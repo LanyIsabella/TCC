@@ -1,0 +1,7 @@
+[project]
+name = "tcc-sistema"
+version = "0.1.0"
+description = "Projeto experimental do TCC"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
