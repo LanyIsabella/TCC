@@ -8,12 +8,12 @@ system_prompt = load_prompt_sys()
 
 agent = create_agent(
     model=client.return_model(),
-    tools=[web_search.langsearch_websearch_tool],  # Pass the tool function directly
+    tools=[web_search.langsearch_websearch_tool],  
     system_prompt=system_prompt,
 )
 
-response = agent.invoke(
-    {"messages": [{"role": "user", "content": "Qual é o clima em São Paulo?"}]}
-)
+# response = agent.invoke(
+#     {"messages": [{"role": "user", "content": "Qual é o clima em São Paulo?"}]}
+# )
 
-print(response["messages"][-1].content)
+# print(response["messages"][-1].content)
