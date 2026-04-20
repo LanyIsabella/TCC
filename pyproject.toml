@@ -4,4 +4,28 @@ version = "0.1.0"
 description = "Projeto experimental do TCC"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "dotenv>=0.9.9",
+    "langchain>=1.2.15",
+    "langchain-ollama>=1.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 88
+src = ["src"]
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.format]
+docstring-code-format = true
+indent-style = "space"
+line-ending = "lf"
+quote-style = "double"
+skip-magic-trailing-comma = false
