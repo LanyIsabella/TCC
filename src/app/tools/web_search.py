@@ -7,7 +7,7 @@ from langchain.tools import tool
 load_dotenv()
 LANGSEARCH_API_KEY = os.getenv("LANGSEARCH_API_KEY")
 
-# Define LangSearch Web Search tool
+
 @tool
 def langsearch_websearch_tool(query: str, count: int = 10) -> str:
     """
@@ -18,30 +18,35 @@ def langsearch_websearch_tool(query: str, count: int = 10) -> str:
     - count: Number of search results to return
 
     Returns:
-    - Detailed information of search results, including web page title, web page URL, 
+    - Detailed information of search results, including web page title, web page URL,
     web page content, web page publication time, etc.
     """
-    
     url = os.getenv("LANGSEARCH_HOST")
+    if not LANGSEARCH_API_KEY or not url:
+        return "LangSearch nao esta configurado no ambiente."
+
     headers = {
-        "Authorization": f"Bearer {LANGSEARCH_API_KEY}",  # Please replace with your API key
-        "Content-Type": "application/json"
+        "Authorization": f"Bearer {LANGSEARCH_API_KEY}",
+        "Content-Type": "application/json",
     }
     data = {
         "query": query,
-        "freshness": "noLimit",  # Search time range, e.g., "oneDay", "oneWeek", "oneMonth", "oneYear", "noLimit"
-        "summary": True,          # Whether to return a long text summary
-        "count": count
+        "freshness": "noLimit",
+        "summary": True,
+        "count": count,
     }
 
-    response = requests.post(url, headers=headers, json=data)
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=30)
+    except requests.RequestException as exc:
+        return f"Search API request failed, reason: {exc}"
 
     if response.status_code == 200:
         json_response = response.json()
         try:
             if json_response["code"] != 200 or not json_response["data"]:
-                return f"Search API request failed, reason: {response.msg or 'Unknown error'}"
-            
+                return "Search API request failed, reason: Unknown error"
+
             webpages = json_response["data"]["webPages"]["value"]
             if not webpages:
                 return "No relevant results found."
@@ -54,9 +59,13 @@ def langsearch_websearch_tool(query: str, count: int = 10) -> str:
                     f"Content: {page['summary']}\n"
                 )
             return formatted_results.strip()
-        except Exception as e:
-            return f"Search API request failed, reason: Failed to parse search results {str(e)}"
-    else:
-        return f"Search API request failed, status code: {response.status_code}, error message: {response.text}"
+        except Exception as exc:
+            return (
+                "Search API request failed, reason: "
+                f"Failed to parse search results {exc}"
+            )
 
-
+    return (
+        "Search API request failed, status code: "
+        f"{response.status_code}, error message: {response.text}"
+    )
