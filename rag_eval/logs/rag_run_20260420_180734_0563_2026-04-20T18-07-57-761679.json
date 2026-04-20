@@ -1,0 +1,121 @@
+{
+  "run_id": "20260420_180734_0563",
+  "timestamp": "2026-04-20T18:07:57.761679",
+  "query": "What is Ragas",
+  "result": {
+    "answer": "Ragas provides abstractions for datasets, experiments, and metrics. It supports evaluations for RAG systems, LLM workflows, and agents, and Ragas 0.3 made experimentation the central pillar of the framework.",
+    "run_id": "20260420_180734_0563"
+  },
+  "num_documents": 6,
+  "traces": [
+    {
+      "event_type": "query_start",
+      "component": "rag_system",
+      "data": {
+        "run_id": "20260420_180734_0563",
+        "question": "What is Ragas",
+        "question_length": 13,
+        "top_k": 3,
+        "total_documents": 6
+      }
+    },
+    {
+      "event_type": "retrieval",
+      "component": "retriever",
+      "data": {
+        "operation": "retrieve_start",
+        "query": "What is Ragas",
+        "query_length": 13,
+        "top_k": 3,
+        "total_documents": 6
+      }
+    },
+    {
+      "event_type": "retrieval",
+      "component": "retriever",
+      "data": {
+        "operation": "retrieve_complete",
+        "num_retrieved": 3,
+        "scores": [
+          1,
+          1,
+          1
+        ],
+        "document_ids": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "event_type": "retrieval",
+      "component": "retriever",
+      "data": {
+        "operation": "retrieve_start",
+        "query": "What is Ragas",
+        "query_length": 13,
+        "top_k": 3,
+        "total_documents": 6
+      }
+    },
+    {
+      "event_type": "retrieval",
+      "component": "retriever",
+      "data": {
+        "operation": "retrieve_complete",
+        "num_retrieved": 3,
+        "scores": [
+          1,
+          1,
+          1
+        ],
+        "document_ids": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "event_type": "llm_call",
+      "component": "llm_api",
+      "data": {
+        "operation": "generate_response",
+        "provider_name": "ollama",
+        "model": "gemma4:e2b",
+        "query": "What is Ragas",
+        "prompt_length": 511,
+        "context_length": 248,
+        "num_context_docs": 3
+      }
+    },
+    {
+      "event_type": "llm_response",
+      "component": "llm_api",
+      "data": {
+        "operation": "generate_response",
+        "response_length": 207,
+        "usage": {
+          "completion_tokens": 328,
+          "prompt_tokens": 143,
+          "total_tokens": 471,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null
+        },
+        "provider_name": "ollama",
+        "model": "gemma4:e2b"
+      }
+    },
+    {
+      "event_type": "query_complete",
+      "component": "rag_system",
+      "data": {
+        "run_id": "20260420_180734_0563",
+        "success": true,
+        "response_length": 207,
+        "num_retrieved": 3
+      }
+    }
+  ]
+}
