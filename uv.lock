@@ -490,6 +490,7 @@ dependencies = [
     { name = "dotenv" },
     { name = "langchain" },
     { name = "langchain-ollama" },
+    { name = "pyyaml" },
 ]
 
 [package.dev-dependencies]
@@ -502,6 +503,7 @@ requires-dist = [
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "langchain", specifier = ">=1.2.15" },
     { name = "langchain-ollama", specifier = ">=1.1.0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
 ]
 
 [package.metadata.requires-dev]

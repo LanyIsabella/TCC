@@ -1,18 +1,15 @@
 from client import Client
 from langchain.agents import create_agent
-
-
-def get_weather(city: str) -> str:
-    """Get weather for a given city."""
-    return f"It's always sunny in {city}!"
-
+from prompt import load_prompt_sys
+from tools import web_search
 
 client = Client()
+system_prompt = load_prompt_sys()
 
 agent = create_agent(
     model=client.return_model(),
-    tools=[get_weather],
-    system_prompt="You are a helpful assistant",
+    tools=[web_search.langsearch_websearch_tool],  # Pass the tool function directly
+    system_prompt=system_prompt,
 )
 
 response = agent.invoke(

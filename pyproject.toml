@@ -8,6 +8,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "langchain>=1.2.15",
     "langchain-ollama>=1.1.0",
+    "pyyaml>=6.0.3",
 ]
 
 [dependency-groups]
