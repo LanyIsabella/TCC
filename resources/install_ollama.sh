@@ -105,7 +105,12 @@ pull_model() {
 }
 
 main() {
-  detect_os_and_install
+  if command -v ollama >/dev/null 2>&1; then
+    log "Ollama ja esta instalado: $(ollama --version)"
+  else
+    detect_os_and_install
+  fi
+
   pull_model
 }
 

@@ -2,25 +2,21 @@ SHELL := /usr/bin/env bash
 
 RESOURCES_DIR := resources
 INSTALL_SCRIPTS := $(sort $(wildcard $(RESOURCES_DIR)/install_*.sh))
+.DEFAULT_GOAL := setup
 
-.PHONY: setup scripts run
+.PHONY: setup install resources
 
-setup:
+setup: resources
+
+install: setup
+
+resources:
 	@echo "[make] Executando scripts de instalacao em ordem:"
+	@if [[ -z "$(INSTALL_SCRIPTS)" ]]; then \
+		echo "[make][erro] Nenhum script install_*.sh encontrado em $(RESOURCES_DIR)."; \
+		exit 1; \
+	fi
 	@for script in $(INSTALL_SCRIPTS); do \
 		echo " - $$script"; \
 		bash "$$script"; \
 	done
-
-scripts:
-	@echo "[make] Scripts encontrados em $(RESOURCES_DIR):"
-	@for script in $(INSTALL_SCRIPTS); do \
-		echo " - $$script"; \
-	done
-
-run:
-	@if [[ -z "$(script)" ]]; then \
-		echo "Uso: make run script=resources/install_uv.sh"; \
-		exit 1; \
-	fi
-	@bash "$(script)"

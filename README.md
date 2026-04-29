@@ -8,8 +8,16 @@ Este projeto possui scripts na pasta `resources` para instalar as dependencias d
 
 ## 1) Instalar o `make` (detecta Win/macOS/Linux automaticamente)
 
+Linux/macOS:
+
 ```bash
-bash resources/install_make.sh
+./resources/install_make.sh
+```
+
+Windows (PowerShell em modo Administrador, sem `bash`):
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1')); choco install make -y
 ```
 
 ## 2) Executar todos os scripts de setup automaticamente
@@ -18,28 +26,46 @@ bash resources/install_make.sh
 make setup
 ```
 
-O alvo `setup` executa todos os scripts `install_*.sh` da pasta `resources` em ordem.
+Esse comando executa automaticamente todos os scripts `install_*.sh` da pasta `resources` em ordem.
 
-## Comandos uteis
-
-Listar scripts encontrados:
+Tambem e aceito:
 
 ```bash
-make scripts
+make install
 ```
 
-Executar apenas um script especifico:
+## Setup em Um Comando
 
 ```bash
-make run script=resources/install_uv.sh
+make install
+```
+
+## API Key da WebSearch (LangSearch)
+
+Para criar a conta e obter sua API Key da tool de WebSearch, acesse:
+
+- https://langsearch.com/login
+
+Depois, configure no `.env`:
+
+```env
+LANGSEARCH_API_KEY=sua_api_key_aqui
 ```
 
 ## Fluxo manual (sem Makefile)
 
-Se preferir rodar sem `make`:
+Linux/macOS:
 
 ```bash
-bash resources/install_make.sh
-bash resources/install_uv.sh
-bash resources/install_ollama.sh
+./resources/install_make.sh
+./resources/install_uv.sh
+./resources/install_ollama.sh
+```
+
+## Observacao (Windows)
+
+Se o `make` ainda nao estiver disponivel apos instalacao, feche e abra o terminal para atualizar o `PATH`, depois rode:
+
+```bash
+make install
 ```

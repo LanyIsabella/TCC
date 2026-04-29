@@ -66,6 +66,11 @@ detect_os_and_install() {
 }
 
 main() {
+  if command -v uv >/dev/null 2>&1; then
+    log "uv ja esta instalado: $(uv --version)"
+    exit 0
+  fi
+
   detect_os_and_install
   log "Instalacao finalizada."
   log "Se o comando 'uv' nao estiver disponivel nesta sessao, abra um novo terminal."
