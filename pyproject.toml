@@ -5,6 +5,7 @@ description = "Projeto experimental do TCC"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "docling>=2.126.0",
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.136.0",
     "langchain>=1.2.15",
@@ -17,7 +18,13 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.4.1",
+    "playwright>=1.52.0",
     "ruff",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "gedweb_playwright: teste de integração do acesso ao GEDWeb via Playwright",
 ]
 
 [tool.ruff]

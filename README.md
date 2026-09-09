@@ -13,6 +13,19 @@ Linux/macOS:
 ```bash
 ./resources/install_make.sh
 ```
+ 
+## Teste de acesso ao GEDWeb com Playwright
+
+O teste é executado somente quando solicitado, pois depende da VPN/restrição de IP do GEDWeb:
+
+```powershell
+uv sync
+uv run playwright install chromium
+$env:RUN_GEDWEB_PLAYWRIGHT="1"
+uv run pytest -q tests/test_gedweb_playwright.py
+```
+
+Para testar outro endereço, configure `GEDWEB_PLAYWRIGHT_URL`.
 
 Windows (PowerShell em modo Administrador, sem `bash`):
 

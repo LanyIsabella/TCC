@@ -1,0 +1,72 @@
+documents:
+  - id: abnt_nbr_10520
+    title: "Informação e documentação — Citações em documentos — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2023"
+    publication_date: "19-07-2023"
+    effective_date: "19-07-2023"
+    status: "vigente"
+    file: arquivos_tcc/NBR10520.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
+  - id: abnt_nbr_12225
+    title: "Informação e documentação — Lombada — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2023"
+    publication_date: "28-04-2023"
+    effective_date: "28-04-2023"
+    status: "vigente"
+    file: arquivos_tcc/NBR12225.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
+  - id: abnt_nbr_14724
+    title: "Informação e documentação — Trabalhos acadêmicos — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2024"
+    publication_date: "16-12-2024"
+    effective_date: "01-04-2025"
+    status: "vigente"
+    file: arquivos_tcc/NBR14724.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
+  - id: abnt_nbr_6022
+    title: "Artigo científico — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2018"
+    publication_date: "16-05-2018"
+    effective_date: "16-05-2018"
+    status: "vigente"
+    file: arquivos_tcc/NBR6022.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
+  - id: abnt_nbr_6023
+    title: "Informação e documentação — Referências — Elaboração"
+    issuer: ABNT
+    document_type: norma
+    version: "2025"
+    publication_date: "21-05-2025"
+    effective_date: "21-05-2025"
+    status: "vigente"
+    file: arquivos_tcc/NBR6023.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
+  - id: abnt_nbr_6034
+    title: "Informação e documentação — Índice — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2005"
+    publication_date: "31-12-2004"
+    effective_date: "31-01-2005"
+    status: "vigente"
+    file: arquivos_tcc/NBR6034.pdf
+    access: "private"
+    source_url: "target GEDWeb"
