@@ -1,12 +1,22 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
+import ctypes
 import os
+import subprocess
+import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Protocol
 
 import requests
 from dotenv import load_dotenv
 from langchain.tools import tool
+
+if __package__ in (None, ""):
+    # Permite executar este arquivo diretamente a partir da raiz do projeto.
+    project_root = Path(__file__).resolve().parents[3]
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 from src.app.tools.vpn_acess import OpenVPNManager, VPNConfig
 
@@ -15,6 +25,36 @@ DEFAULT_OPENVPN_EXECUTABLE = r"C:\Program Files\OpenVPN\bin\openvpn.exe"
 DEFAULT_OPENVPN_CONFIG_FILE = (
     r"C:\Program Files\OpenVPN\config\ifg-srv-pfs-UDP4-1210-config.ovpn"
 )
+
+
+def is_running_as_admin() -> bool:
+    if os.name != "nt":
+        return True
+    return bool(ctypes.windll.shell32.IsUserAnAdmin())
+
+
+def ensure_admin_for_cli() -> None:
+    """Relanca a ferramenta com UAC antes de abrir a conexao OpenVPN."""
+    if is_running_as_admin():
+        return
+
+    script_path = str(Path(__file__).resolve())
+    parameters = subprocess.list2cmdline([script_path, *sys.argv[1:]])
+    result = ctypes.windll.shell32.ShellExecuteW(
+        None,
+        "runas",
+        sys.executable,
+        parameters,
+        str(Path(__file__).resolve().parent),
+        1,
+    )
+
+    if result <= 32:
+        raise PermissionError(
+            "A execucao como Administrador foi cancelada ou falhou."
+        )
+
+    raise SystemExit(0)
 
 
 class VPNManagerProtocol(Protocol):
@@ -154,4 +194,5 @@ def gedweb_vpn_access_tool(attempts: int = 3) -> str:
 
 
 if __name__ == "__main__":
+    ensure_admin_for_cli()
     print(gedweb_vpn_access_tool.invoke({"attempts": 3}))
