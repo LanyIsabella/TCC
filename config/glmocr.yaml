@@ -1,0 +1,49 @@
+pipeline:
+  maas:
+    enabled: false
+
+  ocr_api:
+    api_host: localhost
+    api_port: 11434
+    api_path: /api/generate
+    model: glm-ocr:latest
+    api_mode: ollama_generate
+    request_timeout: 300
+    retry_max_attempts: 0
+
+  page_loader:
+    max_tokens: 2048
+    max_pixels: 4000000
+    pdf_dpi: 120
+    task_prompt_mapping:
+      text: "Text Recognition:"
+      table: "Table Recognition:"
+      formula: "Formula Recognition:"
+
+  # Obrigatório no modo self-hosted: detector de layout usado antes do OCR.
+  layout:
+    model_dir: PaddlePaddle/PP-DocLayoutV3_safetensors
+    device: cpu
+    label_task_mapping:
+      text:
+        - abstract
+        - algorithm
+        - content
+        - doc_title
+        - figure_title
+        - paragraph_title
+        - reference_content
+        - text
+        - vertical_text
+        - vision_footnote
+        - seal
+        - formula_number
+      table:
+        - table
+      formula:
+        - display_formula
+        - inline_formula
+
+  max_workers: 1
+  page_maxsize: 1
+  region_maxsize: 32
