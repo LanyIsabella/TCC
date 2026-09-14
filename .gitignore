@@ -9,3 +9,5 @@ wheels/
 
 # Virtual environments
 .venv
+data/tmp/
+data/page_cache/

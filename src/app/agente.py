@@ -4,6 +4,7 @@ from langchain.agents import create_agent
 
 from .client import Client
 from .prompt import load_prompt_sys
+from .tools.rag_search import rag_document_search
 from .tools.web_search import langsearch_websearch_tool
 
 
@@ -14,7 +15,7 @@ def build_agent():
 
     return create_agent(
         model=client.return_model(),
-        tools=[langsearch_websearch_tool],
+        tools=[langsearch_websearch_tool, rag_document_search],
         system_prompt=system_prompt,
     )
 
