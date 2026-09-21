@@ -79,14 +79,126 @@ def pdf_details(
     }
     docling_result = docling_converter.convert(path)
     docling_text = docling_result.document.export_to_markdown()
-    glmocr_result = glmocr_parser.parse(path, save_layout_visualization=False)
+    if use_direct_ollama_glm_ocr():
+        try:
+            glmocr_text = direct_ollama_pdf_text(path)
+        except RuntimeError as error:
+            # O conteúdo Docling já foi extraído acima. Uma falha transitória
+            # do Ollama não deve impedir a carga do PDF inteiro na Bronze.
+            print(
+                f"Aviso: GLM-OCR indisponível em {path.name}; "
+                f"usando Docling como conteúdo principal: {error}",
+                file=sys.stderr,
+                flush=True,
+            )
+            glmocr_text = ""
+    else:
+        glmocr_result = glmocr_parser.parse(path, save_layout_visualization=False)
+        glmocr_text = glmocr_result.markdown_result
     return (
         metadata,
         docling_text,
-        glmocr_result.markdown_result,
+        glmocr_text,
         len(reader.pages),
         reader.is_encrypted,
     )
+
+
+def use_direct_ollama_glm_ocr() -> bool:
+    """Usa o endpoint local do Ollama sem o detector de layout em CPU."""
+    return os.getenv("RAG_GLM_OCR_MODE", "package").lower() == "direct_ollama"
+
+
+def direct_ollama_pdf_text(path: Path) -> str:
+    """Extrai todas as páginas diretamente pelo GLM-OCR no Ollama."""
+    import requests
+
+    try:
+        from data.rag_pipeline import (
+            direct_ollama_glm_ocr,
+            native_page_text,
+            page_paths,
+        )
+    except ModuleNotFoundError as error:
+        # Execução como ``python data/bronze_postgres.py`` coloca somente
+        # ``data/`` no sys.path; nesse caso, o módulo é importado pelo nome
+        # do arquivo, mantendo o suporte à execução pelo orquestrador.
+        if error.name != "data":
+            raise
+        from rag_pipeline import direct_ollama_glm_ocr, native_page_text, page_paths
+
+    page_texts: list[str] = []
+    network_error: requests.exceptions.RequestException | None = None
+    paths = page_paths(path, 0)
+    for page_number, page_path in enumerate(paths, start=1):
+        if network_error is not None:
+            native = native_page_text(page_path)
+            if native:
+                text = native
+            else:
+                print(
+                    f"Aviso: sem fallback nativo em {path.name}, "
+                    f"página {page_number}; Ollama já havia excedido o timeout.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                text = ""
+            page_texts.append(text)
+            continue
+        try:
+            text, _, _ = direct_ollama_glm_ocr(page_path)
+        except ValueError as error:
+            native = native_page_text(page_path)
+            if native:
+                print(
+                    f"Aviso: usando texto nativo em {path.name}, "
+                    f"página {page_number}: {error}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                text = native
+            else:
+                raise RuntimeError(
+                    f"GLM-OCR falhou em {path.name}, página {page_number}: {error}"
+                ) from error
+        except requests.exceptions.RequestException as error:
+            network_error = error
+            native = native_page_text(page_path)
+            if native:
+                print(
+                    f"Aviso: usando texto nativo em {path.name}, "
+                    f"página {page_number}, após falha de rede do Ollama: {error}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                text = native
+            else:
+                raise RuntimeError(
+                    f"GLM-OCR falhou em {path.name}, página {page_number}: {error}"
+                ) from error
+        except Exception as error:
+            raise RuntimeError(
+                f"GLM-OCR falhou em {path.name}, página {page_number}: {error}"
+            ) from error
+        page_texts.append(text)
+    return "\n\n".join(page_texts)
+
+
+def select_primary_content(docling_text: str, glmocr_text: str) -> tuple[str, str]:
+    """Escolhe uma fonte utilizável e informa quando o GLM foi rejeitado."""
+    if not glmocr_text.strip():
+        return docling_text, "glmocr_empty"
+    if not docling_text.strip():
+        return glmocr_text, "glmocr_only"
+
+    private_use = sum(
+        "\ue000" <= character <= "\uf8ff" for character in glmocr_text
+    )
+    private_ratio = private_use / max(len(glmocr_text), 1)
+    too_short = len(docling_text) >= 1000 and len(glmocr_text) < len(docling_text) * 0.05
+    if private_ratio > 0.005 or too_short:
+        return docling_text, "docling_quality_fallback"
+    return glmocr_text, "glmocr"
 
 
 def collect_file(
@@ -104,7 +216,7 @@ def collect_file(
         page_count,
         encrypted,
     ) = pdf_details(path, docling_converter, glmocr_parser)
-    content = glmocr_text or docling_text
+    content, content_source = select_primary_content(docling_text, glmocr_text)
     manifest_data = manifest.get(path.name.lower(), {})
     return {
         "relative_path": relative_path,
@@ -136,35 +248,50 @@ def collect_file(
             },
             "pdf": pdf_metadata,
             "manifest": manifest_data,
+            "content_source": content_source,
         },
         "collector_version": COLLECTOR_VERSION,
         "inventory_generated_at": utc_now(),
     }
 
 
-def collect_inventory(
+def iter_inventory(
     raw_dir: Path, manifest_path: Path, glmocr_config: Path
-) -> list[dict[str, Any]]:
+):
+    """Produz registros um a um para permitir retomada por arquivo."""
     global RAW_DIR
     RAW_DIR = raw_dir.resolve()
     files = sorted(path for path in RAW_DIR.rglob("*") if path.is_file())
     if not files:
         raise FileNotFoundError(f"Nenhum arquivo encontrado em {RAW_DIR}")
-    from docling.document_converter import DocumentConverter
-    from glmocr import GlmOcr
+    try:
+        from data.rag_pipeline import create_docling_converter
+    except ModuleNotFoundError as error:
+        if error.name != "data":
+            raise
+        from rag_pipeline import create_docling_converter
 
     manifest = load_manifest(manifest_path)
-    docling_converter = DocumentConverter()
-    glmocr_parser = GlmOcr(config_path=str(glmocr_config))
-    return [
-        collect_file(
+    docling_converter = create_docling_converter()
+    if use_direct_ollama_glm_ocr():
+        glmocr_parser = None
+    else:
+        from glmocr import GlmOcr
+
+        glmocr_parser = GlmOcr(config_path=str(glmocr_config))
+    for path in files:
+        yield collect_file(
             path,
             manifest,
             docling_converter,
             glmocr_parser,
         )
-        for path in files
-    ]
+
+
+def collect_inventory(
+    raw_dir: Path, manifest_path: Path, glmocr_config: Path
+) -> list[dict[str, Any]]:
+    return list(iter_inventory(raw_dir, manifest_path, glmocr_config))
 
 
 def write_inventory(records: list[dict[str, Any]], output: Path) -> None:
@@ -340,13 +467,17 @@ def main() -> int:
             write_inventory(records, output)
             print(f"Inventário gerado: {output} ({len(records)} arquivos).")
         else:
-            records = collect_inventory(
+            loaded = 0
+            for record in iter_inventory(
                 args.raw_dir.resolve(), args.manifest, args.glmocr_config
-            )
-            print(
-                f"Carregados {load_database(records, args)} registros em "
-                f"{args.schema}.{args.table}."
-            )
+            ):
+                loaded += load_database([record], args)
+                print(
+                    f"Bronze: {record['file_name']} carregado "
+                    f"({loaded} arquivo(s)).",
+                    flush=True,
+                )
+            print(f"Carregados {loaded} registros em {args.schema}.{args.table}.")
     except Exception as error:
         print(f"Erro: {error}", file=sys.stderr)
         return 1

@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from data.run_pipeline import PipelineOptions, build_pipeline_steps, run_pipeline
+from data.run_pipeline import (
+    PipelineOptions,
+    build_pipeline_steps,
+    pipeline_environment,
+    run_pipeline,
+)
 
 
 def test_pipeline_steps_follow_the_required_order() -> None:
@@ -80,3 +85,11 @@ def test_dry_run_does_not_need_database_for_activation_ids(
     run_pipeline(PipelineOptions(dry_run=True, skip_bronze=True))
 
     assert "activate: (aguarda IDs da Bronze)" in capsys.readouterr().out
+
+
+def test_direct_glm_ocr_flag_is_forwarded_to_child_processes(monkeypatch) -> None:
+    monkeypatch.delenv("RAG_GLM_OCR_MODE", raising=False)
+
+    environment = pipeline_environment(PipelineOptions(direct_glm_ocr=True))
+
+    assert environment["RAG_GLM_OCR_MODE"] == "direct_ollama"

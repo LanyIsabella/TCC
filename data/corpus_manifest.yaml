@@ -35,6 +35,18 @@ documents:
     access: "private"
     source_url: "target GEDWeb"
 
+  - id: abnt_nbr_15287
+    title: "Informação e documentação — Projeto de pesquisa — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2025"
+    publication_date: "18-03-2025"
+    effective_date: "18-03-2025"
+    status: "vigente"
+    file: arquivos_tcc/NBR15287.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
   - id: abnt_nbr_6022
     title: "Artigo científico — Apresentação"
     issuer: ABNT
@@ -56,6 +68,42 @@ documents:
     effective_date: "21-05-2025"
     status: "vigente"
     file: arquivos_tcc/NBR6023.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
+  - id: abnt_nbr_6024
+    title: "Informação e documentação — Numeração progressiva das seções de um documento — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2012"
+    publication_date: "01-02-2012"
+    effective_date: "01-03-2012"
+    status: "vigente"
+    file: arquivos_tcc/NBR6024.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
+  - id: abnt_nbr_6027
+    title: "Informação e documentação — Sumário — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2012"
+    publication_date: "11-12-2012"
+    effective_date: "11-01-2013"
+    status: "vigente"
+    file: arquivos_tcc/NBR6027.pdf
+    access: "private"
+    source_url: "target GEDWeb"
+
+  - id: abnt_nbr_6028
+    title: "Informação e documentação — Resumo, resenha e recensão — Apresentação"
+    issuer: ABNT
+    document_type: norma
+    version: "2021"
+    publication_date: "18-05-2021"
+    effective_date: "18-05-2021"
+    status: "vigente"
+    file: arquivos_tcc/NBR6028.pdf
     access: "private"
     source_url: "target GEDWeb"
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from base64 import b64decode
 from pathlib import Path
 
 import pytest
+import requests
 import yaml
 from data.rag_pipeline import (
     OllamaEmbedder,
@@ -12,8 +14,10 @@ from data.rag_pipeline import (
     direct_ollama_glm_ocr,
     estimated_token_count,
     evaluate_page,
+    extract_page,
     extractor_status_query,
     is_gold_ready,
+    is_likely_blank_page,
     page_is_eligible,
     parse_json_response,
     reconstruct_page_content,
@@ -169,6 +173,30 @@ def test_evaluator_uses_deterministic_json_configuration(
     assert calls["format"] == "json"
 
 
+def test_evaluator_has_deterministic_fallback_on_invalid_model_json(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    class InvalidModel:
+        def __init__(self, **_kwargs: object) -> None:
+            return None
+
+        def invoke(self, _messages: object) -> object:
+            raise ValueError("JSON inválido")
+
+    monkeypatch.setattr("langchain_ollama.ChatOllama", InvalidModel)
+    image = tmp_path / "page.png"
+    image.write_bytes(b"fake-image")
+
+    evaluation, method = evaluate_page(
+        image, "texto nativo confiável", "extração", "gemma"
+    )
+
+    assert method == "deterministic_fallback"
+    assert evaluation["overall_score"] == 50.0
+    assert evaluation["requires_manual_review"] is True
+    assert evaluation["confidence"] == 0.0
+
+
 def test_embedding_request_uses_required_prefix_and_endpoint(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -190,7 +218,7 @@ def test_embedding_request_uses_required_prefix_and_endpoint(
     embedder.embed("conteúdo", "search_document: ")
 
     assert calls[0][0].endswith("/api/show")
-    assert calls[1][0] == "http://localhost:11434/api/embed"
+    assert calls[1][0].endswith("/api/embed")
     body = calls[1][1]["json"]
     assert body["input"] == "search_document: conteúdo"
     assert body["truncate"] is False
@@ -214,6 +242,48 @@ def test_embedding_rejects_wrong_dimension(monkeypatch: pytest.MonkeyPatch) -> N
         embedder.embed("conteúdo", "search_document: ")
 
 
+def test_embedding_splits_text_when_ollama_context_is_exceeded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    class FakeResponse:
+        def __init__(self, body: dict[str, object]) -> None:
+            self.body = body
+
+        def raise_for_status(self) -> None:
+            if "error" in self.body:
+                raise requests.HTTPError("400 Bad Request", response=self)
+
+        def json(self) -> dict[str, object]:
+            return self.body
+
+    def fake_post(url: str, **kwargs: object) -> FakeResponse:
+        if url.endswith("/api/show"):
+            return FakeResponse({"digest": "test-digest"})
+        body = kwargs["json"]
+        assert isinstance(body, dict)
+        value = str(body["input"])
+        calls.append(value)
+        if len(value) > 180:
+            return FakeResponse(
+                {"error": "the input length exceeds the context length"}
+            )
+        vector = [1.0 if value.startswith("search_document: A") else 0.5] + [
+            0.0
+        ] * 767
+        return FakeResponse({"embeddings": [vector]})
+
+    monkeypatch.setattr("data.rag_pipeline.requests.post", fake_post)
+    embedder = OllamaEmbedder()
+
+    vector = embedder.embed("A" * 150 + " " + "B" * 149, "search_document: ")
+
+    assert len(calls) == 3
+    assert len(vector) == 768
+    assert sum(value * value for value in vector) == pytest.approx(1.0)
+
+
 def test_schema_declares_hybrid_retrieval_contract() -> None:
     schema = Path("data/rag_schema.sql").read_text(encoding="utf-8")
     pipeline = Path("data/rag_pipeline.py").read_text(encoding="utf-8")
@@ -233,7 +303,7 @@ def test_rag_tool_returns_complete_document(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(
         rag_search,
         "search_documents",
-        lambda question, pages_limit, documents_limit: [
+        lambda question, pages_limit, documents_limit, **_kwargs: [
             {
                 "document_id": 8,
                 "pages": [5],
@@ -250,6 +320,58 @@ def test_rag_tool_returns_complete_document(monkeypatch: pytest.MonkeyPatch) -> 
     assert '"pages": [5]' in result
 
 
+def test_rag_tool_validates_and_compacts_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.app.tools import rag_search
+
+    monkeypatch.setattr(
+        rag_search,
+        "search_documents",
+        lambda **_kwargs: [
+            {
+                "document_id": 19,
+                "title": "ABNT NBR 6028",
+                "version": "2021",
+                "metadata": {"id": "abnt_nbr_6028", "issuer": "ABNT"},
+                "pages": [4],
+                "matched_pages": [{"page_number": 4, "direct_match": True}],
+                "page_context": [
+                    {"page_number": 4, "direct_match": True, "page_text": "evidence"}
+                ],
+                "full_text": "x" * 20_000,
+                "embedding": [0.0] * 768,
+            }
+        ],
+    )
+
+    result = json.loads(
+        rag_search.rag_document_search.invoke({"question": "resumo"})
+    )
+
+    assert result["status"] == "success"
+    document = result["documents"][0]
+    assert document["title"] == "ABNT NBR 6028"
+    assert document["full_text"] is None
+    assert document["page_context"][0]["page_text"] == "evidence"
+    assert "embedding" not in document
+
+
+def test_rag_tool_returns_structured_error_for_invalid_result(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.app.tools import rag_search
+
+    monkeypatch.setattr(rag_search, "search_documents", lambda **_kwargs: {"bad": True})
+
+    result = json.loads(
+        rag_search.rag_document_search.invoke({"question": "resumo"})
+    )
+
+    assert result["status"] == "error"
+    assert result["evidence_found"] is False
+
+
 def test_gold_gate_requires_successful_evaluation() -> None:
     assert not is_gold_ready("success", 0, 0, [])
     assert is_gold_ready("success", 2, 2, ["success", "success"])
@@ -258,11 +380,13 @@ def test_gold_gate_requires_successful_evaluation() -> None:
     assert not is_gold_ready("error", 2, 1, ["success"], True)
 
 
-def test_retry_only_selects_pending_or_explicit_error_pages() -> None:
+def test_retry_recovers_pending_error_and_interrupted_pages() -> None:
     assert page_is_eligible("pending", False, False)
     assert not page_is_eligible("success", True, False)
     assert not page_is_eligible("error", False, False)
     assert page_is_eligible("error", True, False)
+    assert page_is_eligible("processing", True, False)
+    assert not page_is_eligible("processing", False, False)
     assert page_is_eligible("success", False, True)
 
 
@@ -310,16 +434,80 @@ def test_direct_glm_ocr_uses_ollama_generate_and_rejects_truncation(
     assert body["model"] == "glm-ocr:latest"
     assert body["stream"] is False
     assert body["images"]
+    assert body["options"]["num_ctx"] == 16384
 
     class TruncatedResponse(FakeResponse):
         def json(self) -> dict:
             return {"response": "parcial", "done": True, "done_reason": "length"}
 
-    monkeypatch.setattr(
-        "data.rag_pipeline.requests.post", lambda *_args, **_kwargs: TruncatedResponse()
-    )
+    def truncated_post(url: str, **kwargs: object) -> TruncatedResponse:
+        calls.append((url, kwargs))
+        return TruncatedResponse()
+
+    monkeypatch.setattr("data.rag_pipeline.requests.post", truncated_post)
     with pytest.raises(ValueError, match="trunc"):
         direct_ollama_glm_ocr(image)
+    assert calls[-2][1]["json"]["options"]["num_predict"] == 16384
+    assert calls[-1][1]["json"]["options"]["num_predict"] == 32768
+
+    class UnconfirmedResponse(FakeResponse):
+        def json(self) -> dict:
+            return {"response": "texto sem metadado final", "done": False}
+
+    monkeypatch.setattr(
+        "data.rag_pipeline.requests.post",
+        lambda *_args, **_kwargs: UnconfirmedResponse(),
+    )
+    _, _, diagnostics = direct_ollama_glm_ocr(image)
+    assert diagnostics == {"completion_unconfirmed": True}
+
+
+def test_blank_page_is_detected(tmp_path: Path) -> None:
+    page = tmp_path / "blank.png"
+    page.write_bytes(
+        b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAFklEQVR4nGP8//8/"
+            "A27AhEeOYeRKAwCl4wMRx3ocVQAAAABJRU5ErkJggg=="
+        )
+    )
+
+    assert is_likely_blank_page(page)
+    assert direct_ollama_glm_ocr(page) == ("", "", None)
+
+
+def test_extract_page_falls_back_to_docling_on_ollama_timeout(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    page = tmp_path / "page-0001.pdf"
+    page.write_bytes(b"page one")
+
+    class Document:
+        def export_to_markdown(self) -> str:
+            return "texto Docling"
+
+    class Result:
+        document = Document()
+
+    class Converter:
+        def convert(self, _page: Path) -> Result:
+            return Result()
+
+    monkeypatch.setenv("RAG_GLM_OCR_MODE", "direct_ollama")
+    monkeypatch.setattr(
+        "data.rag_pipeline.direct_ollama_glm_ocr",
+        lambda _page: (_ for _ in ()).throw(requests.exceptions.ReadTimeout("timeout")),
+    )
+
+    text, markdown, diagnostics = extract_page(
+        "glm_ocr", page, Converter(), None
+    )
+
+    assert text == markdown == "texto Docling"
+    assert diagnostics == {
+        "fallback": "docling",
+        "error": "timeout",
+        "error_type": "ReadTimeout",
+    }
 
 
 def test_direct_glm_ocr_mode_is_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -334,6 +522,7 @@ def test_global_validation_query_does_not_use_untyped_null_parameter() -> None:
     query, params = extractor_status_query(None)
 
     assert "IS NULL" not in query
+    assert "SUM(total_pages)::bigint" in query
     assert params == [["docling", "glm_ocr"]]
 
     filtered_query, filtered_params = extractor_status_query(8)

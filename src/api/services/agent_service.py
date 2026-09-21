@@ -58,10 +58,17 @@ class AgentService:
             raise AgentExecutionError("Falha ao executar o agente.") from exc
 
         messages = self._extract_messages(result)
-        normalized_messages = [self._normalize_message(message) for message in messages]
+        normalized_messages = [
+            self._normalize_message(message)
+            for message in messages
+            if not self._is_internal_tool_event(message)
+        ]
         answer = self._extract_answer(normalized_messages)
+        public_messages = [
+            message for message in normalized_messages if message.role != "tool"
+        ]
 
-        return AgentChatResponse(answer=answer, messages=normalized_messages)
+        return AgentChatResponse(answer=answer, messages=public_messages)
 
     def _extract_messages(self, result: Any) -> list[Any]:
         """Extrai a lista de mensagens do retorno bruto do agente."""
@@ -121,6 +128,22 @@ class AgentService:
             content = getattr(message, "content", None)
 
         return self._normalize_content(content)
+
+    def _is_internal_tool_event(self, message: Any) -> bool:
+        """Identifica eventos intermediários que não são conversa pública."""
+
+        if isinstance(message, dict):
+            raw_role = message.get("role") or message.get("type")
+            content = message.get("content")
+            tool_calls = message.get("tool_calls")
+        else:
+            raw_role = getattr(message, "role", None) or getattr(message, "type", None)
+            content = getattr(message, "content", None)
+            tool_calls = getattr(message, "tool_calls", None)
+
+        if str(raw_role) == "tool":
+            return True
+        return bool(tool_calls) and not self._normalize_content(content)
 
     def _extract_answer(self, messages: list[ConversationMessage]) -> str:
         """Seleciona a ultima resposta do assistente no historico normalizado."""

@@ -109,7 +109,7 @@ def build_pipeline_steps(options: PipelineOptions) -> tuple[PipelineStep, ...]:
     if not options.skip_evaluate:
         evaluate_args = (
             "evaluate",
-            *document_argument(options.document_id),
+            *document_argument(options. document_id),
             "--extractor",
             options.extractor,
         )
