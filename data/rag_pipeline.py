@@ -11,6 +11,8 @@ import argparse
 import base64
 import hashlib
 import json
+import logging
+import math
 import os
 import re
 import sys
@@ -32,6 +34,21 @@ EMBEDDING_DIMENSION = 768
 EMBEDDING_URL = "http://localhost:11434/api/embed"
 EVALUATION_PROMPT_VERSION = "rag-page-evaluation-v1"
 VALID_STATUSES = {"pending", "processing", "success", "error"}
+RRF_K = 60.0
+STANDARD_PATTERN = re.compile(
+    r"\b(?:ABNT\s+)?"
+    r"NBR"
+    r"(?:\s+(?:ISO(?:/IEC)?|IEC))?"
+    r"\s+\d{3,5}(?:-\d+)?"
+    r"(?:\s*:\s*\d{4})?",
+    flags=re.IGNORECASE,
+)
+TEXTUAL_STOPWORDS = {
+    "a", "as", "ao", "aos", "com", "da", "das", "de", "do", "dos",
+    "e", "em", "entre", "essa", "esse", "esta", "este", "na", "nas",
+    "no", "nos", "o", "os", "para", "por", "qual", "que", "se", "sem",
+    "ser", "são", "sao", "segundo", "sobre", "um", "uma", "como", "devem",
+}
 EVALUATION_SCORE_KEYS = {
     "textual_fidelity",
     "content_completeness",
@@ -44,6 +61,8 @@ EVALUATION_SCORE_KEYS = {
     "noise_control",
     "hallucination_control",
 }
+
+logger = logging.getLogger(__name__)
 
 
 def utc_now() -> datetime:
@@ -68,6 +87,52 @@ def estimated_token_count(value: str) -> int:
 
 def context_token_limit() -> int:
     return int(os.getenv("RAG_CONTEXT_TOKEN_LIMIT", "8192"))
+
+
+def extract_standard_search_keys(question: str) -> list[str]:
+    """Extrai e normaliza identificadores como NBR 6028 ou NBR ISO 9001."""
+    keys: list[str] = []
+    for match in STANDARD_PATTERN.finditer(question):
+        value = match.group(0).upper()
+        value = re.sub(r"^ABNT\s+", "", value)
+        value = re.sub(r"[^A-Z0-9]", "", value)
+        if value and value not in keys:
+            keys.append(value)
+    return keys
+
+
+def standard_search_filters(
+    standard_keys: list[str],
+) -> tuple[list[str], list[str]]:
+    """Separa o código da norma do ano para a correspondência exata."""
+    codes: list[str] = []
+    versions: list[str] = []
+    for key in standard_keys:
+        match = re.fullmatch(
+            r"(NBR(?:ISO(?:IEC)?|IEC)?\d{3,5})(\d{4})?", key
+        )
+        if not match:
+            continue
+        code, version = match.groups()
+        codes.append(f"%{code}%")
+        if version:
+            versions.append(version)
+    return codes, versions
+
+
+def textual_search_query(question: str, standard_keys: list[str]) -> str:
+    """Gera termos de texto amplos quando uma norma exata foi identificada."""
+    if not standard_keys:
+        return question
+    without_standard = STANDARD_PATTERN.sub(" ", question)
+    terms = [
+        term
+        for term in re.findall(r"[\wÀ-ÿ]+", without_standard, flags=re.UNICODE)
+        if len(term) > 2 and term.casefold() not in TEXTUAL_STOPWORDS
+    ]
+    if not terms:
+        return question
+    return " OR ".join(dict.fromkeys(terms[:12]))
 
 
 def configure_utf8_output() -> None:
@@ -138,14 +203,14 @@ def bronze_documents(document_id: int | None = None) -> list[dict[str, Any]]:
 
 
 def page_paths(pdf_path: Path, document_id: int) -> list[Path]:
-    import fitz
+    import pymupdf
     import pypdf
 
     digest = hashlib.sha256(pdf_path.read_bytes()).hexdigest()[:16]
     target_dir = PAGE_CACHE / str(document_id) / digest
     target_dir.mkdir(parents=True, exist_ok=True)
     reader = pypdf.PdfReader(str(pdf_path), strict=False)
-    pdf_document = fitz.open(str(pdf_path))
+    pdf_document = pymupdf.open(str(pdf_path))
     paths: list[Path] = []
     try:
         for index, page in enumerate(reader.pages, start=1):
@@ -158,7 +223,7 @@ def page_paths(pdf_path: Path, document_id: int) -> list[Path]:
                     writer.write(output)
             if not image_target.exists():
                 pixmap = pdf_document[index - 1].get_pixmap(
-                    matrix=fitz.Matrix(2, 2), alpha=False
+                    matrix=pymupdf.Matrix(2, 2), alpha=False
                 )
                 pixmap.save(str(image_target))
             paths.append(target)
@@ -174,9 +239,51 @@ def native_page_text(page_pdf: Path) -> str:
     return (reader.pages[0].extract_text() or "").strip()
 
 
+def is_likely_blank_page(image_path: Path) -> bool:
+    """Detecta páginas quase vazias que fazem o OCR visual entrar em loop."""
+    from PIL import Image
+
+    try:
+        with Image.open(image_path) as image:
+            grayscale = image.convert("L")
+            grayscale.thumbnail((256, 256))
+            pixels = list(grayscale.tobytes())
+    except Exception:
+        return False
+    if not pixels:
+        return True
+    nonwhite = sum(pixel < 245 for pixel in pixels)
+    dark = sum(pixel < 200 for pixel in pixels)
+    return nonwhite / len(pixels) < 0.09 and dark / len(pixels) < 0.01
+
+
 def use_direct_ollama_glm_ocr() -> bool:
     """Seleciona o modo direto somente quando explicitamente configurado."""
     return os.getenv("RAG_GLM_OCR_MODE", "package").lower() == "direct_ollama"
+
+
+def create_docling_converter() -> Any:
+    """Cria o conversor adequado ao modo de OCR selecionado."""
+    from docling.datamodel.base_models import InputFormat
+    from docling.datamodel.pipeline_options import PdfPipelineOptions
+    from docling.document_converter import DocumentConverter, PdfFormatOption
+
+    if not use_direct_ollama_glm_ocr():
+        return DocumentConverter()
+
+    # No modo direto, o GLM faz o OCR visual. Docling é usado apenas como
+    # referência/fallback, portanto não deve carregar RapidOCR e o layout model.
+    options = PdfPipelineOptions(
+        do_ocr=False,
+        do_table_structure=False,
+        force_backend_text=True,
+    )
+    return DocumentConverter(
+        allowed_formats=[InputFormat.PDF],
+        format_options={
+            InputFormat.PDF: PdfFormatOption(pipeline_options=options),
+        },
+    )
 
 
 def direct_ollama_glm_ocr(
@@ -200,48 +307,90 @@ def direct_ollama_glm_ocr(
     image_path = render_page_image(page_path)
     if not image_path.exists():
         raise FileNotFoundError(f"Imagem da página não encontrada: {image_path}")
-    payload = {
-        "model": os.getenv("GLMOCR_MODEL", api.get("model", "glm-ocr:latest")),
-        "prompt": page_loader.get("task_prompt_mapping", {}).get(
-            "text", "Text Recognition:"
-        ),
-        "images": [base64.b64encode(image_path.read_bytes()).decode("ascii")],
-        "stream": False,
-        "keep_alive": os.getenv("GLMOCR_KEEP_ALIVE", "5m"),
-        "options": {
-            "temperature": 0,
-            "num_predict": int(
-                os.getenv(
-                    "GLMOCR_DIRECT_MAX_TOKENS",
-                    str(page_loader.get("max_tokens", 2048)),
-                )
-            ),
-        },
-    }
+    if is_likely_blank_page(image_path):
+        return "", "", None
     host = api.get("api_host", "localhost")
     port = api.get("api_port", 11434)
     path = api.get("api_path", "/api/generate")
     url = f"http://{host}:{port}/{str(path).lstrip('/')}"
-    response = requests.post(
-        url,
-        json=payload,
-        timeout=int(
-            os.getenv(
-                "GLMOCR_DIRECT_TIMEOUT",
-                str(api.get("request_timeout", 300)),
-            )
-        ),
+    initial_tokens = int(
+        os.getenv(
+            "GLMOCR_DIRECT_MAX_TOKENS",
+            str(page_loader.get("max_tokens", 2048)),
+        )
     )
-    response.raise_for_status()
-    data = response.json()
-    if not isinstance(data, dict):
-        raise ValueError("Resposta inválida do GLM-OCR: objeto JSON esperado.")
-    if data.get("done_reason") == "length":
-        raise ValueError("Resposta do GLM-OCR truncada por limite de tokens.")
-    text = str(data.get("response") or "").strip()
-    if not text:
-        raise ValueError("GLM-OCR não retornou texto para a página.")
-    return text, text, None
+    retry_limit = int(
+        os.getenv(
+            "GLMOCR_DIRECT_RETRY_MAX_TOKENS",
+            str(max(initial_tokens, 32768)),
+        )
+    )
+    if initial_tokens <= 0 or retry_limit < initial_tokens:
+        raise ValueError(
+            "GLMOCR_DIRECT_MAX_TOKENS e GLMOCR_DIRECT_RETRY_MAX_TOKENS "
+            "devem ser positivos, e o limite de retentativa não pode ser menor."
+        )
+
+    token_limits = [initial_tokens]
+    while token_limits[-1] < retry_limit:
+        token_limits.append(min(token_limits[-1] * 2, retry_limit))
+
+    configured_context = int(os.getenv("GLMOCR_DIRECT_CONTEXT", "16384"))
+    if configured_context <= 0:
+        raise ValueError("GLMOCR_DIRECT_CONTEXT deve ser positivo.")
+
+    image = base64.b64encode(image_path.read_bytes()).decode("ascii")
+    timeout = int(
+        os.getenv(
+            "GLMOCR_DIRECT_TIMEOUT",
+            str(api.get("request_timeout", 300)),
+        )
+    )
+    if timeout <= 0:
+        raise ValueError("GLMOCR_DIRECT_TIMEOUT deve ser positivo.")
+    last_data: dict[str, Any] | None = None
+    for num_predict in token_limits:
+        payload = {
+            "model": os.getenv("GLMOCR_MODEL", api.get("model", "glm-ocr:latest")),
+            "prompt": page_loader.get("task_prompt_mapping", {}).get(
+                "text", "Text Recognition:"
+            ),
+            "images": [image],
+            "stream": False,
+            "keep_alive": os.getenv("GLMOCR_KEEP_ALIVE", "5m"),
+            "options": {
+                "temperature": 0,
+                "num_predict": num_predict,
+                # O contexto precisa comportar o limite de saída da tentativa;
+                # caso contrário, aumentar num_predict não tem efeito prático.
+                "num_ctx": max(configured_context, num_predict),
+            },
+        }
+        response = requests.post(url, json=payload, timeout=timeout)
+        response.raise_for_status()
+        data = response.json()
+        if not isinstance(data, dict):
+            raise ValueError("Resposta inválida do GLM-OCR: objeto JSON esperado.")
+        last_data = data
+        if data.get("done_reason") == "length":
+            continue
+        text = str(data.get("response") or "").strip()
+        if not text:
+            raise ValueError("GLM-OCR não retornou texto para a página.")
+        diagnostics = (
+            {"completion_unconfirmed": True}
+            if data.get("done") is False and not data.get("done_reason")
+            else None
+        )
+        return text, text, diagnostics
+
+    used = token_limits[-1]
+    reason = (last_data or {}).get("done_reason", "length")
+    raise ValueError(
+        "Resposta do GLM-OCR truncada por limite de tokens "
+        f"({used}; motivo: {reason}). Aumente GLMOCR_DIRECT_RETRY_MAX_TOKENS "
+        "ou reduza a resolução da página."
+    )
 
 
 def extractor_versions() -> dict[str, str]:
@@ -320,7 +469,9 @@ def page_is_eligible(status: str, retry_errors: bool, force: bool) -> bool:
         return True
     if status == "pending":
         return True
-    return retry_errors and status == "error"
+    # Um encerramento nativo (por exemplo, 0xC0000005) pode deixar a página
+    # como ``processing`` antes de o bloco de erro Python conseguir atualizá-la.
+    return retry_errors and status in {"error", "processing"}
 
 
 def extract_page(
@@ -337,7 +488,26 @@ def extract_page(
         markdown = result.document.export_to_markdown()
         return markdown, markdown, None
     if use_direct_ollama_glm_ocr():
-        return direct_ollama_glm_ocr(page_pdf)
+        try:
+            return direct_ollama_glm_ocr(page_pdf)
+        except (ValueError, requests.exceptions.RequestException) as error:
+            if docling_converter is not None:
+                result = docling_converter.convert(page_pdf)
+                markdown = result.document.export_to_markdown()
+                if markdown.strip():
+                    return markdown, markdown, {
+                        "fallback": "docling",
+                        "error": str(error)[:1000],
+                        "error_type": type(error).__name__,
+                    }
+            native = native_page_text(page_pdf)
+            if native:
+                return native, native, {
+                    "fallback": "pdf_reader",
+                    "error": str(error)[:1000],
+                    "error_type": type(error).__name__,
+                }
+            raise
     result = glmocr_parser.parse(page_pdf, save_layout_visualization=False)
     return result.markdown_result or "", result.markdown_result or "", None
 
@@ -348,20 +518,20 @@ def process_extractions(
     retry_errors: bool,
     force: bool,
 ) -> None:
-    from docling.document_converter import DocumentConverter
-    from glmocr import GlmOcr
     from psycopg.types.json import Jsonb
 
     versions = extractor_versions()
     documents = bronze_documents(document_id)
     if not documents:
         raise ValueError("Nenhum documento Bronze encontrado.")
-    docling_converter = DocumentConverter() if "docling" in extractor_names else None
-    glmocr_parser = (
-        GlmOcr(config_path=str(ROOT / "config" / "glmocr.yaml"))
-        if "glm_ocr" in extractor_names and not use_direct_ollama_glm_ocr()
-        else None
+    docling_converter = (
+        create_docling_converter() if "docling" in extractor_names else None
     )
+    glmocr_parser = None
+    if "glm_ocr" in extractor_names and not use_direct_ollama_glm_ocr():
+        from glmocr import GlmOcr
+
+        glmocr_parser = GlmOcr(config_path=str(ROOT / "config" / "glmocr.yaml"))
     for document in documents:
         pdf_path = RAW_DIR / document["relative_path"]
         paths = page_paths(pdf_path, document["record_id"])
@@ -739,6 +909,31 @@ def deterministic_metrics(reference: str, extracted: str) -> dict[str, Any]:
     }
 
 
+def deterministic_evaluation(
+    error: Exception,
+) -> dict[str, Any]:
+    """Gera uma avaliação neutra quando o avaliador não produz JSON válido."""
+    score_keys = {
+        key: 50.0
+        for key in sorted(EVALUATION_SCORE_KEYS)
+    }
+    return {
+        "overall_score": 50.0,
+        "confidence": 0.0,
+        "scores": score_keys,
+        "missing_elements": [],
+        "incorrect_elements": [],
+        "duplicated_elements": [],
+        "hallucinated_elements": [],
+        "requires_manual_review": True,
+        "justification": (
+            "Fallback determinístico: o modelo avaliador não retornou JSON "
+            "válido. A página precisa de revisão manual."
+        ),
+        "fallback_error": str(error)[:1000],
+    }
+
+
 def evaluate_page(
     page_path: Path, native_text: str, extracted: str, model_name: str
 ) -> tuple[dict[str, Any], str]:
@@ -773,7 +968,8 @@ justification.
         base_url=os.getenv("OLLAMA_HOST"),
         reasoning=False,
         format="json",
-        num_predict=int(os.getenv("RAG_EVALUATION_MAX_TOKENS", "1200")),
+        num_ctx=int(os.getenv("RAG_EVALUATION_CONTEXT", "16384")),
+        num_predict=int(os.getenv("RAG_EVALUATION_MAX_TOKENS", "2400")),
     )
     try:
         result = model.invoke([HumanMessage(content=content)])
@@ -781,9 +977,21 @@ justification.
     except Exception:
         if len(native_text.strip()) < 20:
             raise
-        text_only = rubric + "\nTEXTO NATIVO:\n" + native_text
-        result = model.invoke([HumanMessage(content=text_only)])
-        return parse_json_response(response_text(result)), "pdf_reader_text"
+        text_only = (
+            "Responda exclusivamente com JSON válido.\n"
+            "Use exatamente os campos overall_score, confidence, scores e "
+            "justification. Em scores, inclua todas as dez métricas solicitadas.\n"
+            + rubric
+            + "\nTEXTO NATIVO:\n"
+            + native_text
+            + "\nEXTRAÇÃO:\n"
+            + extracted
+        )
+        try:
+            result = model.invoke([HumanMessage(content=text_only)])
+            return parse_json_response(response_text(result)), "pdf_reader_text"
+        except Exception as text_error:
+            return deterministic_evaluation(text_error), "deterministic_fallback"
 
 
 def evaluate_extractions(
@@ -791,6 +999,7 @@ def evaluate_extractions(
 ) -> None:
     model_name = os.getenv("RAG_EVALUATION_MODEL", os.getenv("OLLAMA_MODEL"))
     from psycopg.types.json import Jsonb
+
     if not model_name:
         raise ValueError("Defina OLLAMA_MODEL ou RAG_EVALUATION_MODEL no .env.")
     query = """
@@ -821,11 +1030,21 @@ def evaluate_extractions(
                 page_path.with_suffix(".png"), native, extracted, model_name
             )
             metrics = deterministic_metrics(native, extracted)
-            metrics["requires_manual_review"] = bool(
+            requires_manual_review = bool(
                 evaluation.get("requires_manual_review", False)
             )
-            evaluation_status = "success"
-            error = None
+            metrics["requires_manual_review"] = requires_manual_review
+            if requires_manual_review:
+                evaluation_status = "error"
+                error = str(
+                    evaluation.get(
+                        "fallback_error",
+                        "A avaliação requer revisão manual.",
+                    )
+                )[:4000]
+            else:
+                evaluation_status = "success"
+                error = None
         except Exception as exc:
             evaluation = {}
             metrics = None
@@ -888,7 +1107,11 @@ def refresh_quality_aggregates() -> None:
                        AVG(quality_score) FILTER (
                            WHERE evaluation_status = 'success'
                        ) AS simple_average,
-                       SUM(quality_score * NULLIF(word_count, 0)) /
+                       SUM(
+                           quality_score * NULLIF(word_count, 0)
+                       ) FILTER (
+                           WHERE evaluation_status = 'success'
+                       ) /
                        NULLIF(SUM(word_count) FILTER (
                            WHERE evaluation_status = 'success'
                        ), 0) AS weighted_average,
@@ -954,7 +1177,11 @@ def activate_gold(
     with connect() as connection, connection.cursor() as cursor:
         query = """
             SELECT d.id, d.document_id, d.extractor, d.full_text,
-                   d.full_markdown, d.total_pages, d.average_quality_score,
+                   d.full_markdown, d.total_pages,
+                   COALESCE(
+                       d.weighted_quality_score,
+                       d.average_quality_score
+                   ) AS selection_quality_score,
                    b.manifest_metadata
             FROM silver.silver_document_extractions d
             JOIN bronze.documents b ON b.record_id = d.document_id
@@ -964,7 +1191,10 @@ def activate_gold(
         if extractor:
             query += " AND d.extractor = %s"
             params.append(extractor)
-        query += " ORDER BY d.average_quality_score DESC NULLS LAST, d.id DESC LIMIT 1"
+        query += (
+            " ORDER BY d.weighted_quality_score DESC NULLS LAST, "
+            "d.average_quality_score DESC NULLS LAST, d.id DESC LIMIT 1"
+        )
         cursor.execute(query, params)
         row = cursor.fetchone()
         if not row:
@@ -1061,8 +1291,8 @@ def activate_gold(
             (
                 source_extractor,
                 (
-                    "Maior média de qualidade disponível; seleção explícita "
-                    "para a Gold."
+                    "Maior média ponderada de qualidade disponível; "
+                    "seleção explícita para a Gold."
                     if not allow_unvalidated
                     else "Promoção explicitamente autorizada sem avaliação completa."
                 ),
@@ -1214,12 +1444,72 @@ class OllamaEmbedder:
             return os.getenv("EMBEDDING_MODEL_DIGEST", "unknown")
 
     def embed(self, text: str, prefix: str) -> list[float]:
+        return self._embed_with_context_splitting(text, prefix)
+
+    def _embed_with_context_splitting(
+        self, text: str, prefix: str, depth: int = 0
+    ) -> list[float]:
         response = requests.post(
             self.url,
             json={"model": self.model, "input": prefix + text, "truncate": False},
             timeout=int(os.getenv("OLLAMA_EMBED_TIMEOUT", "120")),
         )
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            try:
+                error_message = str(response.json().get("error", ""))
+            except (ValueError, AttributeError):
+                error_message = ""
+            if "input length exceeds the context length" not in error_message.lower():
+                raise
+            if depth >= 16 or len(text) < 2:
+                raise ValueError(
+                    "Ollama continua rejeitando o trecho após divisão recursiva; "
+                    f"tamanho restante: {len(text)} caracteres."
+                ) from None
+
+            midpoint = len(text) // 2
+            left_boundary = max(
+                text.rfind(separator, 0, midpoint)
+                for separator in ("\n", " ", "\t")
+            )
+            right_candidates = [
+                position
+                for separator in ("\n", " ", "\t")
+                if (position := text.find(separator, midpoint)) >= 0
+            ]
+            split_at = left_boundary if left_boundary > 0 else midpoint
+            if right_candidates and (
+                left_boundary <= 0
+                or midpoint - left_boundary > min(right_candidates) - midpoint
+            ):
+                split_at = min(right_candidates)
+            left = text[:split_at].strip()
+            right = text[split_at:].strip()
+            if not left or not right:
+                split_at = midpoint
+                left, right = text[:split_at].strip(), text[split_at:].strip()
+            if not left or not right:
+                raise
+
+            left_vector = self._embed_with_context_splitting(left, prefix, depth + 1)
+            right_vector = self._embed_with_context_splitting(
+                right, prefix, depth + 1
+            )
+            left_weight = max(estimated_token_count(left), 1)
+            right_weight = max(estimated_token_count(right), 1)
+            total_weight = left_weight + right_weight
+            combined = [
+                (left_value * left_weight + right_value * right_weight)
+                / total_weight
+                for left_value, right_value in zip(
+                    left_vector, right_vector, strict=True
+                )
+            ]
+            norm = math.sqrt(sum(value * value for value in combined))
+            return [value / norm for value in combined] if norm else combined
+
         data = response.json()
         embeddings = data.get("embeddings")
         if not isinstance(embeddings, list) or len(embeddings) != 1:
@@ -1314,77 +1604,379 @@ def generate_embeddings(document_id: int | None, retry_errors: bool) -> None:
 
 
 def search_documents(
-    question: str, pages_limit: int, documents_limit: int
+    question: str,
+    pages_limit: int = 12,
+    documents_limit: int = 5,
+    full_documents_limit: int = 1,
+    neighbor_radius: int = 1,
 ) -> list[dict[str, Any]]:
-    embedder = OllamaEmbedder()
-    vector = vector_literal(embedder.embed(question, "search_query: "))
+    """Executa recuperação exata, textual e semântica com fusão por RRF.
+
+    A busca usa páginas como unidade de localização e mantém o documento como
+    unidade final de resposta. Somente os primeiros documentos que couberem no
+    orçamento configurado recebem ``full_text``; para os demais, são retornadas
+    as páginas relevantes e suas vizinhas.
+    """
+    question = question.strip()
+    if not question:
+        raise ValueError("A pergunta da busca RAG não pode estar vazia.")
+
+    pages_limit = max(1, min(int(pages_limit), 50))
+    documents_limit = max(1, min(int(documents_limit), 5))
+    full_documents_limit = max(
+        0,
+        min(int(full_documents_limit), documents_limit),
+    )
+    neighbor_radius = max(0, min(int(neighbor_radius), 2))
+
+    standard_keys = extract_standard_search_keys(question)
+    standard_codes, standard_versions = standard_search_filters(standard_keys)
+    textual_question = textual_search_query(question, standard_keys)
+
+    # A indisponibilidade do Ollama não deve impedir a busca textual ou exata.
+    query_vector: str | None = None
+    semantic_error: Exception | None = None
+    try:
+        embedder = OllamaEmbedder()
+        query_vector = vector_literal(
+            embedder.embed(question, "search_query: ")
+        )
+    except Exception as error:
+        semantic_error = error
+        logger.warning(
+            "Busca semântica indisponível; continuando com busca textual: %s",
+            error,
+        )
+
+    candidates_limit = max(pages_limit, documents_limit * 5)
+    evidence_pages_limit = max(
+        1,
+        min(
+            pages_limit,
+            int(os.getenv("RAG_EVIDENCE_PAGES_PER_DOCUMENT", "3")),
+        ),
+    )
+
     with connect() as connection, connection.cursor() as cursor:
         cursor.execute(
             """
             WITH query_params AS (
                 SELECT %s::vector AS embedding,
-                       websearch_to_tsquery('portuguese', %s) AS tsquery
-            ), semantic_pages AS (
-                SELECT p.rag_document_id, p.page_number,
-                       p.embedding <=> q.embedding AS semantic_distance,
-                       NULL::real AS textual_rank
-                FROM gold.gold_rag_page_index p
-                JOIN gold.gold_rag_documents d ON d.id = p.rag_document_id
-                CROSS JOIN query_params q
-                WHERE d.is_active AND p.embedding_status = 'success'
-                  AND p.embedding IS NOT NULL
-                ORDER BY p.embedding <=> q.embedding
-                LIMIT %s
-            ), textual_pages AS (
-                SELECT p.rag_document_id, p.page_number,
-                       NULL::double precision AS semantic_distance,
-                       ts_rank_cd(p.search_vector, q.tsquery) AS textual_rank
-                FROM gold.gold_rag_page_index p
-                JOIN gold.gold_rag_documents d ON d.id = p.rag_document_id
-                CROSS JOIN query_params q
-                WHERE d.is_active AND p.search_vector @@ q.tsquery
-                ORDER BY ts_rank_cd(p.search_vector, q.tsquery) DESC
-                LIMIT %s
-            ), textual_documents AS (
-                SELECT d.id AS rag_document_id, NULL::integer AS page_number,
-                       NULL::double precision AS semantic_distance,
-                       ts_rank_cd(d.search_vector, q.tsquery) AS textual_rank
+                       websearch_to_tsquery('portuguese', %s) AS tsquery,
+                       %s::text[] AS standard_codes,
+                       %s::text[] AS standard_versions
+            ), exact_documents AS (
+                SELECT d.id AS rag_document_id,
+                       ROW_NUMBER() OVER (
+                           ORDER BY d.version DESC NULLS LAST, d.id
+                       ) AS source_rank
                 FROM gold.gold_rag_documents d
                 CROSS JOIN query_params q
-                WHERE d.is_active AND d.search_vector @@ q.tsquery
-                ORDER BY ts_rank_cd(d.search_vector, q.tsquery) DESC
+                WHERE d.is_active
+                  AND regexp_replace(
+                        upper(concat_ws(
+                            ' ', d.title, d.metadata->>'id', d.metadata->>'title'
+                        )),
+                        '[^A-Z0-9]+', '', 'g'
+                      ) LIKE ANY(q.standard_codes)
+                  AND (
+                      cardinality(q.standard_versions) = 0
+                      OR regexp_replace(
+                          coalesce(d.version, d.metadata->>'version', ''),
+                          '[^0-9]', '', 'g'
+                      ) = ANY(q.standard_versions)
+                  )
+            ), semantic_raw AS (
+                SELECT p.rag_document_id, p.page_number,
+                       p.embedding <=> q.embedding AS semantic_distance
+                FROM gold.gold_rag_page_index p
+                JOIN gold.gold_rag_documents d ON d.id = p.rag_document_id
+                CROSS JOIN query_params q
+                WHERE d.is_active
+                  AND q.embedding IS NOT NULL
+                  AND p.embedding_status = 'success'
+                  AND p.embedding IS NOT NULL
+                  AND (
+                      NOT EXISTS (SELECT 1 FROM exact_documents)
+                      OR p.rag_document_id IN (
+                          SELECT rag_document_id FROM exact_documents
+                      )
+                  )
+                ORDER BY p.embedding <=> q.embedding
                 LIMIT %s
-            ), candidates AS (
-                SELECT * FROM semantic_pages
-                UNION ALL SELECT * FROM textual_pages
-                UNION ALL SELECT * FROM textual_documents
-            ), grouped AS (
+            ), semantic_pages AS (
+                SELECT rag_document_id, page_number, semantic_distance,
+                       ROW_NUMBER() OVER (
+                           ORDER BY semantic_distance
+                       ) AS source_rank
+                FROM semantic_raw
+            ), textual_pages_raw AS (
+                SELECT p.rag_document_id, p.page_number,
+                       ts_rank_cd(
+                           p.search_vector, q.tsquery
+                       ) AS textual_rank
+                FROM gold.gold_rag_page_index p
+                JOIN gold.gold_rag_documents d ON d.id = p.rag_document_id
+                CROSS JOIN query_params q
+                WHERE d.is_active
+                  AND p.search_vector @@ q.tsquery
+                  AND (
+                      NOT EXISTS (SELECT 1 FROM exact_documents)
+                      OR p.rag_document_id IN (
+                          SELECT rag_document_id FROM exact_documents
+                      )
+                  )
+                ORDER BY textual_rank DESC
+                LIMIT %s
+            ), textual_pages AS (
+                SELECT rag_document_id, page_number, textual_rank,
+                       ROW_NUMBER() OVER (
+                           ORDER BY textual_rank DESC
+                       ) AS source_rank
+                FROM textual_pages_raw
+            ), textual_documents_raw AS (
+                SELECT d.id AS rag_document_id,
+                       ts_rank_cd(
+                           d.search_vector, q.tsquery
+                       ) AS textual_rank
+                FROM gold.gold_rag_documents d
+                CROSS JOIN query_params q
+                WHERE d.is_active
+                  AND d.search_vector @@ q.tsquery
+                  AND (
+                      NOT EXISTS (SELECT 1 FROM exact_documents)
+                      OR d.id IN (
+                          SELECT rag_document_id FROM exact_documents
+                      )
+                  )
+                ORDER BY textual_rank DESC
+                LIMIT %s
+            ), textual_documents AS (
+                SELECT rag_document_id, textual_rank,
+                       ROW_NUMBER() OVER (
+                           ORDER BY textual_rank DESC
+                       ) AS source_rank
+                FROM textual_documents_raw
+            ), source_candidates AS (
+                SELECT rag_document_id, page_number, semantic_distance,
+                       NULL::real AS textual_rank,
+                       'semantic'::text AS source, source_rank,
+                       1.0::double precision AS source_weight
+                FROM semantic_pages
+
+                UNION ALL
+
+                SELECT rag_document_id, page_number,
+                       NULL::double precision, textual_rank,
+                       'textual_page', source_rank,
+                       1.30::double precision
+                FROM textual_pages
+
+                UNION ALL
+
+                SELECT rag_document_id, NULL::integer,
+                       NULL::double precision, textual_rank,
+                       'textual_document', source_rank,
+                       1.50::double precision
+                FROM textual_documents
+
+                UNION ALL
+
+                SELECT rag_document_id, NULL::integer,
+                       NULL::double precision, NULL::real,
+                       'exact_standard', source_rank,
+                       4.0::double precision
+                FROM exact_documents
+            ), best_source_per_document AS (
+                SELECT DISTINCT ON (rag_document_id, source)
+                       rag_document_id, source, source_rank, source_weight
+                FROM source_candidates
+                ORDER BY rag_document_id, source, source_rank
+            ), document_scores AS (
+                SELECT rag_document_id,
+                       SUM(
+                           source_weight / (%s + source_rank)
+                       ) AS rrf_score,
+                       jsonb_object_agg(
+                           source, source_rank
+                       ) AS source_ranks
+                FROM best_source_per_document
+                GROUP BY rag_document_id
+            ), document_evidence AS (
                 SELECT rag_document_id,
                        MIN(semantic_distance) AS best_distance,
-                       MAX(textual_rank) AS best_textual_rank,
-                       array_agg(DISTINCT page_number ORDER BY page_number)
-                           FILTER (WHERE page_number IS NOT NULL) AS pages
-                FROM candidates
+                       MAX(textual_rank) AS best_textual_rank
+                FROM source_candidates
                 GROUP BY rag_document_id
-                ORDER BY MIN(semantic_distance) NULLS LAST,
-                         MAX(textual_rank) DESC NULLS LAST
+            ), page_scores AS (
+                SELECT rag_document_id, page_number,
+                       MIN(semantic_distance) AS semantic_distance,
+                       MAX(textual_rank) AS textual_rank,
+                       SUM(
+                           source_weight / (%s + source_rank)
+                       ) AS page_rrf_score
+                FROM source_candidates
+                WHERE page_number IS NOT NULL
+                GROUP BY rag_document_id, page_number
+            ), ranked_pages AS (
+                SELECT *,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY rag_document_id
+                           ORDER BY page_rrf_score DESC,
+                                    semantic_distance ASC NULLS LAST,
+                                    textual_rank DESC NULLS LAST
+                       ) AS page_position
+                FROM page_scores
+            ), page_summary AS (
+                SELECT rag_document_id,
+                       array_agg(
+                           page_number ORDER BY page_rrf_score DESC
+                       ) FILTER (
+                           WHERE page_position <= %s
+                       ) AS pages,
+                       jsonb_agg(
+                           jsonb_build_object(
+                               'page_number', page_number,
+                               'rrf_score', page_rrf_score,
+                               'semantic_distance', semantic_distance,
+                               'textual_rank', textual_rank
+                           ) ORDER BY page_rrf_score DESC
+                       ) FILTER (
+                           WHERE page_position <= %s
+                       ) AS matched_pages
+                FROM ranked_pages
+                GROUP BY rag_document_id
+            ), ranked_documents AS (
+                SELECT s.rag_document_id, s.rrf_score, s.source_ranks,
+                       e.best_distance, e.best_textual_rank,
+                       EXISTS (
+                           SELECT 1
+                           FROM exact_documents x
+                           WHERE x.rag_document_id = s.rag_document_id
+                       ) AS exact_standard_match
+                FROM document_scores s
+                JOIN document_evidence e
+                  ON e.rag_document_id = s.rag_document_id
+                ORDER BY s.rrf_score DESC,
+                         e.best_distance ASC NULLS LAST,
+                         e.best_textual_rank DESC NULLS LAST
                 LIMIT %s
             )
             SELECT d.id, d.document_id, d.title, d.version,
-                   d.source_extractor, d.quality_score, g.pages,
-                   g.best_distance, g.best_textual_rank,
+                   d.source_extractor, d.quality_score,
+                   COALESCE(
+                       p.pages, ARRAY[]::integer[]
+                   ) AS pages,
+                   COALESCE(
+                       p.matched_pages, '[]'::jsonb
+                   ) AS matched_pages,
+                   r.rrf_score, r.source_ranks,
+                   r.exact_standard_match,
+                   r.best_distance, r.best_textual_rank,
                    d.full_text, d.metadata,
                    d.token_count, d.context_token_limit,
                    d.context_window_exceeded, d.context_warning
-            FROM grouped g
-            JOIN gold.gold_rag_documents d ON d.id = g.rag_document_id
-            ORDER BY g.best_distance NULLS LAST,
-                     g.best_textual_rank DESC NULLS LAST
+            FROM ranked_documents r
+            JOIN gold.gold_rag_documents d
+              ON d.id = r.rag_document_id
+            LEFT JOIN page_summary p
+              ON p.rag_document_id = r.rag_document_id
+            ORDER BY r.rrf_score DESC,
+                     r.best_distance ASC NULLS LAST,
+                     r.best_textual_rank DESC NULLS LAST
             """,
-            (vector, question, pages_limit, pages_limit, pages_limit, documents_limit),
+            (
+                query_vector,
+                textual_question,
+                standard_codes,
+                standard_versions,
+                candidates_limit,
+                candidates_limit,
+                candidates_limit,
+                RRF_K,
+                RRF_K,
+                evidence_pages_limit,
+                evidence_pages_limit,
+                documents_limit,
+            ),
         )
         columns = [item.name for item in cursor.description]
-        return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
+        raw_documents = [
+            dict(zip(columns, row, strict=True))
+            for row in cursor.fetchall()
+        ]
+
+        if not raw_documents and semantic_error is not None:
+            raise RuntimeError(
+                "A busca semântica está indisponível e a busca textual "
+                "não encontrou documentos."
+            ) from semantic_error
+
+        documents: list[dict[str, Any]] = []
+        for position, document in enumerate(raw_documents, start=1):
+            document["metadata"] = json_value(document.get("metadata")) or {}
+            document["matched_pages"] = (
+                json_value(document.get("matched_pages")) or []
+            )
+            document["detected_standard_codes"] = standard_keys
+            document["semantic_search_available"] = query_vector is not None
+            document["full_text_available"] = bool(document.get("full_text"))
+
+            exceeds_context = bool(document.get("context_window_exceeded"))
+            include_full_text = (
+                position <= full_documents_limit and not exceeds_context
+            )
+            direct_pages = [
+                int(page) for page in (document.get("pages") or [])
+            ]
+
+            if include_full_text:
+                document["context_mode"] = "full_document"
+                document["page_context"] = []
+            else:
+                document["context_mode"] = "page_window"
+                document["full_text"] = None
+                document["page_context"] = []
+
+                if direct_pages:
+                    cursor.execute(
+                        """
+                        WITH hits(page_number) AS (
+                            SELECT unnest(%s::integer[])
+                        )
+                        SELECT DISTINCT p.page_number, p.page_text,
+                               p.page_number = ANY(
+                                   %s::integer[]
+                               ) AS direct_match
+                        FROM gold.gold_rag_page_index p
+                        JOIN hits h
+                          ON p.page_number BETWEEN
+                             h.page_number - %s
+                             AND h.page_number + %s
+                        WHERE p.rag_document_id = %s
+                        ORDER BY p.page_number
+                        """,
+                        (
+                            direct_pages,
+                            direct_pages,
+                            neighbor_radius,
+                            neighbor_radius,
+                            document["id"],
+                        ),
+                    )
+                    document["page_context"] = [
+                        {
+                            "page_number": page_number,
+                            "direct_match": direct_match,
+                            "page_text": page_text,
+                        }
+                        for page_number, page_text, direct_match
+                        in cursor.fetchall()
+                    ]
+
+            documents.append(document)
+
+    return documents
 
 
 def extractor_status_query(
@@ -1392,22 +1984,36 @@ def extractor_status_query(
 ) -> tuple[str, list[Any]]:
     """Monta o filtro de extratores sem parâmetro ``NULL`` sem tipo."""
     query = """
-        SELECT e.extractor, e.processing_status, e.total_pages,
-               COUNT(p.id) AS page_rows,
-               COUNT(p.id) FILTER (WHERE p.processing_status = 'success')
-                   AS successful_pages,
-               COUNT(p.id) FILTER (WHERE p.evaluation_status = 'success')
-                   AS evaluated_pages
-        FROM silver.silver_document_extractions e
-        LEFT JOIN silver.silver_page_extractions p
-            ON p.extraction_id = e.id
-        WHERE e.extractor = ANY(%s)
+        WITH filtered_extractions AS (
+            SELECT e.id, e.extractor, e.processing_status, e.total_pages
+            FROM silver.silver_document_extractions e
+            WHERE e.extractor = ANY(%s)
     """
     params: list[Any] = [["docling", "glm_ocr"]]
     if document_id is not None:
         query += " AND e.document_id = %s"
         params.append(document_id)
-    query += " GROUP BY e.extractor, e.processing_status, e.total_pages"
+    query += """
+        ), per_extraction AS (
+            SELECT f.extractor, f.processing_status, f.total_pages,
+                   COUNT(p.id) AS page_rows,
+                   COUNT(p.id) FILTER (WHERE p.processing_status = 'success')
+                       AS successful_pages,
+                   COUNT(p.id) FILTER (WHERE p.evaluation_status = 'success')
+                       AS evaluated_pages
+            FROM filtered_extractions f
+        LEFT JOIN silver.silver_page_extractions p
+                ON p.extraction_id = f.id
+            GROUP BY f.id, f.extractor, f.processing_status, f.total_pages
+        )
+        SELECT extractor, processing_status,
+               SUM(total_pages)::bigint AS total_pages,
+               SUM(page_rows)::bigint AS page_rows,
+               SUM(successful_pages)::bigint AS successful_pages,
+               SUM(evaluated_pages)::bigint AS evaluated_pages
+        FROM per_extraction
+        GROUP BY extractor, processing_status
+    """
     return query, params
 
 
@@ -1646,6 +2252,8 @@ def main() -> int:
     search.add_argument("question")
     search.add_argument("--pages", type=int, default=12)
     search.add_argument("--documents", type=int, default=5)
+    search.add_argument("--full-documents", type=int, default=1)
+    search.add_argument("--neighbor-radius", type=int, default=1)
     validate = subparsers.add_parser("validate")
     validate.add_argument("--document-id")
     args = parser.parse_args()
@@ -1678,7 +2286,13 @@ def main() -> int:
         elif args.command == "search":
             print(
                 json.dumps(
-                    search_documents(args.question, args.pages, args.documents),
+                    search_documents(
+                        question=args.question,
+                        pages_limit=args.pages,
+                        documents_limit=args.documents,
+                        full_documents_limit=args.full_documents,
+                        neighbor_radius=args.neighbor_radius,
+                    ),
                     ensure_ascii=False,
                     default=str,
                     indent=2,

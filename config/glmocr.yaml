@@ -8,11 +8,11 @@ pipeline:
     api_path: /api/generate
     model: glm-ocr:latest
     api_mode: ollama_generate
-    request_timeout: 300
+    request_timeout: 120
     retry_max_attempts: 0
 
   page_loader:
-    max_tokens: 2048
+    max_tokens: 16384
     max_pixels: 4000000
     pdf_dpi: 120
     task_prompt_mapping:

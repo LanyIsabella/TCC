@@ -26,6 +26,22 @@ class InvalidResponseExecutor:
         return {"messages": [{"role": "tool", "content": "busca"}]}
 
 
+class ToolCallingExecutor:
+    def invoke(self, _payload: dict[str, object]) -> dict[str, object]:
+        return {
+            "messages": [
+                {"role": "user", "content": "Pergunta original"},
+                {
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": [{"name": "rag_document_search"}],
+                },
+                {"role": "tool", "content": '{"status":"success"}'},
+                {"role": "assistant", "content": "Resposta fundamentada"},
+            ]
+        }
+
+
 def test_agent_service_normalizes_messages() -> None:
     service = AgentService(agent=SuccessfulExecutor())
 
@@ -49,3 +65,12 @@ def test_agent_service_requires_assistant_answer() -> None:
 
     with pytest.raises(AgentResponseError):
         service.chat(AgentChatRequest(message="Explique ABNT"))
+
+
+def test_agent_service_hides_internal_tool_events() -> None:
+    service = AgentService(agent=ToolCallingExecutor())
+
+    response = service.chat(AgentChatRequest(message="Explique ABNT"))
+
+    assert response.answer == "Resposta fundamentada"
+    assert [message.role for message in response.messages] == ["user", "assistant"]

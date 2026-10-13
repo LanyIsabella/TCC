@@ -35,7 +35,7 @@ console = Console(
             "warning": "bold bright_yellow",
         }
     )
-)
+)   
 
 
 def ensure_repo_path() -> None:

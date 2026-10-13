@@ -94,12 +94,31 @@ uv run python data/rag_pipeline.py extract --document-id 8 --extractor glm_ocr
 ```
 
 O modo padrão continua sendo `package`; selecione `direct_ollama` somente de
-forma explícita.
+forma explícita. O modo direto começa com `GLMOCR_DIRECT_MAX_TOKENS` e, se o
+Ollama informar `done_reason=length`, repete a página aumentando o limite até
+`GLMOCR_DIRECT_RETRY_MAX_TOKENS` (padrão do projeto: 16384 e 32768). O contexto
+usado nessa rota é controlado por `GLMOCR_DIRECT_CONTEXT`. Páginas quase vazias
+são identificadas antes da chamada visual e registradas sem texto, evitando loops
+de geração em marcas d’água e carimbos.
+
+Nesse modo, o Docling é configurado somente como referência/fallback, com OCR
+e análise de layout desativados; assim, o RapidOCR não é carregado novamente
+no Bronze e no Silver enquanto o GLM-OCR visual está sendo usado.
+
+Se uma página não puder ser processada visualmente, a extração por página tenta
+Docling e depois o texto nativo do PDF quando disponíveis. O fallback fica
+registrado em `structured_output`. Em falhas de conexão ou timeout, o texto
+nativo é usado quando disponível; caso contrário, o Docling da Bronze continua
+como fonte principal. A ocorrência permanece registrada no diagnóstico, sem
+ser apresentada como OCR confirmado do GLM. O timeout padrão dessa chamada é
+120 s; depois do primeiro timeout no processamento de um PDF, as páginas
+restantes não repetem chamadas ao Ollama indisponível.
 
 O pipeline executa os dois extratores. Na tabela bronze, os resultados ficam em
-`content_text_docling` e `content_text_glmocr`; `content_text` mantém o resultado
-principal do GLM-OCR. O extrator de arquivos também grava as versões em
-`data/processed/docling/` e `data/processed/glmocr/`.
+`content_text_docling` e `content_text_glmocr`; `content_text` usa o GLM-OCR
+quando a saída passa pela verificação de qualidade e usa Docling como fallback
+quando a resposta está vazia, muito curta ou corrompida. O extrator de arquivos
+também grava as versões em `data/processed/docling/` e `data/processed/glmocr/`.
 
 ```powershell
 uv sync
@@ -115,8 +134,10 @@ uv run python data/bronze_postgres.py --review-only
 ```
 
 A tabela padrão é `bronze.documents` e usa `relative_path` como chave única. A
-carga pode ser repetida: arquivos novos são inseridos e arquivos já existentes
-são atualizados sem duplicidade.
+carga normal persiste cada arquivo imediatamente; se um PDF posterior falhar,
+os arquivos anteriores permanecem carregados. A carga pode ser repetida:
+arquivos novos são inseridos e arquivos já existentes são atualizados sem
+duplicidade.
 
 ## Pipeline Silver/Gold e RAG vetorial
 
@@ -136,7 +157,7 @@ uv run python data/run_pipeline.py --skip-bronze --direct-glm-ocr
 
 Para um documento específico, use `--document-id <record_id>`. O pipeline é
 fail-fast: se uma etapa falhar, as seguintes não são executadas. Para retomar
-somente erros, acrescente `--retry-errors`; para conferir os comandos sem
+páginas com erro ou interrompidas, acrescente `--retry-errors`; para conferir os comandos sem
 executá-los, use `--dry-run`. As etapas também podem ser puladas individualmente
 com `--skip-init-db`, `--skip-extract`, `--skip-evaluate`, `--skip-activate`,
 `--skip-embed` e `--skip-validate`.
@@ -155,11 +176,20 @@ imediatamente e páginas com sucesso não são repetidas:
 uv run python data/rag_pipeline.py extract --extractor all
 ```
 
-Para retomar somente páginas que falharam:
+Para retomar páginas que falharam ou ficaram interrompidas:
 
 ```powershell
 uv run python data/rag_pipeline.py extract --extractor all --retry-errors
 ```
+
+Se o modelo avaliador não devolver JSON válido, a segunda tentativa usa texto
+apenas; persistindo a falha, é registrada uma avaliação determinística neutra
+com `requires_manual_review=true`, permitindo a continuidade sem declarar uma
+avaliação semântica inexistente.
+
+No embedding, páginas que excedem o contexto do Ollama são divididas em trechos
+sem truncar o conteúdo; os vetores dos trechos são combinados em um vetor da
+página para manter o contrato do índice Gold.
 
 Avalie as extrações página por página e depois ative a melhor variante na Gold:
 

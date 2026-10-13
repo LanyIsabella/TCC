@@ -1,0 +1,87 @@
+[theme]
+base = "light"
+font = "sans serif"
+codeFont = "monospace"
+showWidgetBorder = true
+baseRadius = "0.75rem"
+buttonRadius = "0.75rem"
+
+# -------- Tema claro --------
+[theme.light]
+primaryColor = "#A8C5D8"
+backgroundColor = "#FAF8F6"
+secondaryBackgroundColor = "#F1ECE8"
+textColor = "#4E5A63"
+borderColor = "#DDD6D0"
+
+linkColor = "#B7AEDC"
+codeTextColor = "#4E5A63"
+codeBackgroundColor = "#F1ECE8"
+
+dataframeBorderColor = "#DDD6D0"
+dataframeHeaderBackgroundColor = "#D8E6E0"
+dataframeHeaderTextColor = "#4E5A63"
+
+# opcionais, mas ajudam a manter a identidade visual
+redColor = "#D7A6A6"
+orangeColor = "#E6C7A8"
+yellowColor = "#E8DCA8"
+greenColor = "#BFDCC6"
+blueColor = "#A8C5D8"
+violetColor = "#B7AEDC"
+grayColor = "#B7B0AA"
+
+[theme.light.sidebar]
+primaryColor = "#A8C5D8"
+backgroundColor = "#F1ECE8"
+secondaryBackgroundColor = "#D8E6E0"
+textColor = "#4E5A63"
+borderColor = "#DDD6D0"
+
+linkColor = "#B7AEDC"
+codeTextColor = "#4E5A63"
+codeBackgroundColor = "#FAF8F6"
+
+dataframeBorderColor = "#DDD6D0"
+dataframeHeaderBackgroundColor = "#D8E6E0"
+dataframeHeaderTextColor = "#4E5A63"
+
+# -------- Tema escuro --------
+[theme.dark]
+primaryColor = "#AFCFE0"
+backgroundColor = "#2B2F36"
+secondaryBackgroundColor = "#383E46"
+textColor = "#F5F1EC"
+borderColor = "#555D66"
+
+linkColor = "#C7BDE8"
+codeTextColor = "#F5F1EC"
+codeBackgroundColor = "#383E46"
+
+dataframeBorderColor = "#555D66"
+dataframeHeaderBackgroundColor = "#4A515B"
+dataframeHeaderTextColor = "#F5F1EC"
+
+# opcionais, mas ajudam a manter a identidade visual
+redColor = "#C99A9A"
+orangeColor = "#D7B394"
+yellowColor = "#D8CB97"
+greenColor = "#B7D7BE"
+blueColor = "#AFCFE0"
+violetColor = "#C7BDE8"
+grayColor = "#B8B2AC"
+
+[theme.dark.sidebar]
+primaryColor = "#AFCFE0"
+backgroundColor = "#383E46"
+secondaryBackgroundColor = "#444B54"
+textColor = "#F5F1EC"
+borderColor = "#555D66"
+
+linkColor = "#C7BDE8"
+codeTextColor = "#F5F1EC"
+codeBackgroundColor = "#2B2F36"
+
+dataframeBorderColor = "#555D66"
+dataframeHeaderBackgroundColor = "#4A515B"
+dataframeHeaderTextColor = "#F5F1EC"

@@ -1,7 +1,6 @@
 ﻿from __future__ import annotations
 
 import requests
-
 from src.app.tools.gedweb_access import GEDWEB_URL, GedwebVPNAccessChecker
 
 

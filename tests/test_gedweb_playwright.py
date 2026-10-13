@@ -5,7 +5,6 @@ import os
 import pytest
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import sync_playwright
-
 from src.app.tools.gedweb_access import GEDWEB_URL
 
 
