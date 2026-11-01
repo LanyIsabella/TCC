@@ -16,6 +16,16 @@ MAX_PAGE_TEXT_CHARS = 1_800
 MAX_CONTEXT_CHARS = 5_000
 
 
+def _standard_label(standard_id: Any, title: str) -> str:
+    """Converte o identificador interno em um nome legível para citação."""
+    normalized = str(standard_id or "").strip().lower()
+    if normalized.startswith("abnt_nbr_"):
+        number = normalized.removeprefix("abnt_nbr_")
+        if number.isdigit():
+            return f"ABNT NBR {number}"
+    return str(standard_id or title or "Documento normativo").strip()
+
+
 class RagDocumentSearchInput(BaseModel):
     """Parâmetros aceitos pela ferramenta de consulta documental."""
 
@@ -131,6 +141,7 @@ def _compact_document(document: Any) -> dict[str, Any] | None:
         "document_id": document.get("document_id"),
         "title": title,
         "standard_id": metadata.get("id"),
+        "standard_label": _standard_label(metadata.get("id"), title),
         "version": document.get("version") or metadata.get("version"),
         "issuer": metadata.get("issuer"),
         "status": metadata.get("status"),

@@ -4,6 +4,8 @@ Este modulo recebe os dados validados pela API, monta o payload esperado
 pela implementacao do agente e normaliza a resposta para os schemas HTTP.
 """
 
+import json
+import re
 from typing import Any, Protocol
 
 from src.api.core.exceptions import AgentExecutionError, AgentResponseError
@@ -15,6 +17,12 @@ from src.api.schemas.agent import (
 
 ROLE_MAP = {"ai": "assistant", "human": "user"}
 VALID_ROLES = {"assistant", "system", "tool", "user"}
+NORMATIVE_TERMS = (
+    "abnt", "norma", "citação", "citacao", "referência", "referencia",
+    "formatação", "formatacao", "tcc", "sumário", "sumario", "resumo",
+    "lombada", "seção", "secao",
+)
+STANDARD_PATTERN = re.compile(r"\b(?:ABNT\s+)?NBR\s+\d{4,5}\b", re.IGNORECASE)
 
 
 class AgentExecutor(Protocol):
@@ -58,17 +66,83 @@ class AgentService:
             raise AgentExecutionError("Falha ao executar o agente.") from exc
 
         messages = self._extract_messages(result)
+        evidence = self._extract_rag_evidence(messages)
         normalized_messages = [
             self._normalize_message(message)
             for message in messages
             if not self._is_internal_tool_event(message)
         ]
         answer = self._extract_answer(normalized_messages)
+        answer = self._ensure_normative_grounding(request.message, answer, evidence)
         public_messages = [
             message for message in normalized_messages if message.role != "tool"
         ]
 
         return AgentChatResponse(answer=answer, messages=public_messages)
+
+    def _extract_rag_evidence(self, messages: list[Any]) -> list[dict[str, Any]]:
+        """Extrai documentos válidos retornados pela ferramenta RAG."""
+        evidence: list[dict[str, Any]] = []
+        for message in messages:
+            if self._extract_role(message) != "tool":
+                continue
+            try:
+                payload = json.loads(self._extract_content(message))
+            except (TypeError, ValueError):
+                continue
+            if not isinstance(payload, dict) or not payload.get("evidence_found"):
+                continue
+            documents = payload.get("documents")
+            if isinstance(documents, list):
+                evidence.extend(
+                    document for document in documents if isinstance(document, dict)
+                )
+        return evidence
+
+    def _ensure_normative_grounding(
+        self, question: str, answer: str, evidence: list[dict[str, Any]]
+    ) -> str:
+        """Garante que respostas normativas apresentem a fonte recuperada."""
+        if not self._requires_normative_source(question):
+            return answer
+        if not evidence:
+            return (
+                "Não localizei evidência suficiente nos documentos normativos "
+                "disponíveis para responder com segurança."
+            )
+        if "base normativa" in answer.casefold() and STANDARD_PATTERN.search(answer):
+            return answer
+        return f"{answer.rstrip()}\n\n{self._citation_block(evidence[0])}"
+
+    def _requires_normative_source(self, question: str) -> bool:
+        normalized = question.casefold()
+        return any(term in normalized for term in NORMATIVE_TERMS)
+
+    def _citation_block(self, document: dict[str, Any]) -> str:
+        standard = str(
+            document.get("standard_label")
+            or document.get("standard_id")
+            or document.get("title")
+            or "Documento normativo"
+        ).strip()
+        version = str(document.get("version") or "").strip()
+        pages: list[str] = []
+        matched_pages = document.get("matched_pages")
+        if isinstance(matched_pages, list):
+            pages = [
+                str(item.get("page_number"))
+                for item in matched_pages
+                if isinstance(item, dict) and item.get("page_number")
+            ]
+        if not pages and isinstance(document.get("pages"), list):
+            pages = [str(page) for page in document["pages"] if page]
+
+        label = f"- {standard}"
+        if version:
+            label += f":{version}"
+        if pages:
+            label += f", p. {', '.join(pages)}"
+        return f"### Base normativa\n\n{label}."
 
     def _extract_messages(self, result: Any) -> list[Any]:
         """Extrai a lista de mensagens do retorno bruto do agente."""
