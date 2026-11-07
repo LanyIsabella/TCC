@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 import sys
-from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
 import streamlit as st
 
-ChatMessage = dict[str, str]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.app.evidence import (  # noqa: E402
+    AgentResult,
+    EvidenceRecord,
+    extract_agent_result,
+)
+
+ChatMessage = dict[str, Any]
 
 SUGGESTIONS = {
     ":material/format_quote: Como fazer uma citação direta curta?": (
@@ -41,63 +50,117 @@ def _clear_conversation() -> None:
 def _load_agent() -> Any:
     """Carrega o agente mesmo quando o Streamlit executa este arquivo direto."""
 
-    project_root = Path(__file__).resolve().parents[2]
-    project_root_text = str(project_root)
-    if project_root_text not in sys.path:
-        sys.path.insert(0, project_root_text)
-
     from src.app.agente import build_agent
 
     return build_agent()
 
 
-def _normalize_content(content: Any) -> str:
-    """Converte os formatos de conteudo usados pelo LangChain em texto."""
+def _render_conversation_summary(container: Any, messages: list[ChatMessage]) -> None:
+    """Renderiza o resumo da conversa no container reservado do sidebar."""
 
-    if isinstance(content, str):
-        return content.strip()
+    with container.container(border=True):
+        st.markdown("**Conversa atual**")
+        if not messages:
+            st.caption("Nenhuma pergunta feita ainda.")
+            return
 
-    if isinstance(content, list):
-        parts: list[str] = []
-        for item in content:
-            if isinstance(item, str) and item.strip():
-                parts.append(item.strip())
-                continue
+        user_count = sum(message["role"] == "user" for message in messages)
+        question_label = "pergunta" if user_count == 1 else "perguntas"
+        st.caption(f"{user_count} {question_label} nesta conversa")
 
-            if isinstance(item, Mapping):
-                value = item.get("text") or item.get("content")
-                if isinstance(value, str) and value.strip():
-                    parts.append(value.strip())
+        last_message = next(
+            (
+                message["content"]
+                for message in reversed(messages)
+                if message["role"] == "user"
+            ),
+            "",
+        )
+        if last_message:
+            st.caption(f"Última pergunta: {last_message[:100]}")
 
-        return "\n".join(parts).strip()
 
-    return str(content).strip() if content is not None else ""
+def _agent_history(messages: list[ChatMessage]) -> list[dict[str, str]]:
+    """Remove metadados visuais antes de enviar o histórico ao agente."""
+
+    return [
+        {"role": message["role"], "content": message["content"]}
+        for message in messages
+        if message.get("role") in {"user", "assistant"}
+        and isinstance(message.get("content"), str)
+    ]
 
 
-def _extract_answer(result: Any) -> str:
-    """Retorna a ultima mensagem textual do assistente."""
+def _document_label(evidence: EvidenceRecord) -> str:
+    title = str(evidence.get("title") or "Documento sem título").strip()
+    version = str(evidence.get("version") or "").strip()
+    return f"{title} ({version})" if version else title
 
-    if not isinstance(result, Mapping):
-        raise RuntimeError("O agente retornou um formato de resposta invalido.")
 
-    messages = result.get("messages")
-    if not isinstance(messages, list):
-        raise RuntimeError("O agente retornou uma resposta sem mensagens.")
+def _render_document_references(evidences: list[EvidenceRecord]) -> None:
+    """Renderiza recortes correspondentes sem executar uma nova consulta."""
 
-    for message in reversed(messages):
-        if isinstance(message, Mapping):
-            raw_role = message.get("role") or message.get("type")
-            content = message.get("content")
+    if not evidences:
+        return
+
+    unique_evidences: list[EvidenceRecord] = []
+    seen_texts: set[str] = set()
+    for evidence in evidences:
+        if "matched_text" in evidence:
+            text = str(evidence.get("matched_text") or "").strip()
         else:
-            raw_role = getattr(message, "role", None) or getattr(message, "type", None)
-            content = getattr(message, "content", None)
+            text = str(evidence.get("text") or "").strip()
+        if not text:
+            continue
+        duplicate_key = " ".join(text.split())
+        if duplicate_key in seen_texts:
+            continue
+        seen_texts.add(duplicate_key)
+        unique_evidences.append(evidence)
+    if not unique_evidences:
+        return
 
-        role = {"ai": "assistant", "human": "user"}.get(str(raw_role), str(raw_role))
-        answer = _normalize_content(content)
-        if role == "assistant" and answer:
-            return answer
+    documents: list[str] = []
+    document_keys: set[tuple[str, str]] = set()
+    for evidence in unique_evidences:
+        label = _document_label(evidence)
+        key = (
+            str(
+                evidence.get("rag_document_id")
+                or evidence.get("document_id")
+                or label
+            ),
+            label,
+        )
+        if key not in document_keys:
+            document_keys.add(key)
+            documents.append(label)
 
-    raise RuntimeError("O agente nao retornou uma resposta do assistente.")
+    reference_label = (
+        "Documento de referência"
+        if len(documents) == 1
+        else "Documentos de referência"
+    )
+    st.caption(f"**{reference_label}:** {', '.join(documents)}")
+
+    with st.status(
+        ":material/check_circle: Trechos que sustentam a resposta",
+        state="complete",
+        expanded=False,
+        type="compact",
+    ):
+        for rendered_count, evidence in enumerate(unique_evidences, start=1):
+            if "matched_text" in evidence:
+                text = str(evidence.get("matched_text") or "").strip()
+            else:
+                text = str(evidence.get("text") or "").strip()
+
+            st.markdown(f"**Trecho {rendered_count}**")
+
+            quote = "\n".join(f"> {line}" for line in text.splitlines())
+            st.markdown(quote)
+            if rendered_count < len(unique_evidences):
+                st.divider()
 
 
 def invoke_agent(
@@ -105,8 +168,8 @@ def invoke_agent(
     history: list[ChatMessage] | None = None,
     *,
     agent: Any | None = None,
-) -> str:
-    """Envia o prompt do UI ao agente e devolve a resposta para o UI."""
+) -> AgentResult:
+    """Envia o prompt e devolve a resposta com evidências validadas."""
 
     normalized_prompt = prompt.strip()
     if not normalized_prompt:
@@ -118,7 +181,7 @@ def invoke_agent(
         agent = _load_agent()
 
     result = agent.invoke({"messages": conversation})
-    return _extract_answer(result)
+    return extract_agent_result(result)
 
 
 def app() -> None:
@@ -132,7 +195,7 @@ def app() -> None:
     )
 
     _init_session_state()
-    chat_bar()
+    conversation_summary = chat_bar()
 
     st.title("Normas Acadêmicas", icon=":material/menu_book:")
     st.caption(
@@ -147,6 +210,8 @@ def app() -> None:
         )
         with st.chat_message(role, avatar=avatar):
             st.markdown(message["content"])
+            if role == "assistant":
+                _render_document_references(message.get("evidences", []))
 
     prompt = None
     if not st.session_state.messages:
@@ -180,10 +245,11 @@ def app() -> None:
     if not prompt:
         return
 
-    history = list(st.session_state.messages)
+    history = _agent_history(st.session_state.messages)
 
     user_message = {"role": "user", "content": prompt}
     st.session_state.messages.append(user_message)
+    _render_conversation_summary(conversation_summary, st.session_state.messages)
     with st.chat_message("user", avatar=":material/person:"):
         st.markdown(prompt)
 
@@ -195,7 +261,7 @@ def app() -> None:
                 expanded=False,
                 type="compact",
             ) as status:
-                answer = invoke_agent(prompt, history)
+                result = invoke_agent(prompt, history)
         except Exception as exc:
             status.update(
                 label="Não foi possível concluir a consulta", state="error"
@@ -204,12 +270,20 @@ def app() -> None:
             return
 
         status.update(label="Consulta concluída", state="complete")
-        st.markdown(answer)
+        st.markdown(result.answer)
+        _render_document_references(result.evidences)
 
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.session_state.messages.append(
+        {
+            "role": "assistant",
+            "content": result.answer,
+            "evidences": result.evidences,
+        }
+    )
+    _render_conversation_summary(conversation_summary, st.session_state.messages)
 
 
-def chat_bar() -> None:
+def chat_bar() -> Any:
     """Renderiza a navegação e os controles persistentes do chat."""
 
     with st.sidebar:
@@ -226,25 +300,10 @@ def chat_bar() -> None:
             on_click=_clear_conversation,
         )
 
-        messages = st.session_state.get("messages", [])
-        with st.container(border=True):
-            st.markdown("**Conversa atual**")
-            if messages:
-                user_count = sum(message["role"] == "user" for message in messages)
-                question_label = "pergunta" if user_count == 1 else "perguntas"
-                st.caption(f"{user_count} {question_label} nesta conversa")
-                last_message = next(
-                    (
-                        message["content"]
-                        for message in reversed(messages)
-                        if message["role"] == "user"
-                    ),
-                    "",
-                )
-                if last_message:
-                    st.caption(f"Última pergunta: {last_message[:100]}")
-            else:
-                st.caption("Nenhuma pergunta feita ainda.")
+        conversation_summary = st.empty()
+        _render_conversation_summary(
+            conversation_summary, st.session_state.get("messages", [])
+        )
 
         with st.expander("Como posso ajudar?", icon=":material/lightbulb:"):
             st.markdown(
@@ -255,6 +314,8 @@ def chat_bar() -> None:
             )
 
         st.caption("Baseado no conteúdo acadêmico disponível para o projeto.")
+
+    return conversation_summary
 
 
 app()
