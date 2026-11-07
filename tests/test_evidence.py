@@ -74,6 +74,7 @@ def test_extract_agent_result_accepts_only_retrieved_evidence_ids() -> None:
                                         "title": "ABNT NBR 6023",
                                         "page_number": 4,
                                         "text": "Trecho original",
+                                        "matched_text": "Trecho original",
                                     }
                                 ]
                             }
@@ -178,3 +179,45 @@ def test_extract_agent_result_links_relevant_evidence_without_model_ids() -> Non
     assert [item["evidence_id"] for item in extracted.evidences] == [
         "document:32:page:7"
     ]
+
+
+def test_extract_agent_result_rejects_semantically_unrelated_selected_evidence(
+) -> None:
+    result = {
+        "messages": [
+            {
+                "role": "tool",
+                "name": "rag_document_search",
+                "content": json.dumps(
+                    {
+                        "status": "success",
+                        "documents": [
+                            {
+                                "title": "ABNT NBR 14724 — Lombada",
+                                "evidence": [
+                                    {
+                                        "evidence_id": "document:14724:page:1",
+                                        "text": (
+                                            "A lombada identifica o trabalho "
+                                            "encadernado."
+                                        ),
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ),
+            }
+        ],
+        "structured_response": AgentAnswer(
+            answer=(
+                "As margens e o espaçamento devem seguir a formatação geral "
+                "do trabalho."
+            ),
+            evidence_ids=["document:14724:page:1"],
+        ),
+    }
+
+    extracted = extract_agent_result(result)
+
+    assert extracted.evidences == []

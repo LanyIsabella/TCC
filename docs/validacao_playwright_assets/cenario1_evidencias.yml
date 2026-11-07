@@ -1,0 +1,221 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading [level=2] [ref=e16]:
+      - generic [ref=e17]:
+        - img "menu_book icon" [ref=e18]: menu_book
+        - text: Normas Acadêmicas
+    - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+    - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: add
+        - paragraph [ref=e33]: Nova conversa
+    - generic [ref=e35]:
+      - paragraph [ref=e40]:
+        - strong [ref=e41]: Conversa atual
+      - paragraph [ref=e46]: 1 pergunta nesta conversa
+      - paragraph [ref=e154]: "Última pergunta: Quais são as principais regras de formatação de um TCC?"
+    - group [ref=e49]:
+      - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: lightbulb
+          - paragraph [ref=e56]: Como posso ajudar?
+    - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e95]:
+          - heading "Comece por uma pergunta" [level=3] [ref=e100]:
+            - text: Comece por uma pergunta
+            - generic [ref=e101]:
+              - link "Link to heading":
+                - /url: "#comece-por-uma-pergunta"
+          - paragraph [ref=e106]: Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem.
+          - radiogroup "Sugestões para começar" [ref=e109]:
+            - radio "format_quote Como fazer uma citação direta curta?" [ref=e110] [cursor=pointer]:
+              - generic [ref=e112]:
+                - generic [ref=e113]: format_quote
+                - paragraph [ref=e117]: Como fazer uma citação direta curta?
+            - radio "menu_book Como montar as referências?" [ref=e118] [cursor=pointer]:
+              - generic [ref=e120]:
+                - generic [ref=e121]: menu_book
+                - paragraph [ref=e125]: Como montar as referências?
+            - radio "article Como formatar o TCC?" [ref=e126] [cursor=pointer]:
+              - generic [ref=e128]:
+                - generic [ref=e129]: article
+                - paragraph [ref=e133]: Como formatar o TCC?
+        - generic [ref=e164]:
+          - generic [ref=e165]: person
+          - generic "Chat message from user" [ref=e168]:
+            - paragraph [ref=e174]: Quais são as principais regras de formatação de um TCC?
+        - generic [ref=e176]:
+          - generic [ref=e177]: auto_awesome
+          - generic "Chat message from assistant" [ref=e180]:
+            - generic [ref=e181]:
+              - group [ref=e184]:
+                - generic "check Consulta concluída chevron_right" [ref=e201] [cursor=pointer]:
+                  - generic [ref=e186]:
+                    - generic [ref=e202]: check
+                    - paragraph [ref=e189]: Consulta concluída
+                    - generic [ref=e190]: chevron_right
+              - generic [ref=e207]:
+                - paragraph [ref=e208]: "Com base nas informações fornecidas no contexto, que parecem seguir as normas da ABNT (Associação Brasileira de Normas Técnicas), apresento um resumo sobre a estrutura e o formato de trabalhos acadêmicos:"
+                - heading "Estrutura Geral e Formato" [level=3] [ref=e210]:
+                  - text: Estrutura Geral e Formato
+                  - generic [ref=e211]:
+                    - link "Link to heading":
+                      - /url: "#estrutura-geral-e-formato"
+                - paragraph [ref=e212]:
+                  - text: O documento refere-se às diretrizes para a apresentação de projetos de pesquisa, seguindo padrões como a
+                  - strong [ref=e213]: ABNT NBR 15287:2025
+                  - text: .
+                - heading "Margens" [level=4] [ref=e215]:
+                  - text: Margens
+                  - generic [ref=e216]:
+                    - link "Link to heading":
+                      - /url: "#margens"
+                - paragraph [ref=e217]: "As margens devem seguir regras específicas dependendo se a folha é o anverso ou o verso:"
+                - list [ref=e218]:
+                  - listitem [ref=e219]:
+                    - strong [ref=e220]: "Anverso (Verso da folha):"
+                    - text: Margem esquerda e superior de 3 cm, e direita e inferior de 2 cm.
+                  - listitem [ref=e221]:
+                    - strong [ref=e222]: "Verso (Frente da folha):"
+                    - text: Margem direita e superior de 3 cm, e esquerda e inferior de 2 cm.
+                - heading "Fonte e Espaçamento" [level=4] [ref=e224]:
+                  - text: Fonte e Espaçamento
+                  - generic [ref=e225]:
+                    - link "Link to heading":
+                      - /url: "#fonte-e-espacamento"
+                - list [ref=e226]:
+                  - listitem [ref=e227]:
+                    - strong [ref=e228]: "Fonte:"
+                    - text: Recomenda-se que o texto seja digitado em
+                    - strong [ref=e229]: tamanho 12
+                    - text: para todo o trabalho, incluindo a capa (se houver).
+                  - listitem [ref=e230]:
+                    - strong [ref=e231]: "Espaçamento entre linhas:"
+                    - text: O corpo do texto deve ter espaçamento de
+                    - strong [ref=e232]: 1,5 entre as linhas
+                    - text: .
+                  - listitem [ref=e233]:
+                    - strong [ref=e234]: "Exceções ao Espaçamento:"
+                    - text: "O espaçamento simples é exigido para:"
+                    - list [ref=e235]:
+                      - listitem [ref=e236]: Citações com mais de três linhas.
+                      - listitem [ref=e237]: Notas de rodapé.
+                      - listitem [ref=e238]: Referências.
+                      - listitem [ref=e239]: Títulos das ilustrações e tabelas, fontes e legendas das ilustrações e tabelas.
+                - heading "Paginação e Estrutura de Seções" [level=4] [ref=e241]:
+                  - text: Paginação e Estrutura de Seções
+                  - generic [ref=e242]:
+                    - link "Link to heading":
+                      - /url: "#paginacao-e-estrutura-de-secoes"
+                - list [ref=e243]:
+                  - listitem [ref=e244]:
+                    - strong [ref=e245]: "Paginação:"
+                    - text: A paginação deve ser observada conforme as regras estabelecidas.
+                  - listitem [ref=e246]:
+                    - strong [ref=e247]: "Indicativos de Seção:"
+                    - text: O indicativo numérico (em algarismo arábico) de uma seção deve preceder seu título, alinhado à esquerda e separado por um espaço de caractere. As seções primárias devem começar em
+                    - strong [ref=e248]: página ímpar (anverso)
+                    - text: ", na parte superior da margem gráfica."
+                - heading "Elementos Pré-textuais" [level=4] [ref=e250]:
+                  - text: Elementos Pré-textuais
+                  - generic [ref=e251]:
+                    - link "Link to heading":
+                      - /url: "#elementos-pre-textuais"
+                - list [ref=e252]:
+                  - listitem [ref=e253]: Os elementos pré-textuais devem iniciar no anverso da folha.
+                  - listitem [ref=e254]: Na folha de rosto, o tipo de projeto de pesquisa e o nome da entidade a que o trabalho é submetido devem ser alinhados do meio da margem gráfica até a margem direita.
+                - heading "Citações e Referências" [level=4] [ref=e256]:
+                  - text: Citações e Referências
+                  - generic [ref=e257]:
+                    - link "Link to heading":
+                      - /url: "#citacoes-e-referencias"
+                - list [ref=e258]:
+                  - listitem [ref=e259]:
+                    - strong [ref=e260]: "Citações:"
+                    - text: Devem ser citadas no texto, inseridas o mais próximo possível do trecho a que se referem, e padronizadas conforme as normas vigentes (como ABNT NBR 10520 para tabelas).
+                  - listitem [ref=e261]:
+                    - strong [ref=e262]: "Referências:"
+                    - text: As referências devem ser separadas entre si por um espaço simples em branco ao final do trabalho.
+                - heading "Anexos e Apêndices" [level=4] [ref=e264]:
+                  - text: Anexos e Apêndices
+                  - generic [ref=e265]:
+                    - link "Link to heading":
+                      - /url: "#anexos-e-apendices"
+                - list [ref=e266]:
+                  - listitem [ref=e267]:
+                    - strong [ref=e268]: "Apêndices:"
+                    - text: Devem ser precedidos pela palavra
+                    - strong [ref=e269]: APÊNDICE
+                    - text: ", identificados por letras maiúsculas consecutivas, travessão e pelo respectivo título."
+                  - listitem [ref=e270]:
+                    - strong [ref=e271]: "Anexos:"
+                    - text: Devem ser precedidos pela palavra
+                    - strong [ref=e272]: ANEXO
+                    - text: ", identificados por letras maiúsculas consecutivas, travessão e pelo respectivo título."
+                - heading "Formato da Folha" [level=4] [ref=e274]:
+                  - text: Formato da Folha
+                  - generic [ref=e275]:
+                    - link "Link to heading":
+                      - /url: "#formato-da-folha"
+                - paragraph [ref=e276]:
+                  - text: Se impresso, o trabalho deve utilizar papel no formato
+                  - strong [ref=e277]: A4 (21 cm × 29,7 cm)
+                  - text: . O texto deve ser apresentado em cor preta.
+              - paragraph [ref=e282]:
+                - strong [ref=e283]: "Documentos de referência:"
+                - text: Artigo científico — Apresentação (2018), Informação e documentação — Projeto de pesquisa — Apresentação (2025)
+              - group [ref=e286]:
+                - generic "check check_circle icon Trechos que sustentam a resposta keyboard_arrow_down" [active] [ref=e300] [cursor=pointer]:
+                  - generic [ref=e288]:
+                    - generic [ref=e289]: check
+                    - paragraph [ref=e293]:
+                      - img "check_circle icon" [ref=e294]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e301]: keyboard_arrow_down
+                - generic [ref=e304]:
+                  - paragraph [ref=e309]:
+                    - strong [ref=e310]: Trecho 1
+                  - blockquote [ref=e315]:
+                    - paragraph [ref=e316]: decimentos
+                    - paragraph [ref=e317]: Texto sucinto aprovado pelo periódico em que será publicado.
+                    - paragraph [ref=e318]: Deve ser o último elemento pós-textual.
+                    - heading "6 Regras gerais" [level=2] [ref=e320]:
+                      - text: 6 Regras gerais
+                      - generic [ref=e321]:
+                        - link "Link to heading":
+                          - /url: "#6-regras-gerais"
+                    - paragraph [ref=e322]: Devem ser conforme 6.1 a 6.7.
+                    - heading "6.1 Formato" [level=2] [ref=e324]:
+                      - text: 6.1 Formato
+                      - generic [ref=e325]:
+                        - link "Link to heading":
+                          - /url: "#6-1-formato"
+                    - paragraph [ref=e326]: Recomenda-se fonte em tamanho 12 e espaçamento simples, padroniz
+                  - separator [ref=e331]
+                  - paragraph [ref=e336]:
+                    - strong [ref=e337]: Trecho 2
+                  - blockquote [ref=e342]:
+                    - paragraph [ref=e343]: MBALAGENS PARA INSTRUMENTOS MÉDICOS
+                    - paragraph [ref=e344]: 4.2.3.5 Índice
+                    - paragraph [ref=e345]: Elemento opcional. Deve ser elaborado conforme a ABNT NBR 6034.
+                    - paragraph [ref=e346]: 5 Regras gerais
+                    - paragraph [ref=e347]: A apresentação de projetos de pesquisa deve ser conforme 5.1 a 5.10.
+                    - paragraph [ref=e348]: 5.1 Formato
+                    - paragraph [ref=e349]: Os textos devem ser apresent
+      - generic [ref=e142]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [ref=e144]
+        - button "Send message" [disabled] [ref=e146]

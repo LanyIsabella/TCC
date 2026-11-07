@@ -1,10 +1,16 @@
-"""Classificação determinística do escopo de atuação do agente."""
+"""Filtro conservador de escopo antes da orquestração do agente."""
 
 from __future__ import annotations
 
+import logging
+import re
 import unicodedata
 from enum import StrEnum
 from typing import Any
+
+from .query_planner import is_contextual_follow_up
+
+logger = logging.getLogger(__name__)
 
 
 class ScopeDecision(StrEnum):
@@ -12,6 +18,7 @@ class ScopeDecision(StrEnum):
 
     IN_SCOPE = "in_scope"
     GREETING = "greeting"
+    UNCERTAIN = "uncertain"
     OUT_OF_SCOPE = "out_of_scope"
 
 
@@ -141,10 +148,10 @@ def has_academic_term(value: str) -> bool:
     """Indica se o texto contém vocabulário do escopo acadêmico."""
     normalized = normalize_text(value)
     has_explicit_academic = any(
-        term in normalized for term in EXPLICIT_ACADEMIC_TERMS
+        _contains_term(normalized, term) for term in EXPLICIT_ACADEMIC_TERMS
     )
     has_ambiguous_academic = any(
-        term in normalized for term in AMBIGUOUS_ACADEMIC_TERMS
+        _contains_term(normalized, term) for term in AMBIGUOUS_ACADEMIC_TERMS
     )
     has_academic = has_explicit_academic or has_ambiguous_academic
     if has_academic and any(
@@ -154,6 +161,15 @@ def has_academic_term(value: str) -> bool:
     return has_academic
 
 
+def _contains_term(normalized_text: str, term: str) -> bool:
+    """Busca termos completos para evitar falsos positivos como ``tese``."""
+
+    return re.search(
+        rf"(?<!\w){re.escape(term)}(?!\w)",
+        normalized_text,
+    ) is not None
+
+
 def _message_value(message: Any, key: str) -> Any:
     if isinstance(message, dict):
         return message.get(key)
@@ -161,7 +177,13 @@ def _message_value(message: Any, key: str) -> Any:
 
 
 def classify_messages(messages: list[Any]) -> ScopeDecision:
-    """Classifica a mensagem atual usando o contexto acadêmico disponível."""
+    """Classifica o escopo sem bloquear perguntas semanticamente ambíguas.
+
+    Somente mensagens claramente fora do domínio são bloqueadas antes do
+    modelo. Mensagens não reconhecidas ficam como ``UNCERTAIN`` e seguem para
+    o agente, que decide se deve pedir esclarecimento, consultar o RAG ou
+    recusar o assunto.
+    """
     user_messages = [
         str(_message_value(message, "content") or "")
         for message in messages
@@ -177,16 +199,34 @@ def classify_messages(messages: list[Any]) -> ScopeDecision:
     greeting_text = greeting_text.replace("!", " ").replace("?", " ")
     greeting_text = " ".join(greeting_text.replace(".", " ").split())
     if greeting_text in GREETING_FORMS:
+        logger.info("scope_classification decision=greeting")
         return ScopeDecision.GREETING
     if has_academic_term(current):
+        logger.info("scope_classification decision=in_scope reason=academic_term")
         return ScopeDecision.IN_SCOPE
 
-    is_follow_up = any(term in normalized_current for term in FOLLOW_UP_TERMS)
-    if is_follow_up and any(
-        has_academic_term(message) for message in user_messages[:-1]
+    previous_context = any(
+        has_academic_term(message)
+        for message in user_messages[:-1]
+    )
+    clearly_non_academic = any(
+        _contains_term(normalized_current, hint)
+        for hint in NON_ACADEMIC_HINTS
+    )
+    if (
+        previous_context
+        and is_contextual_follow_up(current)
+        and not clearly_non_academic
     ):
+        logger.info(
+            "scope_classification decision=in_scope reason=contextual_follow_up"
+        )
         return ScopeDecision.IN_SCOPE
-    return ScopeDecision.OUT_OF_SCOPE
+    if clearly_non_academic:
+        logger.info("scope_classification decision=out_of_scope reason=explicit_hint")
+        return ScopeDecision.OUT_OF_SCOPE
+    logger.info("scope_classification decision=uncertain reason=no_confident_match")
+    return ScopeDecision.UNCERTAIN
 
 
 def guarded_response(messages: list[Any], decision: ScopeDecision) -> dict[str, Any]:

@@ -49,6 +49,12 @@ def test_scope_guard_rejects_unrelated_questions() -> None:
     assert classify_messages(messages) == ScopeDecision.OUT_OF_SCOPE
 
 
+def test_scope_guard_leaves_unrecognized_questions_for_model_interpretation() -> None:
+    assert classify_messages(
+        [{"role": "user", "content": "Explique fotossíntese."}]
+    ) == ScopeDecision.UNCERTAIN
+
+
 def test_scope_guard_rejects_ambiguous_terms_in_nonacademic_context() -> None:
     assert (
         classify_messages(
@@ -80,6 +86,16 @@ def test_scope_guard_allows_academic_follow_up() -> None:
     assert classify_messages(messages) == ScopeDecision.IN_SCOPE
 
 
+def test_scope_guard_allows_implicit_academic_follow_up() -> None:
+    messages = [
+        {"role": "user", "content": "Quais são as regras de formatação de um TCC?"},
+        {"role": "assistant", "content": "A formatação envolve margens e recuos."},
+        {"role": "user", "content": "Qual o tamanho do recuo necessário?"},
+    ]
+
+    assert classify_messages(messages) == ScopeDecision.IN_SCOPE
+
+
 def test_scoped_agent_does_not_call_model_outside_scope() -> None:
     inner = CountingAgent()
     agent = ScopedAgent(inner)
@@ -102,7 +118,9 @@ def test_scoped_agent_handles_greetings_without_model() -> None:
     assert result["messages"][-1]["content"] == GREETING_MESSAGE
 
 
-def test_scoped_agent_does_not_accept_placeholder_for_academic_question() -> None:
+def test_scoped_agent_does_not_accept_placeholder_for_academic_question(
+    monkeypatch,
+) -> None:
     class PlaceholderAgent:
         def invoke(self, payload: dict[str, object]) -> dict[str, object]:
             return {
@@ -121,12 +139,36 @@ def test_scoped_agent_does_not_accept_placeholder_for_academic_question() -> Non
     question = (
         "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
     )
-    result = ScopedAgent(PlaceholderAgent()).invoke(
-        {"messages": [{"role": "user", "content": question}]}
-    )
+    class RecoverySearch:
+        def invoke(self, _payload: dict[str, object]) -> str:
+            return json.dumps(
+                {
+                    "status": "success",
+                    "evidence_found": True,
+                    "documents": [
+                        {
+                            "standard_label": "ABNT NBR 14724",
+                            "evidence": [],
+                        }
+                    ],
+                }
+            )
+
+    class RecoveryModel:
+        def invoke(self, _messages: list[dict[str, str]]) -> object:
+            return type(
+                "Response",
+                (),
+                {"content": "As regras devem ser verificadas na ABNT NBR 14724."},
+            )()
+
+    monkeypatch.setattr("src.app.agente.rag_document_search", RecoverySearch())
+    result = ScopedAgent(
+        PlaceholderAgent(), RecoveryModel(), "Você é um assistente."
+    ).invoke({"messages": [{"role": "user", "content": question}]})
 
     assert "faça sua pergunta" not in result["messages"][-1]["content"]
-    assert "base normativa" in result["messages"][-1]["content"].casefold()
+    assert "Base normativa" not in result["messages"][-1]["content"]
 
 
 def test_scoped_agent_recovers_rag_when_model_skips_tool(monkeypatch) -> None:
@@ -134,6 +176,7 @@ def test_scoped_agent_recovers_rag_when_model_skips_tool(monkeypatch) -> None:
         def invoke(self, _payload: dict[str, object]) -> str:
             return json.dumps(
                 {
+                    "status": "success",
                     "evidence_found": True,
                     "documents": [
                         {
@@ -173,17 +216,25 @@ def test_scoped_agent_recovers_rag_when_model_skips_tool(monkeypatch) -> None:
         "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
     )
 
-    result = ScopedAgent(inner).invoke(
+    class RecoveryModel:
+        def invoke(self, _messages: list[dict[str, str]]) -> object:
+            return type(
+                "Response",
+                (),
+                {"content": "A ABNT NBR 14724 orienta a apresentação do trabalho."},
+            )()
+
+    result = ScopedAgent(inner, RecoveryModel(), "Você é um assistente.").invoke(
         {"messages": [{"role": "user", "content": question}]}
     )
 
     answer = result["messages"][-1]["content"]
-    assert inner.calls == 0
+    assert inner.calls == 1
     assert "Por favor" not in answer
     assert "ABNT NBR 14724" in answer, result["messages"]
 
 
-def test_scoped_agent_rejects_full_greeting_placeholder() -> None:
+def test_scoped_agent_rejects_full_greeting_placeholder(monkeypatch) -> None:
     class PlaceholderAgent:
         def invoke(self, payload: dict[str, object]) -> dict[str, object]:
             return {
@@ -204,10 +255,29 @@ def test_scoped_agent_rejects_full_greeting_placeholder() -> None:
     question = (
         "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
     )
-    result = ScopedAgent(PlaceholderAgent()).invoke(
-        {"messages": [{"role": "user", "content": question}]}
-    )
+    class RecoverySearch:
+        def invoke(self, _payload: dict[str, object]) -> str:
+            return json.dumps(
+                {
+                    "status": "success",
+                    "evidence_found": True,
+                    "documents": [{"standard_label": "ABNT NBR 14724", "evidence": []}],
+                }
+            )
+
+    class RecoveryModel:
+        def invoke(self, _messages: list[dict[str, str]]) -> object:
+            return type(
+                "Response",
+                (),
+                {"content": "A resposta deve seguir a ABNT NBR 14724."},
+            )()
+
+    monkeypatch.setattr("src.app.agente.rag_document_search", RecoverySearch())
+    result = ScopedAgent(
+        PlaceholderAgent(), RecoveryModel(), "Você é um assistente."
+    ).invoke({"messages": [{"role": "user", "content": question}]})
 
     answer = result["messages"][-1]["content"]
     assert "Sou seu assistente" not in answer
-    assert "Base normativa" in answer
+    assert "Base normativa" not in answer

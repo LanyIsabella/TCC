@@ -1,0 +1,76 @@
+- generic [ref=e2]:
+  - generic [ref=e7]:
+    - button "keyboard_double_arrow_left" [ref=e799] [cursor=pointer]
+    - generic [ref=e11]:
+      - heading [level=2] [ref=e16]:
+        - generic [ref=e17]:
+          - img "menu_book icon" [ref=e18]: menu_book
+          - text: Normas Acadêmicas
+      - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+      - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: add
+          - paragraph [ref=e33]: Nova conversa
+      - generic [ref=e35]:
+        - paragraph [ref=e40]:
+          - strong [ref=e41]: Conversa atual
+        - paragraph [ref=e46]: 1 pergunta nesta conversa
+        - paragraph [ref=e995]: "Última pergunta: Quais são as diferenças entre as regras de referências e citações?"
+      - group [ref=e49]:
+        - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+          - generic [ref=e51]:
+            - generic [ref=e52]: lightbulb
+            - paragraph [ref=e56]: Como posso ajudar?
+      - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - generic [ref=e997]:
+          - img "Running..." [ref=e998]
+          - button "Stop" [ref=e1003] [cursor=pointer]
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e802]:
+          - heading "Comece por uma pergunta" [level=3] [ref=e807]:
+            - text: Comece por uma pergunta
+            - generic [ref=e808]:
+              - link "Link to heading":
+                - /url: "#comece-por-uma-pergunta"
+          - paragraph [ref=e813]: Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem.
+          - radiogroup "Sugestões para começar" [ref=e816]:
+            - radio "format_quote Como fazer uma citação direta curta?" [ref=e817] [cursor=pointer]:
+              - generic [ref=e819]:
+                - generic [ref=e820]: format_quote
+                - paragraph [ref=e824]: Como fazer uma citação direta curta?
+            - radio "menu_book Como montar as referências?" [ref=e825] [cursor=pointer]:
+              - generic [ref=e827]:
+                - generic [ref=e828]: menu_book
+                - paragraph [ref=e832]: Como montar as referências?
+            - radio "article Como formatar o TCC?" [ref=e833] [cursor=pointer]:
+              - generic [ref=e835]:
+                - generic [ref=e836]: article
+                - paragraph [ref=e840]: Como formatar o TCC?
+        - generic [ref=e1005]:
+          - generic [ref=e1006]: person
+          - generic "Chat message from user" [ref=e1009]:
+            - paragraph [ref=e1015]: Quais são as diferenças entre as regras de referências e citações?
+        - generic [ref=e1017]:
+          - generic [ref=e1018]: auto_awesome
+          - generic "Chat message from assistant" [ref=e1021]:
+            - group [ref=e1025]:
+              - generic "Consultando a base de conhecimento... chevron_right" [ref=e1026] [cursor=pointer]:
+                - generic [ref=e1027]:
+                  - paragraph [ref=e1030]: Consultando a base de conhecimento...
+                  - generic [ref=e1031]: chevron_right
+      - generic [ref=e142]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [disabled] [ref=e144]
+        - button "Send message" [disabled] [ref=e146]

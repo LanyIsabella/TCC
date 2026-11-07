@@ -95,11 +95,7 @@ def test_agent_service_hides_internal_tool_events() -> None:
 
     response = service.chat(AgentChatRequest(message="Explique ABNT"))
 
-    assert response.answer == (
-        "Resposta fundamentada\n\n"
-        "### Base normativa\n\n"
-        "- ABNT NBR 10520:2023, p. 12."
-    )
+    assert response.answer == "Resposta fundamentada"
     assert [message.role for message in response.messages] == ["user", "assistant"]
 
 

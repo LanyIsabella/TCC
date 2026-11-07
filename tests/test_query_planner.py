@@ -1,6 +1,10 @@
 import json
 
-from src.app.query_planner import is_broad_question, plan_queries
+from src.app.query_planner import (
+    contextualize_query,
+    is_broad_question,
+    plan_queries,
+)
 
 
 def test_broad_question_gets_generic_expansion() -> None:
@@ -18,6 +22,19 @@ def test_specific_question_is_not_expanded() -> None:
     queries = plan_queries("Qual é o item 7.1 da ABNT NBR 10520?")
 
     assert queries == ["Qual é o item 7.1 da ABNT NBR 10520?"]
+
+
+def test_contextual_follow_up_keeps_original_intent_and_previous_topic() -> None:
+    history = [
+        {"role": "user", "content": "Como devo formatar um TCC segundo a ABNT?"},
+        {"role": "assistant", "content": "A formatação inclui margens e recuos."},
+    ]
+
+    query = contextualize_query("Qual o tamanho do recuo necessário?", history)
+
+    assert "Qual o tamanho do recuo necessário?" in query
+    assert "formatar um TCC" in query
+    assert plan_queries("Qual o tamanho do recuo necessário?", history) == [query]
 
 
 def test_broad_rag_search_merges_adaptive_results(monkeypatch) -> None:
@@ -99,3 +116,48 @@ def test_adaptive_search_keeps_first_result_when_expansion_fails(monkeypatch) ->
 
     assert result["status"] == "success"
     assert result["documents"][0]["standard_label"] == "ABNT NBR 14724"
+
+
+def test_adaptive_merge_deduplicates_documents_without_adding_rrf_scores(
+    monkeypatch,
+) -> None:
+    from src.app.tools import rag_search
+
+    def fake_search(question: str, **_kwargs):
+        page = 8 if "primeira" in question else 9
+        return [
+            {
+                "id": 32,
+                "document_id": 14724,
+                "title": "Trabalhos acadêmicos",
+                "metadata": {"id": "abnt_nbr_14724"},
+                "rrf_score": 0.02 if page == 8 else 0.01,
+                "pages": [page],
+                "page_context": [
+                    {"page_number": page, "page_text": f"Trecho da página {page}."}
+                ],
+            }
+        ]
+
+    monkeypatch.setattr(rag_search, "search_documents", fake_search)
+    monkeypatch.setattr(
+        rag_search,
+        "plan_queries",
+        lambda _question: ["primeira consulta", "segunda consulta"],
+    )
+
+    result = json.loads(
+        rag_search.rag_document_search.invoke(
+            {"question": "Quais são as principais regras de formatação?"}
+        )
+    )
+
+    document = result["documents"][0]
+    assert len(result["documents"]) == 1
+    assert document["retrieval_hits"] == 2
+    assert document["retrieval_queries"] == [
+        "primeira consulta",
+        "segunda consulta",
+    ]
+    assert document["rrf_score"] == 0.02
+    assert document["pages"] == [8, 9]

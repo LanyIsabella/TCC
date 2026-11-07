@@ -178,6 +178,166 @@ def _matched_text(text: str, question: str) -> str | None:
     return text[window_start:window_end].strip()
 
 
+def _document_merge_key(document: dict[str, Any]) -> str:
+    metadata = document.get("metadata")
+    if not isinstance(metadata, dict):
+        metadata = {}
+    identity = (
+        document.get("id")
+        or document.get("rag_document_id")
+        or document.get("document_id")
+        or metadata.get("id")
+        or document.get("title")
+    )
+    return str(identity or "document-without-id").strip()
+
+
+def _numeric_score(value: Any) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return float("-inf")
+
+
+def _merge_page_context(
+    current: list[Any], incoming: list[Any]
+) -> list[dict[str, Any]]:
+    pages: dict[int, dict[str, Any]] = {}
+    for item in [*current, *incoming]:
+        if not isinstance(item, dict):
+            continue
+        try:
+            page_number = int(item.get("page_number"))
+        except (TypeError, ValueError):
+            continue
+        if page_number <= 0:
+            continue
+        candidate = dict(item)
+        previous = pages.get(page_number)
+        if previous is None or len(str(candidate.get("page_text") or "")) > len(
+            str(previous.get("page_text") or "")
+        ):
+            pages[page_number] = candidate
+        elif item.get("direct_match"):
+            previous["direct_match"] = True
+    return [pages[number] for number in sorted(pages)]
+
+
+def _merge_matched_pages(
+    current: list[Any], incoming: list[Any]
+) -> list[dict[str, Any]]:
+    pages: dict[int, dict[str, Any]] = {}
+    for item in [*current, *incoming]:
+        if not isinstance(item, dict):
+            continue
+        try:
+            page_number = int(item.get("page_number"))
+        except (TypeError, ValueError):
+            continue
+        if page_number <= 0:
+            continue
+        previous = pages.setdefault(page_number, {"page_number": page_number})
+        previous["direct_match"] = bool(
+            previous.get("direct_match") or item.get("direct_match")
+        )
+        for key in ("rrf_score", "semantic_distance", "textual_rank"):
+            if key in item and key not in previous:
+                previous[key] = item[key]
+    return list(pages.values())
+
+
+def _merge_documents(
+    result_groups: list[tuple[str, list[dict[str, Any]]]],
+) -> list[dict[str, Any]]:
+    """Consolida consultas adaptativas sem somar RRF de escalas distintas.
+
+    A política é: documentos encontrados por mais consultas têm prioridade;
+    em empate, a consulta original vem antes das expansões; depois usamos a
+    melhor pontuação RRF individual. A pontuação nunca é somada entre
+    consultas independentes.
+    """
+
+    merged: dict[str, dict[str, Any]] = {}
+    order = 0
+    for query_index, (query, documents) in enumerate(result_groups):
+        for document in documents:
+            if not isinstance(document, dict):
+                continue
+            key = _document_merge_key(document)
+            current = merged.get(key)
+            if current is None:
+                current = dict(document)
+                current["pages"] = list(document.get("pages") or [])
+                current["matched_pages"] = list(
+                    document.get("matched_pages") or []
+                )
+                current["page_context"] = list(document.get("page_context") or [])
+                current["retrieval_queries"] = []
+                current["retrieval_hits"] = 0
+                current["_query_indexes"] = set()
+                current["_first_query_index"] = query_index
+                current["_best_query_index"] = query_index
+                current["_best_rrf_score"] = _numeric_score(
+                    document.get("rrf_score")
+                )
+                current["_merge_order"] = order
+                merged[key] = current
+                order += 1
+
+            query_indexes = current["_query_indexes"]
+            if query_index not in query_indexes:
+                query_indexes.add(query_index)
+                current["retrieval_hits"] += 1
+                current["retrieval_queries"].append(query)
+
+            score = _numeric_score(document.get("rrf_score"))
+            if score >= current["_best_rrf_score"]:
+                current["_best_query_index"] = query_index
+            current["_best_rrf_score"] = max(current["_best_rrf_score"], score)
+            current["rrf_score"] = current["_best_rrf_score"]
+            current["pages"] = list(
+                dict.fromkeys(
+                    [
+                        *current.get("pages", []),
+                        *(document.get("pages") or []),
+                    ]
+                )
+            )
+            current["matched_pages"] = _merge_matched_pages(
+                current.get("matched_pages", []),
+                document.get("matched_pages") or [],
+            )
+            current["page_context"] = _merge_page_context(
+                current.get("page_context", []),
+                document.get("page_context") or [],
+            )
+            if not current.get("full_text") and document.get("full_text"):
+                current["full_text"] = document["full_text"]
+            if isinstance(document.get("metadata"), dict):
+                metadata = current.setdefault("metadata", {})
+                if isinstance(metadata, dict):
+                    for metadata_key, metadata_value in document["metadata"].items():
+                        metadata.setdefault(metadata_key, metadata_value)
+
+    documents = list(merged.values())
+    documents.sort(
+        key=lambda document: (
+            -int(document.get("retrieval_hits", 0)),
+            -_numeric_score(document.get("rrf_score")),
+            -int(document.get("_best_query_index", 0)),
+            int(document.get("_first_query_index", 0)),
+            int(document.get("_merge_order", 0)),
+        )
+    )
+    for document in documents:
+        document.pop("_query_indexes", None)
+        document.pop("_first_query_index", None)
+        document.pop("_best_query_index", None)
+        document.pop("_best_rrf_score", None)
+        document.pop("_merge_order", None)
+    return documents
+
+
 def _compact_document(
     document: Any,
     question: str = "",
@@ -388,6 +548,7 @@ def _validated_result(
         "query": question,
         "documents_found": len(model_documents),
         "documents": model_documents,
+        "retrieval_queries": retrieval_queries or [question],
     }
 
 
@@ -401,11 +562,15 @@ def _model_document(document: dict[str, Any]) -> dict[str, Any]:
             "rag_document_id",
             "title",
             "standard_id",
+            "standard_label",
             "version",
             "issuer",
             "status",
             "source_extractor",
             "quality_score",
+            "rrf_score",
+            "retrieval_hits",
+            "retrieval_queries",
             "pages",
             "matched_pages",
             "context_warning",
@@ -450,11 +615,20 @@ def rag_document_search(
     search_documents_limit = max(documents_limit, 3) if broad else documents_limit
     search_pages_limit = max(pages_limit, 10) if broad else pages_limit
     search_neighbor_radius = 1 if broad else 0
+    logger.info(
+        "rag_search_start question=%r broad=%s query_count=%d "
+        "documents_limit=%d pages_limit=%d",
+        question[:240],
+        broad,
+        len(queries),
+        search_documents_limit,
+        search_pages_limit,
+    )
 
     try:
         result_groups: list[tuple[str, list[dict[str, Any]]]] = []
         query_errors: list[Exception] = []
-        for query in queries:
+        for query_index, query in enumerate(queries):
             try:
                 result_groups.append(
                     (
@@ -471,7 +645,9 @@ def rag_document_search(
             except Exception as error:
                 query_errors.append(error)
                 logger.warning(
-                    "Consulta adaptativa indisponível: %s", error
+                    "adaptive_query_failed query_index=%d error=%s",
+                    query_index,
+                    error,
                 )
         if not result_groups:
             if query_errors:
@@ -501,6 +677,12 @@ def rag_document_search(
             retrieval_queries=queries,
         )
         result["adaptive_retrieval"] = broad
+        logger.info(
+            "rag_search_complete status=%s documents=%d adaptive=%s",
+            result.get("status"),
+            result.get("documents_found", 0),
+            broad,
+        )
     except (TypeError, ValueError) as error:
         logger.exception("Resultado RAG inválido: %s", error)
         result = {
