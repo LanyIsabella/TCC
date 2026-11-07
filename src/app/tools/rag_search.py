@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import re
+import unicodedata
 from typing import Any
 
 from data.rag_pipeline import search_documents
@@ -16,6 +19,48 @@ logger = logging.getLogger(__name__)
 MAX_FULL_TEXT_CHARS = 6_000
 MAX_PAGE_TEXT_CHARS = 1_800
 MAX_CONTEXT_CHARS = 5_000
+MATCH_WINDOW_CHARS = 240
+PAGE_MARKER_PATTERN = re.compile(r"<<<PÁGINA\s+(\d+)(?:\s+—[^>]*)?>>>")
+MATCH_TERM_PATTERN = re.compile(r"[\wÀ-ÿ]{4,}", flags=re.UNICODE)
+
+MATCH_STOPWORDS = {
+    "a",
+    "as",
+    "ao",
+    "aos",
+    "com",
+    "como",
+    "da",
+    "das",
+    "de",
+    "do",
+    "dos",
+    "e",
+    "em",
+    "entre",
+    "essa",
+    "esse",
+    "esta",
+    "este",
+    "fazer",
+    "mais",
+    "na",
+    "nas",
+    "no",
+    "nos",
+    "o",
+    "os",
+    "para",
+    "por",
+    "qual",
+    "quais",
+    "que",
+    "segundo",
+    "sem",
+    "sobre",
+    "uma",
+    "um",
+}
 
 
 def _standard_label(standard_id: Any, title: str) -> str:
@@ -51,7 +96,92 @@ class RagDocumentSearchInput(BaseModel):
     )
 
 
-def _compact_document(document: Any) -> dict[str, Any] | None:
+def _evidence_identity(
+    document: dict[str, Any], title: str, document_id: Any
+) -> str:
+    """Gera a parte estável do identificador de uma evidência."""
+
+    raw_identity = (
+        document.get("id")
+        or document.get("rag_document_id")
+        or document_id
+        or title
+    )
+    identity = str(raw_identity).strip()
+    if not identity:
+        identity = hashlib.sha256(title.encode("utf-8")).hexdigest()[:16]
+    return f"document:{identity}"
+
+
+def _full_text_parts(full_text: str) -> list[tuple[int | None, str]]:
+    """Divide o texto integral nos marcadores de página já persistidos."""
+
+    markers = list(PAGE_MARKER_PATTERN.finditer(full_text))
+    if not markers:
+        return [(None, full_text)]
+
+    parts: list[tuple[int | None, str]] = []
+    for index, marker in enumerate(markers):
+        end = markers[index + 1].start() if index + 1 < len(markers) else len(full_text)
+        text = full_text[marker.end() : end].strip()
+        if text:
+            parts.append((int(marker.group(1)), text))
+    return parts
+
+
+def _normalized_with_positions(value: str) -> tuple[str, list[int]]:
+    """Normaliza acentos sem perder a posição no texto original."""
+
+    normalized: list[str] = []
+    positions: list[int] = []
+    for position, character in enumerate(value):
+        decomposed = unicodedata.normalize("NFD", character.casefold())
+        for item in decomposed:
+            if unicodedata.category(item) == "Mn":
+                continue
+            normalized.append(item)
+            positions.append(position)
+    return "".join(normalized), positions
+
+
+def _match_prefixes(question: str) -> list[str]:
+    normalized_question, _ = _normalized_with_positions(question)
+    prefixes: set[str] = set()
+    for term in MATCH_TERM_PATTERN.findall(normalized_question):
+        if term in MATCH_STOPWORDS:
+            continue
+        prefix_length = max(4, len(term) - 2)
+        prefixes.add(term[:prefix_length])
+    return sorted(prefixes, key=lambda value: (-len(value), value))
+
+
+def _matched_text(text: str, question: str) -> str | None:
+    """Retorna um recorte original em torno do primeiro match da consulta."""
+
+    prefixes = _match_prefixes(question)
+    if not prefixes:
+        return None
+
+    normalized_text, positions = _normalized_with_positions(text)
+    pattern = re.compile(
+        rf"\b(?:{'|'.join(re.escape(prefix) for prefix in prefixes)})\w*",
+        flags=re.UNICODE,
+    )
+    match = pattern.search(normalized_text)
+    if match is None:
+        return None
+
+    original_start = positions[match.start()]
+    original_end = positions[match.end() - 1] + 1
+    window_start = max(0, original_start - MATCH_WINDOW_CHARS // 2)
+    window_end = min(len(text), original_end + MATCH_WINDOW_CHARS // 2)
+    return text[window_start:window_end].strip()
+
+
+def _compact_document(
+    document: Any,
+    question: str = "",
+) -> dict[str, Any] | None:
     """Valida e reduz um resultado do RAG para o contexto do modelo."""
     if not isinstance(document, dict):
         return None
@@ -63,6 +193,10 @@ def _compact_document(document: Any) -> dict[str, Any] | None:
     title = str(
         document.get("title") or metadata.get("title") or "Documento sem título"
     ).strip()
+    document_id = document.get("document_id")
+    rag_document_id = document.get("id") or document.get("rag_document_id")
+    default_section = document.get("section") or metadata.get("section")
+    default_section = str(default_section).strip() if default_section else None
 
     pages: list[int] = []
     raw_pages = document.get("pages")
@@ -121,13 +255,14 @@ def _compact_document(document: Any) -> dict[str, Any] | None:
             text = text[: min(MAX_PAGE_TEXT_CHARS, remaining)].strip()
             if not text:
                 continue
-            page_context.append(
-                {
-                    "page_number": page_number,
-                    "direct_match": bool(item.get("direct_match", False)),
-                    "page_text": text,
-                }
-            )
+            page_item = {
+                "page_number": page_number,
+                "direct_match": bool(item.get("direct_match", False)),
+                "page_text": text,
+            }
+            if item.get("section"):
+                page_item["section"] = str(item["section"]).strip()
+            page_context.append(page_item)
             context_chars += len(text)
 
     full_text = document.get("full_text")
@@ -139,8 +274,67 @@ def _compact_document(document: Any) -> dict[str, Any] | None:
     if not full_text and not page_context:
         return None
 
+    evidence_identity = _evidence_identity(document, title, document_id)
+    evidence: list[dict[str, Any]] = []
+    seen_text: set[str] = set()
+
+    def add_evidence(
+        text: str,
+        page_number: int | None,
+        *,
+        section: Any = None,
+        direct_match: bool = False,
+        source: str,
+    ) -> None:
+        normalized_text = text.strip()
+        if not normalized_text:
+            return
+        duplicate_key = " ".join(normalized_text.split())
+        if duplicate_key in seen_text:
+            return
+        seen_text.add(duplicate_key)
+        evidence_id = (
+            f"{evidence_identity}:page:{page_number}"
+            if page_number is not None
+            else f"{evidence_identity}:text:"
+            f"{hashlib.sha256(normalized_text.encode('utf-8')).hexdigest()[:16]}"
+        )
+        evidence_item: dict[str, Any] = {
+            "evidence_id": evidence_id,
+            "document_id": document_id,
+            "rag_document_id": rag_document_id,
+            "title": title,
+            "version": document.get("version") or metadata.get("version"),
+            "issuer": metadata.get("issuer") or document.get("issuer"),
+            "page_number": page_number,
+            "text": normalized_text,
+            "direct_match": direct_match,
+            "source": source,
+        }
+        evidence_item["matched_text"] = (
+            _matched_text(normalized_text, question) or ""
+        )
+        resolved_section = section or default_section
+        if resolved_section:
+            evidence_item["section"] = str(resolved_section).strip()
+        evidence.append(evidence_item)
+
+    if full_text:
+        for page_number, text in _full_text_parts(full_text):
+            add_evidence(text, page_number, source="full_document")
+    else:
+        for page in page_context:
+            add_evidence(
+                page["page_text"],
+                page["page_number"],
+                section=page.get("section"),
+                direct_match=page["direct_match"],
+                source="page_window",
+            )
+
     compact: dict[str, Any] = {
-        "document_id": document.get("document_id"),
+        "document_id": document_id,
+        "rag_document_id": rag_document_id,
         "title": title,
         "standard_id": metadata.get("id"),
         "standard_label": _standard_label(metadata.get("id"), title),
@@ -156,6 +350,7 @@ def _compact_document(document: Any) -> dict[str, Any] | None:
         "matched_pages": matched_pages,
         "full_text": full_text,
         "page_context": page_context,
+        "evidence": evidence,
         "context_warning": document.get("context_warning"),
     }
     return compact
@@ -174,7 +369,7 @@ def _validated_result(
     compact_documents = [
         compact
         for document in documents
-        if (compact := _compact_document(document)) is not None
+        if (compact := _compact_document(document, question)) is not None
     ]
     if not compact_documents:
         return {
@@ -186,90 +381,54 @@ def _validated_result(
             "retrieval_queries": retrieval_queries or [question],
             "message": "Nenhuma evidência textual correspondente foi localizada.",
         }
+    model_documents = [_model_document(document) for document in compact_documents]
     return {
         "status": "success",
         "evidence_found": True,
         "query": question,
-        "documents_found": len(compact_documents),
-        "documents": compact_documents,
-        "retrieval_queries": retrieval_queries or [question],
+        "documents_found": len(model_documents),
+        "documents": model_documents,
     }
 
 
-def _merge_documents(
-    result_groups: list[tuple[str, list[dict[str, Any]]]],
-) -> list[dict[str, Any]]:
-    """Consolida consultas adaptativas sem alterar o RRF interno."""
-    merged: dict[Any, dict[str, Any]] = {}
-    for query_position, (query, documents) in enumerate(result_groups):
-        for document in documents:
-            if not isinstance(document, dict):
-                continue
-            key = document.get("document_id") or (
-                document.get("title"),
-                document.get("version"),
-            )
-            score = float(document.get("rrf_score") or 0.0)
-            if query_position > 0:
-                score += 0.0005
-            current = merged.get(key)
-            if current is None:
-                current = {**document, "rrf_score": score}
-                current["retrieval_queries"] = [query]
-                current["retrieval_hits"] = 1
-                merged[key] = current
-                continue
+def _model_document(document: dict[str, Any]) -> dict[str, Any]:
+    """Reduz o payload sem duplicar o texto integral e os trechos de páginas."""
 
-            current["retrieval_hits"] = int(current.get("retrieval_hits", 1)) + 1
-            current["rrf_score"] = max(
-                float(current.get("rrf_score") or 0.0), score
-            )
-            current["retrieval_queries"] = list(
-                dict.fromkeys([*current.get("retrieval_queries", []), query])
-            )
-            current_pages = {
-                int(page) for page in current.get("pages", []) or []
-            }
-            current_pages.update(
-                int(page) for page in document.get("pages", []) or []
-            )
-            current["pages"] = sorted(current_pages)
-            current_matches = {
-                int(item.get("page_number")): item
-                for item in current.get("matched_pages", []) or []
-                if isinstance(item, dict) and item.get("page_number")
-            }
-            for item in document.get("matched_pages", []) or []:
-                if not isinstance(item, dict) or not item.get("page_number"):
-                    continue
-                page = int(item["page_number"])
-                if page not in current_matches or item.get("direct_match"):
-                    current_matches[page] = item
-            current["matched_pages"] = list(current_matches.values())
-            current_context = {
-                int(item.get("page_number")): item
-                for item in current.get("page_context", []) or []
-                if isinstance(item, dict) and item.get("page_number")
-            }
-            for item in document.get("page_context", []) or []:
-                if not isinstance(item, dict) or not item.get("page_number"):
-                    continue
-                page = int(item["page_number"])
-                previous = current_context.get(page)
-                if previous is None or len(item.get("page_text", "")) > len(
-                    previous.get("page_text", "")
-                ):
-                    current_context[page] = item
-            current["page_context"] = list(current_context.values())
-
-    return sorted(
-        merged.values(),
-        key=lambda document: (
-            -float(document.get("rrf_score") or 0.0),
-            -int(document.get("retrieval_hits", 1)),
-            -float(document.get("quality_score") or 0.0),
-        ),
-    )
+    model_document = {
+        key: document.get(key)
+        for key in (
+            "document_id",
+            "rag_document_id",
+            "title",
+            "standard_id",
+            "version",
+            "issuer",
+            "status",
+            "source_extractor",
+            "quality_score",
+            "pages",
+            "matched_pages",
+            "context_warning",
+        )
+    }
+    evidence_fields = {
+        "evidence_id",
+        "page_number",
+        "section",
+        "text",
+        "matched_text",
+        "direct_match",
+        "source",
+    }
+    model_document["evidence"] = [
+        {
+            key: evidence[key]
+            for key in evidence_fields
+            if key in evidence
+        }
+        for evidence in document.get("evidence", [])
+    ]
+    return model_document
 @tool(args_schema=RagDocumentSearchInput)
 def rag_document_search(
     question: str,

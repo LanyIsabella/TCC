@@ -352,8 +352,9 @@ def test_rag_tool_validates_and_compacts_evidence(
     assert result["status"] == "success"
     document = result["documents"][0]
     assert document["title"] == "ABNT NBR 6028"
-    assert document["full_text"] is None
-    assert document["page_context"][0]["page_text"] == "evidence"
+    assert document["evidence"][0]["text"] == "evidence"
+    assert "full_text" not in document
+    assert "page_context" not in document
     assert "embedding" not in document
 
 

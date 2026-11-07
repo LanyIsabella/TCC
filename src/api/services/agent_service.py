@@ -73,11 +73,18 @@ class AgentService:
             for message in messages
             if not self._is_internal_tool_event(message)
         ]
-        answer = self._extract_answer(normalized_messages)
-        answer = self._ensure_normative_grounding(request.message, answer, evidence)
+        structured_answer = self._extract_structured_answer(result)
+        answer = structured_answer or self._extract_answer(normalized_messages)
         public_messages = [
             message for message in normalized_messages if message.role != "tool"
         ]
+        if structured_answer and not any(
+            message.role == "assistant" and message.content == structured_answer
+            for message in public_messages
+        ):
+            public_messages.append(
+                ConversationMessage(role="assistant", content=structured_answer)
+            )
 
         return AgentChatResponse(answer=answer, messages=public_messages)
 
@@ -229,6 +236,22 @@ class AgentService:
                 return message.content
 
         raise AgentResponseError("O agente nao retornou uma resposta do assistente.")
+
+    def _extract_structured_answer(self, result: Any) -> str | None:
+        """Extrai o texto quando o agente usou a saída estruturada."""
+
+        if not isinstance(result, dict):
+            return None
+        structured = result.get("structured_response")
+        if structured is None:
+            return None
+        if isinstance(structured, dict):
+            answer = structured.get("answer")
+        else:
+            answer = getattr(structured, "answer", None)
+        if not isinstance(answer, str) or not answer.strip():
+            return None
+        return answer.strip()
 
     def _normalize_content(self, content: Any) -> str:
         """Normaliza conteudos de diferentes formatos para texto simples."""
