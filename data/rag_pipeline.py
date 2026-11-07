@@ -162,6 +162,7 @@ def reconstruct_page_content(pages: list[dict[str, Any]]) -> str:
 def connect():
     import psycopg
 
+    load_dotenv(ROOT / ".env")
     return psycopg.connect(
         host=os.getenv("DB_HOST"),
         port=os.getenv("DB_PORT"),

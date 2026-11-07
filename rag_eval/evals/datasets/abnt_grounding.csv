@@ -1,0 +1,8 @@
+question,expected_standard,expected_behavior
+Como fazer uma citação direta curta segundo a ABNT?,ABNT NBR 10520,answer_with_grounded_citation
+Como fazer uma citação direta longa segundo a ABNT?,ABNT NBR 10520,answer_with_grounded_citation
+Como montar a referência de um livro?,ABNT NBR 6023,answer_with_grounded_citation
+Como apresentar um trabalho acadêmico?,ABNT NBR 14724,answer_with_grounded_citation
+Como elaborar um resumo acadêmico?,ABNT NBR 6028,answer_with_grounded_citation
+Como estruturar um projeto de pesquisa?,ABNT NBR 15287,answer_with_grounded_citation
+Qual é a regra da ABNT NBR 99999 para citações?,,abstain_without_evidence

@@ -49,7 +49,7 @@ def test_chat_agent_returns_response(client: TestClient) -> None:
     response = client.post(
         "/api/v1/agent/chat",
         json={
-            "message": "Como faco uma citacao direta curta?",
+            "message": "Olá",
             "history": [
                 {
                     "role": "assistant",
@@ -69,7 +69,7 @@ def test_chat_agent_returns_response(client: TestClient) -> None:
             },
             {
                 "role": "user",
-                "content": "Como faco uma citacao direta curta?",
+                "content": "Olá",
             },
             {
                 "role": "assistant",

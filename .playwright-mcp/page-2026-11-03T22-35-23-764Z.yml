@@ -1,0 +1,58 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading [level=2] [ref=e16]:
+      - generic [ref=e17]:
+        - img "menu_book icon" [ref=e18]: menu_book
+        - text: Normas Acadêmicas
+    - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+    - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: add
+        - paragraph [ref=e33]: Nova conversa
+    - generic [ref=e35]:
+      - paragraph [ref=e40]:
+        - strong [ref=e41]: Conversa atual
+      - paragraph [ref=e46]: Nenhuma pergunta feita ainda.
+    - group [ref=e49]:
+      - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: lightbulb
+          - paragraph [ref=e56]: Como posso ajudar?
+    - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e95]:
+          - heading "Comece por uma pergunta" [level=3] [ref=e100]:
+            - text: Comece por uma pergunta
+            - generic [ref=e101]:
+              - link "Link to heading":
+                - /url: "#comece-por-uma-pergunta"
+          - paragraph [ref=e106]: Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem.
+          - radiogroup "Sugestões para começar" [ref=e109]:
+            - radio "format_quote Como fazer uma citação direta curta?" [ref=e110] [cursor=pointer]:
+              - generic [ref=e112]:
+                - generic [ref=e113]: format_quote
+                - paragraph [ref=e117]: Como fazer uma citação direta curta?
+            - radio "menu_book Como montar as referências?" [ref=e118] [cursor=pointer]:
+              - generic [ref=e120]:
+                - generic [ref=e121]: menu_book
+                - paragraph [ref=e125]: Como montar as referências?
+            - radio "article Como formatar o TCC?" [ref=e126] [cursor=pointer]:
+              - generic [ref=e128]:
+                - generic [ref=e129]: article
+                - paragraph [ref=e133]: Como formatar o TCC?
+      - generic [ref=e141]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [ref=e143]
+        - button "Send message" [disabled] [ref=e145]

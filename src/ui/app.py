@@ -11,6 +11,32 @@ import streamlit as st
 
 ChatMessage = dict[str, str]
 
+SUGGESTIONS = {
+    ":material/format_quote: Como fazer uma citação direta curta?": (
+        "Como fazer uma citação direta curta segundo a ABNT?"
+    ),
+    ":material/menu_book: Como montar as referências?": (
+        "Como montar as referências bibliográficas de um livro?"
+    ),
+    ":material/article: Como formatar o TCC?": (
+        "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
+    ),
+}
+
+
+def _init_session_state() -> None:
+    """Inicializa o estado da sessão em um único lugar."""
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+
+def _clear_conversation() -> None:
+    """Limpa a conversa atual e os controles da tela inicial."""
+
+    st.session_state.messages = []
+    st.session_state.pop("suggestion", None)
+
 
 def _load_agent() -> Any:
     """Carrega o agente mesmo quando o Streamlit executa este arquivo direto."""
@@ -96,21 +122,57 @@ def invoke_agent(
 
 
 def app() -> None:
-    
     """Renderiza a tela e conecta o chat ao agente."""
-    
+
+    st.set_page_config(
+        page_title="Normas Acadêmicas",
+        page_icon=":material/menu_book:",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+
+    _init_session_state()
     chat_bar()
 
-    st.header("Chatbot para consultas ABNT", divider="gray")
-
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+    st.title("Normas Acadêmicas", icon=":material/menu_book:")
+    st.caption(
+        "Seu espaço para consultar documentos normativos acadêmicos, estruturar "
+        "trabalhos e escrever com mais segurança."
+    )
 
     for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
+        role = message["role"]
+        avatar = (
+            ":material/person:" if role == "user" else ":material/auto_awesome:"
+        )
+        with st.chat_message(role, avatar=avatar):
             st.markdown(message["content"])
 
-    prompt = st.chat_input("Digite sua mensagem")
+    prompt = None
+    if not st.session_state.messages:
+        with st.container(border=True):
+            st.subheader("Comece por uma pergunta")
+            st.caption(
+                "Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem."
+            )
+            selected = st.pills(
+                "Sugestões para começar",
+                list(SUGGESTIONS),
+                key="suggestion",
+                label_visibility="collapsed",
+                wrap=True,
+            )
+            if selected:
+                prompt = SUGGESTIONS[selected]
+
+    chat_prompt = st.chat_input(
+        "Pergunte sobre citações, referências ou formatação ABNT...",
+        key="chat_input",
+        submit_mode="disable",
+    )
+    if chat_prompt:
+        prompt = chat_prompt
+
     if not prompt:
         return
 
@@ -120,31 +182,79 @@ def app() -> None:
 
     history = list(st.session_state.messages)
 
-    # Salva e exibe o usuario antes da chamada bloqueante ao agente.
     user_message = {"role": "user", "content": prompt}
     st.session_state.messages.append(user_message)
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar=":material/person:"):
         st.markdown(prompt)
 
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=":material/auto_awesome:"):
         try:
-            with st.spinner("Pensando..."):
+            with st.status(
+                ":shimmer[Consultando a base de conhecimento...]",
+                state="running",
+                expanded=False,
+                type="compact",
+            ) as status:
                 answer = invoke_agent(prompt, history)
         except Exception as exc:
+            status.update(
+                label="Não foi possível concluir a consulta", state="error"
+            )
             st.error(f"Não foi possível consultar o agente: {exc}")
             return
 
+        status.update(label="Consulta concluída", state="complete")
         st.markdown(answer)
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
-    
 
 
+def chat_bar() -> None:
+    """Renderiza a navegação e os controles persistentes do chat."""
 
-def chat_bar():
     with st.sidebar:
-        st.header("Olá, Lany!", text_alignment="left", )
-        st.subheader("Acesse suas conversas abaixo", text_alignment="center")
-        container = st.container(border=True, vertical_alignment='top')
+        st.markdown("## :material/menu_book: Normas Acadêmicas")
+        st.caption(
+            "Documentos normativos acadêmicos de forma simples, clara e confiável."
+        )
+
+        st.button(
+            "Nova conversa",
+            icon=":material/add:",
+            type="primary",
+            width="stretch",
+            on_click=_clear_conversation,
+        )
+
+        messages = st.session_state.get("messages", [])
+        with st.container(border=True):
+            st.markdown("**Conversa atual**")
+            if messages:
+                user_count = sum(message["role"] == "user" for message in messages)
+                question_label = "pergunta" if user_count == 1 else "perguntas"
+                st.caption(f"{user_count} {question_label} nesta conversa")
+                last_message = next(
+                    (
+                        message["content"]
+                        for message in reversed(messages)
+                        if message["role"] == "user"
+                    ),
+                    "",
+                )
+                if last_message:
+                    st.caption(f"Última pergunta: {last_message[:100]}")
+            else:
+                st.caption("Nenhuma pergunta feita ainda.")
+
+        with st.expander("Como posso ajudar?", icon=":material/lightbulb:"):
+            st.markdown(
+                "- Citações diretas e indiretas\n"
+                "- Referências bibliográficas\n"
+                "- Estrutura e formatação de trabalhos\n"
+                "- Dúvidas sobre normas ABNT"
+            )
+
+        st.caption("Baseado no conteúdo acadêmico disponível para o projeto.")
+
 
 app()

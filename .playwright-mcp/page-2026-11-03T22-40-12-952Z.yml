@@ -1,0 +1,100 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e11]:
+    - heading [level=2] [ref=f1e16]:
+      - generic [ref=f1e17]:
+        - img "menu_book icon" [ref=f1e18]: menu_book
+        - text: Normas Acadêmicas
+    - paragraph [ref=f1e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+    - button "add Nova conversa" [ref=f1e26] [cursor=pointer]:
+      - generic [ref=f1e28]:
+        - generic [ref=f1e29]: add
+        - paragraph [ref=f1e33]: Nova conversa
+    - generic [ref=f1e35]:
+      - paragraph [ref=f1e40]:
+        - strong [ref=f1e41]: Conversa atual
+      - paragraph [ref=f1e46]: Nenhuma pergunta feita ainda.
+    - group [ref=f1e49]:
+      - generic "lightbulb Como posso ajudar?" [ref=f1e50] [cursor=pointer]:
+        - generic [ref=f1e51]:
+          - generic [ref=f1e52]: lightbulb
+          - paragraph [ref=f1e56]: Como posso ajudar?
+    - paragraph [ref=f1e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=f1e3]:
+    - banner [ref=f1e64]:
+      - generic [ref=f1e67]:
+        - button "Deploy" [ref=f1e69] [cursor=pointer]
+        - button "Main menu" [ref=f1e73] [cursor=pointer]
+    - generic [ref=f1e77]:
+      - generic [ref=f1e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=f1e84]:
+          - generic [ref=f1e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=f1e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=f1e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=f1e95]:
+          - heading "Comece por uma pergunta" [level=3] [ref=f1e100]:
+            - text: Comece por uma pergunta
+            - generic [ref=f1e101]:
+              - link "Link to heading":
+                - /url: "#comece-por-uma-pergunta"
+          - paragraph [ref=f1e106]: Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem.
+          - radiogroup "Sugestões para começar" [ref=f1e109]:
+            - radio "format_quote Como fazer uma citação direta curta?" [ref=f1e110] [cursor=pointer]:
+              - generic [ref=f1e112]:
+                - generic [ref=f1e113]: format_quote
+                - paragraph [ref=f1e117]: Como fazer uma citação direta curta?
+            - radio "menu_book Como montar as referências?" [ref=f1e118] [cursor=pointer]:
+              - generic [ref=f1e120]:
+                - generic [ref=f1e121]: menu_book
+                - paragraph [ref=f1e125]: Como montar as referências?
+            - radio "article Como formatar o TCC?" [ref=f1e126] [cursor=pointer]:
+              - generic [ref=f1e128]:
+                - generic [ref=f1e129]: article
+                - paragraph [ref=f1e133]: Como formatar o TCC?
+        - generic [ref=f1e158]:
+          - generic [ref=f1e159]: person
+          - generic "Chat message from user" [ref=f1e162]:
+            - paragraph [ref=f1e168]: Quais são as principais regras de formatação de um TCC segundo a ABNT?
+        - generic [ref=f1e170]:
+          - generic [ref=f1e171]: auto_awesome
+          - generic "Chat message from assistant" [ref=f1e174]:
+            - generic [ref=f1e175]:
+              - group [ref=f1e178]:
+                - generic "check Consulta concluída chevron_right" [ref=f1e186] [cursor=pointer]:
+                  - generic [ref=f1e180]:
+                    - generic [ref=f1e187]: check
+                    - paragraph [ref=f1e183]: Consulta concluída
+                    - generic [ref=f1e184]: chevron_right
+              - generic [ref=f1e192]:
+                - paragraph [ref=f1e193]: "Os trechos normativos recuperados indicam os seguintes pontos relevantes para a formatação do trabalho:"
+                - blockquote [ref=f1e194]:
+                  - paragraph [ref=f1e195]: "Os elementos pré-textuais devem iniciar no anverso da folha, com exceção dos dados internacionais de catalogação na publicação, que devem constar no verso da folha de rosto. Fonte: ABNT NBR 14724:2024, p. 14"
+                - blockquote [ref=f1e196]:
+                  - paragraph [ref=f1e197]: "Recomenda-se que os elementos textuais e pós-textuais sejam apresentados no anverso e verso das folhas. Fonte: ABNT NBR 14724:2024, p. 14"
+                - blockquote [ref=f1e198]:
+                  - paragraph [ref=f1e199]: "Recomenda-se, quando o trabalho for digitado, a fonte tamanho 12 para todo o texto, inclusive a capa, excetuando-se citações diretas com mais de três linhas, notas de rodapé, paginação, dados internacionais de catalogação na publicação, fontes e legendas das ilustrações e das tabelas, que devem ser em tamanho menor e uniforme. Fonte: ABNT NBR 14724:2024, p. 14"
+                - blockquote [ref=f1e200]:
+                  - paragraph [ref=f1e201]: "Todo o texto deve ser digitado ou datilografado com espaçoamento 1,5 entre as linhas, excetuando-se as citações diretas com mais de três linhas, notas de rodapé, referências, títulos das ilustrações e das tabelas, fontes e legendas das ilustrações e das tabelas, natureza (tipo do trabalho, objetivo, nome da instituição a que é submetido e área de concentração), que devem ser digitados ou datilografados em espaço simples. Fonte: ABNT NBR 14724:2024, p. 14"
+                - heading "Base normativa" [level=3] [ref=f1e203]:
+                  - text: Base normativa
+                  - generic [ref=f1e204]:
+                    - link "Link to heading":
+                      - /url: "#base-normativa"
+                - list [ref=f1e205]:
+                  - listitem [ref=f1e206]: ABNT NBR 14724:2024, p. 1, 2, 6, 7, 8, 14.
+                - heading "Trechos que sustentam a resposta" [level=3] [ref=f1e208]:
+                  - text: Trechos que sustentam a resposta
+                  - generic [ref=f1e209]:
+                    - link "Link to heading":
+                      - /url: "#trechos-que-sustentam-a-resposta"
+                - blockquote [ref=f1e210]:
+                  - paragraph [ref=f1e211]: Os elementos pré-textuais devem iniciar no anverso da folha, com exceção dos dados internacionais de catalogação na publicação, que devem constar no verso da folha de rosto. — ABNT NBR 14724:2024, p. 14
+                - blockquote [ref=f1e212]:
+                  - paragraph [ref=f1e213]: Recomenda-se que os elementos textuais e pós-textuais sejam apresentados no anverso e verso das folhas. — ABNT NBR 14724:2024, p. 14
+                - blockquote [ref=f1e214]:
+                  - paragraph [ref=f1e215]: Recomenda-se, quando o trabalho for digitado, a fonte tamanho 12 para todo o texto, inclusive a capa, excetuando-se citações diretas com mais de três linhas, notas de rodapé, paginação, dados internacionais de catalogação na publicação, fontes e legendas das ilustrações e das tabelas, que devem ser em tamanho menor e uniforme. — ABNT NBR 14724:2024, p. 14
+      - generic [ref=f1e141]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [active] [ref=f1e143]
+        - button "Send message" [disabled] [ref=f1e145]
