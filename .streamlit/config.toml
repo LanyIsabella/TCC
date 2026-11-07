@@ -2,6 +2,12 @@
 base = "light"
 font = "sans serif"
 codeFont = "monospace"
+primaryColor = "#1F6F8B"
+backgroundColor = "#F7F9FC"
+secondaryBackgroundColor = "#EDF3F7"
+textColor = "#19324D"
+borderColor = "#D4E0E8"
+linkColor = "#1F6F8B"
 showWidgetBorder = true
 baseRadius = "0.75rem"
 buttonRadius = "0.75rem"

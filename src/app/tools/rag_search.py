@@ -10,6 +10,8 @@ from data.rag_pipeline import search_documents
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
+from src.app.query_planner import is_broad_question, plan_queries
+
 logger = logging.getLogger(__name__)
 MAX_FULL_TEXT_CHARS = 6_000
 MAX_PAGE_TEXT_CHARS = 1_800
@@ -147,6 +149,9 @@ def _compact_document(document: Any) -> dict[str, Any] | None:
         "status": metadata.get("status"),
         "source_extractor": document.get("source_extractor"),
         "quality_score": document.get("quality_score"),
+        "rrf_score": document.get("rrf_score"),
+        "retrieval_hits": document.get("retrieval_hits", 1),
+        "retrieval_queries": document.get("retrieval_queries", []),
         "pages": pages,
         "matched_pages": matched_pages,
         "full_text": full_text,
@@ -159,6 +164,8 @@ def _compact_document(document: Any) -> dict[str, Any] | None:
 def _validated_result(
     documents: Any,
     question: str,
+    *,
+    retrieval_queries: list[str] | None = None,
 ) -> dict[str, Any]:
     """Monta um contrato estável para o modelo consumir."""
     if not isinstance(documents, list):
@@ -176,6 +183,7 @@ def _validated_result(
             "query": question,
             "documents_found": 0,
             "documents": [],
+            "retrieval_queries": retrieval_queries or [question],
             "message": "Nenhuma evidência textual correspondente foi localizada.",
         }
     return {
@@ -184,7 +192,84 @@ def _validated_result(
         "query": question,
         "documents_found": len(compact_documents),
         "documents": compact_documents,
+        "retrieval_queries": retrieval_queries or [question],
     }
+
+
+def _merge_documents(
+    result_groups: list[tuple[str, list[dict[str, Any]]]],
+) -> list[dict[str, Any]]:
+    """Consolida consultas adaptativas sem alterar o RRF interno."""
+    merged: dict[Any, dict[str, Any]] = {}
+    for query_position, (query, documents) in enumerate(result_groups):
+        for document in documents:
+            if not isinstance(document, dict):
+                continue
+            key = document.get("document_id") or (
+                document.get("title"),
+                document.get("version"),
+            )
+            score = float(document.get("rrf_score") or 0.0)
+            if query_position > 0:
+                score += 0.0005
+            current = merged.get(key)
+            if current is None:
+                current = {**document, "rrf_score": score}
+                current["retrieval_queries"] = [query]
+                current["retrieval_hits"] = 1
+                merged[key] = current
+                continue
+
+            current["retrieval_hits"] = int(current.get("retrieval_hits", 1)) + 1
+            current["rrf_score"] = max(
+                float(current.get("rrf_score") or 0.0), score
+            )
+            current["retrieval_queries"] = list(
+                dict.fromkeys([*current.get("retrieval_queries", []), query])
+            )
+            current_pages = {
+                int(page) for page in current.get("pages", []) or []
+            }
+            current_pages.update(
+                int(page) for page in document.get("pages", []) or []
+            )
+            current["pages"] = sorted(current_pages)
+            current_matches = {
+                int(item.get("page_number")): item
+                for item in current.get("matched_pages", []) or []
+                if isinstance(item, dict) and item.get("page_number")
+            }
+            for item in document.get("matched_pages", []) or []:
+                if not isinstance(item, dict) or not item.get("page_number"):
+                    continue
+                page = int(item["page_number"])
+                if page not in current_matches or item.get("direct_match"):
+                    current_matches[page] = item
+            current["matched_pages"] = list(current_matches.values())
+            current_context = {
+                int(item.get("page_number")): item
+                for item in current.get("page_context", []) or []
+                if isinstance(item, dict) and item.get("page_number")
+            }
+            for item in document.get("page_context", []) or []:
+                if not isinstance(item, dict) or not item.get("page_number"):
+                    continue
+                page = int(item["page_number"])
+                previous = current_context.get(page)
+                if previous is None or len(item.get("page_text", "")) > len(
+                    previous.get("page_text", "")
+                ):
+                    current_context[page] = item
+            current["page_context"] = list(current_context.values())
+
+    return sorted(
+        merged.values(),
+        key=lambda document: (
+            -float(document.get("rrf_score") or 0.0),
+            -int(document.get("retrieval_hits", 1)),
+            -float(document.get("quality_score") or 0.0),
+        ),
+    )
 @tool(args_schema=RagDocumentSearchInput)
 def rag_document_search(
     question: str,
@@ -201,13 +286,42 @@ def rag_document_search(
     pela recuperação e as páginas vizinhas. O documento mais relevante é
     retornado integralmente somente quando couber no orçamento de contexto.
     """
+    broad = is_broad_question(question)
+    queries = plan_queries(question)
+    search_documents_limit = max(documents_limit, 3) if broad else documents_limit
+    search_pages_limit = max(pages_limit, 10) if broad else pages_limit
+    search_neighbor_radius = 1 if broad else 0
+
     try:
-        documents = search_documents(
-            question=question,
-            pages_limit=pages_limit,
-            documents_limit=documents_limit,
-            full_documents_limit=0,
-            neighbor_radius=0,
+        result_groups: list[tuple[str, list[dict[str, Any]]]] = []
+        query_errors: list[Exception] = []
+        for query in queries:
+            try:
+                result_groups.append(
+                    (
+                        query,
+                        search_documents(
+                            question=query,
+                            pages_limit=search_pages_limit,
+                            documents_limit=search_documents_limit,
+                            full_documents_limit=0,
+                            neighbor_radius=search_neighbor_radius,
+                        ),
+                    )
+                )
+            except Exception as error:
+                query_errors.append(error)
+                logger.warning(
+                    "Consulta adaptativa indisponível: %s", error
+                )
+        if not result_groups:
+            if query_errors:
+                raise query_errors[-1]
+            raise RuntimeError("Nenhuma consulta adaptativa foi executada.")
+        documents = (
+            _merge_documents(result_groups)[:search_documents_limit]
+            if broad
+            else result_groups[0][1]
         )
     except Exception:
         logger.exception("Erro durante a busca RAG.")
@@ -222,7 +336,12 @@ def rag_document_search(
         )
 
     try:
-        result = _validated_result(documents, question)
+        result = _validated_result(
+            documents,
+            question,
+            retrieval_queries=queries,
+        )
+        result["adaptive_retrieval"] = broad
     except (TypeError, ValueError) as error:
         logger.exception("Resultado RAG inválido: %s", error)
         result = {

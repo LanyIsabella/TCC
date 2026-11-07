@@ -14,6 +14,7 @@ from src.api.schemas.agent import (
     AgentChatResponse,
     ConversationMessage,
 )
+from src.app.citation_validator import grounded_answer
 
 ROLE_MAP = {"ai": "assistant", "human": "user"}
 VALID_ROLES = {"assistant", "system", "tool", "user"}
@@ -105,6 +106,7 @@ class AgentService:
         """Garante que respostas normativas apresentem a fonte recuperada."""
         if not self._requires_normative_source(question):
             return answer
+        return grounded_answer(answer, evidence, question)
         if not evidence:
             return (
                 "Não localizei evidência suficiente nos documentos normativos "
