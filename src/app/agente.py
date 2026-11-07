@@ -6,10 +6,17 @@ from typing import Any
 
 from langchain.agents import create_agent
 
+from .citation_validator import grounded_answer, supporting_excerpts
 from .client import Client
 from .evidence import AgentAnswer, looks_like_guarded_answer
 from .prompt import load_prompt_sys
-from .scope_guard import ScopeDecision, classify_messages, guarded_response
+from .query_planner import is_broad_question
+from .scope_guard import (
+    ScopeDecision,
+    classify_messages,
+    guarded_response,
+    normalize_text,
+)
 from .tools.rag_search import rag_document_search
 
 logger = logging.getLogger(__name__)

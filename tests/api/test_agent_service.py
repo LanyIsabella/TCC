@@ -37,7 +37,14 @@ class ToolCallingExecutor:
                     "content": "",
                     "tool_calls": [{"name": "rag_document_search"}],
                 },
-                {"role": "tool", "content": '{"status":"success"}'},
+                {
+                    "role": "tool",
+                    "content": (
+                        '{"status":"success","evidence_found":true,'
+                        '"documents":[{"standard_label":"ABNT NBR 10520",'
+                        '"version":"2023","matched_pages":[{"page_number":12}]}]}'
+                    ),
+                },
                 {"role": "assistant", "content": "Resposta fundamentada"},
             ]
         }
@@ -61,7 +68,7 @@ class StructuredExecutor:
 def test_agent_service_normalizes_messages() -> None:
     service = AgentService(agent=SuccessfulExecutor())
 
-    response = service.chat(AgentChatRequest(message="Explique ABNT"))
+    response = service.chat(AgentChatRequest(message="Olá"))
 
     assert response.answer == "Resposta final"
     assert response.messages[0].role == "user"
@@ -88,7 +95,11 @@ def test_agent_service_hides_internal_tool_events() -> None:
 
     response = service.chat(AgentChatRequest(message="Explique ABNT"))
 
-    assert response.answer == "Resposta fundamentada"
+    assert response.answer == (
+        "Resposta fundamentada\n\n"
+        "### Base normativa\n\n"
+        "- ABNT NBR 10520:2023, p. 12."
+    )
     assert [message.role for message in response.messages] == ["user", "assistant"]
 
 
