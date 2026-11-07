@@ -1,0 +1,116 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading [level=2] [ref=e16]:
+      - generic [ref=e17]:
+        - img "menu_book icon" [ref=e18]: menu_book
+        - text: Normas Acadêmicas
+    - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+    - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: add
+        - paragraph [ref=e33]: Nova conversa
+    - generic [ref=e35]:
+      - paragraph [ref=e40]:
+        - strong [ref=e41]: Conversa atual
+      - paragraph [ref=e46]: 1 pergunta nesta conversa
+      - paragraph [ref=e1498]: "Última pergunta: Qual o tamanho da margem?"
+    - group [ref=e49]:
+      - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: lightbulb
+          - paragraph [ref=e56]: Como posso ajudar?
+    - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e802]:
+          - heading "Comece por uma pergunta" [level=3] [ref=e807]:
+            - text: Comece por uma pergunta
+            - generic [ref=e808]:
+              - link "Link to heading":
+                - /url: "#comece-por-uma-pergunta"
+          - paragraph [ref=e813]: Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem.
+          - radiogroup "Sugestões para começar" [ref=e816]:
+            - radio "format_quote Como fazer uma citação direta curta?" [ref=e817] [cursor=pointer]:
+              - generic [ref=e819]:
+                - generic [ref=e820]: format_quote
+                - paragraph [ref=e824]: Como fazer uma citação direta curta?
+            - radio "menu_book Como montar as referências?" [ref=e825] [cursor=pointer]:
+              - generic [ref=e827]:
+                - generic [ref=e828]: menu_book
+                - paragraph [ref=e832]: Como montar as referências?
+            - radio "article Como formatar o TCC?" [ref=e833] [cursor=pointer]:
+              - generic [ref=e835]:
+                - generic [ref=e836]: article
+                - paragraph [ref=e840]: Como formatar o TCC?
+        - generic [ref=e1508]:
+          - generic [ref=e1509]: person
+          - generic "Chat message from user" [ref=e1512]:
+            - paragraph [ref=e1518]: Qual o tamanho da margem?
+        - generic [ref=e1520]:
+          - generic [ref=e1521]: auto_awesome
+          - generic "Chat message from assistant" [ref=e1524]:
+            - generic [ref=e1525]:
+              - group [ref=e1528]:
+                - generic "check Consulta concluída chevron_right" [ref=e1536] [cursor=pointer]:
+                  - generic [ref=e1530]:
+                    - generic [ref=e1537]: check
+                    - paragraph [ref=e1533]: Consulta concluída
+                    - generic [ref=e1534]: chevron_right
+              - generic [ref=e1542]:
+                - paragraph [ref=e1543]: O tamanho das margens em trabalhos acadêmicos no Brasil é regido pelas normas da Associação Brasileira de Normas Técnicas (ABNT).
+                - paragraph [ref=e1544]:
+                  - text: Embora a norma principal citada (
+                  - code [ref=e1545]: ABNT NBR 14724
+                  - text: ") trate da apresentação geral do trabalho e não define explicitamente o tamanho exato das margens, as diretrizes gerais da ABNT e as práticas mais aceitas para trabalhos acadêmicos (como TCCs e monografias) estabelecem os seguintes parâmetros:"
+                - list [ref=e1546]:
+                  - listitem [ref=e1547]:
+                    - strong [ref=e1548]: "Margem Superior:"
+                    - text: 3 cm
+                  - listitem [ref=e1549]:
+                    - strong [ref=e1550]: "Margem Esquerda:"
+                    - text: 3 cm
+                  - listitem [ref=e1551]:
+                    - strong [ref=e1552]: "Margem Inferior:"
+                    - text: 2 cm
+                  - listitem [ref=e1553]:
+                    - strong [ref=e1554]: "Margem Direita:"
+                    - text: 2 cm
+                - paragraph [ref=e1555]:
+                  - text: É importante notar que estas são as
+                  - strong [ref=e1556]: recomendações mais comuns e amplamente aceitas
+                  - text: ", mas é sempre fundamental consultar o manual específico da sua instituição, pois algumas instituições podem ter exigências internas adicionais."
+              - paragraph [ref=e1561]:
+                - strong [ref=e1562]: "Documento de referência:"
+                - text: Informação e documentação — Trabalhos acadêmicos — Apresentação (2024)
+              - group [ref=e1565]:
+                - generic "check check_circle icon Trechos que sustentam a resposta keyboard_arrow_down" [active] [ref=e1576] [cursor=pointer]:
+                  - generic [ref=e1567]:
+                    - generic [ref=e1568]: check
+                    - paragraph [ref=e1572]:
+                      - img "check_circle icon" [ref=e1573]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e1577]: keyboard_arrow_down
+                - generic [ref=e1580]:
+                  - paragraph [ref=e1585]:
+                    - strong [ref=e1586]: Trecho 1
+                  - blockquote [ref=e1591]:
+                    - paragraph [ref=e1592]: NORMA BRASILEIRA
+                    - paragraph [ref=e1593]: ABNT NBR 14724
+                    - paragraph [ref=e1594]: Quarta edição 16.12.2024
+                    - paragraph [ref=e1595]: Versão corrigida 01.04.2025
+                    - paragraph [ref=e1596]: Informação e documentação — Trabalho
+      - generic [ref=e142]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [ref=e144]
+        - button "Send message" [disabled] [ref=e146]

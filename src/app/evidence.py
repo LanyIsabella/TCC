@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import unicodedata
 from collections.abc import Mapping
@@ -10,6 +11,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 
 class AgentAnswer(BaseModel):
@@ -51,6 +54,20 @@ EVIDENCE_STOPWORDS = {
     "esse",
     "esta",
     "este",
+    "academico",
+    "academica",
+    "acordo",
+    "apresentacao",
+    "deve",
+    "devem",
+    "documento",
+    "documentos",
+    "elemento",
+    "elementos",
+    "forma",
+    "informacao",
+    "item",
+    "itens",
     "mais",
     "na",
     "nas",
@@ -68,6 +85,12 @@ EVIDENCE_STOPWORDS = {
     "sao",
     "segundo",
     "sobre",
+    "norma",
+    "normas",
+    "pode",
+    "podem",
+    "trabalho",
+    "trabalhos",
     "um",
     "uma",
 }
@@ -208,12 +231,21 @@ def _normalized_terms(value: str) -> set[str]:
 
 
 def looks_like_guarded_answer(answer: str) -> bool:
-    normalized = " ".join(answer.casefold().split())
+    normalized = unicodedata.normalize("NFD", answer.casefold())
+    normalized = "".join(
+        character
+        for character in normalized
+        if unicodedata.category(character) != "Mn"
+    )
+    normalized = " ".join(normalized.split())
     return (
         ("por favor" in normalized and "pergunta" in normalized)
         or "meu foco" in normalized
         or "fora do escopo" in normalized
         or "nao consigo orientar" in normalized
+        or "estou pronto para ajudar" in normalized
+        or "sou seu assistente" in normalized
+        or "como posso te auxiliar" in normalized
     )
 
 
@@ -228,7 +260,7 @@ def _fallback_evidence_ids(
     if len(answer_terms) < 2:
         return []
 
-    ranked: list[tuple[int, int, str]] = []
+    ranked: list[tuple[float, int, str]] = []
     for position, (evidence_id, evidence) in enumerate(available.items()):
         evidence_text = " ".join(
             str(evidence.get(key) or "")
@@ -237,15 +269,38 @@ def _fallback_evidence_ids(
                 "standard_id",
                 "version",
                 "section",
+                "matched_text",
                 "text",
             )
         )
-        overlap = answer_terms & _normalized_terms(evidence_text)
-        if len(overlap) >= 2:
-            ranked.append((len(overlap), position, evidence_id))
+        evidence_terms = _normalized_terms(evidence_text)
+        overlap = answer_terms & evidence_terms
+        if len(overlap) < 2:
+            continue
+        precision = len(overlap) / max(len(evidence_terms), 1)
+        recall = len(overlap) / max(len(answer_terms), 1)
+        score = (precision * 0.65) + (recall * 0.35)
+        if score >= 0.08:
+            ranked.append((score, position, evidence_id))
 
     ranked.sort(key=lambda item: (-item[0], item[1]))
     return [evidence_id for _, _, evidence_id in ranked[:3]]
+
+
+def _supports_answer(answer: str, evidence: EvidenceRecord) -> bool:
+    """Aplica uma validação conservadora para IDs escolhidos pelo modelo."""
+
+    if str(evidence.get("matched_text") or "").strip():
+        return True
+    answer_terms = _normalized_terms(answer)
+    evidence_terms = _normalized_terms(
+        " ".join(
+            str(evidence.get(key) or "")
+            for key in ("title", "standard_id", "version", "section", "text")
+        )
+    )
+    overlap = answer_terms & evidence_terms
+    return len(overlap) >= 2
 
 
 def _extract_answer(result: Mapping[str, Any]) -> str:
@@ -287,14 +342,36 @@ def extract_agent_result(result: Any) -> AgentResult:
             selected_ids = []
     validated: list[EvidenceRecord] = []
     seen_ids: set[str] = set()
+    rejected_ids: list[str] = []
     for evidence_id in selected_ids:
         if not isinstance(evidence_id, str):
             continue
         evidence_id = evidence_id.strip()
-        if evidence_id in seen_ids or evidence_id not in available:
+        if evidence_id in seen_ids:
+            continue
+        if evidence_id not in available:
+            rejected_ids.append(evidence_id)
+            continue
+        if structured is not None and not _supports_answer(
+            answer, available[evidence_id]
+        ):
+            rejected_ids.append(evidence_id)
             continue
         seen_ids.add(evidence_id)
         validated.append(available[evidence_id])
+
+    if rejected_ids:
+        logger.warning(
+            "evidence_ids_rejected count=%d ids=%s",
+            len(rejected_ids),
+            rejected_ids[:5],
+        )
+    logger.info(
+        "evidence_selection available=%d selected=%d structured=%s",
+        len(available),
+        len(validated),
+        structured is not None,
+    )
 
     return AgentResult(answer=answer, evidences=validated)
 

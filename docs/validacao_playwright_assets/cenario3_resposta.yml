@@ -1,0 +1,355 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading [level=2] [ref=e16]:
+      - generic [ref=e17]:
+        - img "menu_book icon" [ref=e18]: menu_book
+        - text: Normas Acadêmicas
+    - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+    - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: add
+        - paragraph [ref=e33]: Nova conversa
+    - generic [ref=e35]:
+      - paragraph [ref=e40]:
+        - strong [ref=e41]: Conversa atual
+      - paragraph [ref=e46]: 3 perguntas nesta conversa
+      - paragraph [ref=e154]: "Última pergunta: Como faço isso no Word?"
+    - group [ref=e49]:
+      - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: lightbulb
+          - paragraph [ref=e56]: Como posso ajudar?
+    - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e358]:
+          - generic [ref=e359]: person
+          - generic "Chat message from user" [ref=e362]:
+            - paragraph [ref=e368]: Quais são as principais regras de formatação de um TCC?
+        - generic [ref=e164]:
+          - generic [ref=e165]: auto_awesome
+          - generic "Chat message from assistant" [ref=e371]:
+            - generic [ref=e169]:
+              - generic [ref=e173]:
+                - paragraph [ref=e174]: "Com base nas informações fornecidas no contexto, que parecem seguir as normas da ABNT (Associação Brasileira de Normas Técnicas), apresento um resumo sobre a estrutura e o formato de trabalhos acadêmicos:"
+                - heading "Estrutura Geral e Formato" [level=3] [ref=e373]:
+                  - text: Estrutura Geral e Formato
+                  - generic [ref=e374]:
+                    - link "Link to heading":
+                      - /url: "#estrutura-geral-e-formato"
+                - paragraph [ref=e375]:
+                  - text: O documento refere-se às diretrizes para a apresentação de projetos de pesquisa, seguindo padrões como a
+                  - strong [ref=e376]: ABNT NBR 15287:2025
+                  - text: .
+                - heading "Margens" [level=4] [ref=e378]:
+                  - text: Margens
+                  - generic [ref=e379]:
+                    - link "Link to heading":
+                      - /url: "#margens"
+                - paragraph [ref=e380]: "As margens devem seguir regras específicas dependendo se a folha é o anverso ou o verso:"
+                - list [ref=e381]:
+                  - listitem [ref=e382]:
+                    - strong [ref=e383]: "Anverso (Verso da folha):"
+                    - text: Margem esquerda e superior de 3 cm, e direita e inferior de 2 cm.
+                  - listitem [ref=e384]:
+                    - strong [ref=e385]: "Verso (Frente da folha):"
+                    - text: Margem direita e superior de 3 cm, e esquerda e inferior de 2 cm.
+                - heading "Fonte e Espaçamento" [level=4] [ref=e387]:
+                  - text: Fonte e Espaçamento
+                  - generic [ref=e388]:
+                    - link "Link to heading":
+                      - /url: "#fonte-e-espacamento"
+                - list [ref=e389]:
+                  - listitem [ref=e390]:
+                    - strong [ref=e391]: "Fonte:"
+                    - text: Recomenda-se que o texto seja digitado em
+                    - strong [ref=e392]: tamanho 12
+                    - text: para todo o trabalho, incluindo a capa (se houver).
+                  - listitem [ref=e393]:
+                    - strong [ref=e394]: "Espaçamento entre linhas:"
+                    - text: O corpo do texto deve ter espaçamento de
+                    - strong [ref=e395]: 1,5 entre as linhas
+                    - text: .
+                  - listitem [ref=e396]:
+                    - strong [ref=e397]: "Exceções ao Espaçamento:"
+                    - text: "O espaçamento simples é exigido para:"
+                    - list [ref=e398]:
+                      - listitem [ref=e399]: Citações com mais de três linhas.
+                      - listitem [ref=e400]: Notas de rodapé.
+                      - listitem [ref=e401]: Referências.
+                      - listitem [ref=e402]: Títulos das ilustrações e tabelas, fontes e legendas das ilustrações e tabelas.
+                - heading "Paginação e Estrutura de Seções" [level=4] [ref=e404]:
+                  - text: Paginação e Estrutura de Seções
+                  - generic [ref=e405]:
+                    - link "Link to heading":
+                      - /url: "#paginacao-e-estrutura-de-secoes"
+                - list [ref=e406]:
+                  - listitem [ref=e407]:
+                    - strong [ref=e408]: "Paginação:"
+                    - text: A paginação deve ser observada conforme as regras estabelecidas.
+                  - listitem [ref=e409]:
+                    - strong [ref=e410]: "Indicativos de Seção:"
+                    - text: O indicativo numérico (em algarismo arábico) de uma seção deve preceder seu título, alinhado à esquerda e separado por um espaço de caractere. As seções primárias devem começar em
+                    - strong [ref=e411]: página ímpar (anverso)
+                    - text: ", na parte superior da margem gráfica."
+                - heading "Elementos Pré-textuais" [level=4] [ref=e413]:
+                  - text: Elementos Pré-textuais
+                  - generic [ref=e414]:
+                    - link "Link to heading":
+                      - /url: "#elementos-pre-textuais"
+                - list [ref=e415]:
+                  - listitem [ref=e416]: Os elementos pré-textuais devem iniciar no anverso da folha.
+                  - listitem [ref=e417]: Na folha de rosto, o tipo de projeto de pesquisa e o nome da entidade a que o trabalho é submetido devem ser alinhados do meio da margem gráfica até a margem direita.
+                - heading "Citações e Referências" [level=4] [ref=e419]:
+                  - text: Citações e Referências
+                  - generic [ref=e420]:
+                    - link "Link to heading":
+                      - /url: "#citacoes-e-referencias"
+                - list [ref=e421]:
+                  - listitem [ref=e422]:
+                    - strong [ref=e423]: "Citações:"
+                    - text: Devem ser citadas no texto, inseridas o mais próximo possível do trecho a que se referem, e padronizadas conforme as normas vigentes (como ABNT NBR 10520 para tabelas).
+                  - listitem [ref=e424]:
+                    - strong [ref=e425]: "Referências:"
+                    - text: As referências devem ser separadas entre si por um espaço simples em branco ao final do trabalho.
+                - heading "Anexos e Apêndices" [level=4] [ref=e427]:
+                  - text: Anexos e Apêndices
+                  - generic [ref=e428]:
+                    - link "Link to heading":
+                      - /url: "#anexos-e-apendices"
+                - list [ref=e429]:
+                  - listitem [ref=e430]:
+                    - strong [ref=e431]: "Apêndices:"
+                    - text: Devem ser precedidos pela palavra
+                    - strong [ref=e432]: APÊNDICE
+                    - text: ", identificados por letras maiúsculas consecutivas, travessão e pelo respectivo título."
+                  - listitem [ref=e433]:
+                    - strong [ref=e434]: "Anexos:"
+                    - text: Devem ser precedidos pela palavra
+                    - strong [ref=e435]: ANEXO
+                    - text: ", identificados por letras maiúsculas consecutivas, travessão e pelo respectivo título."
+                - heading "Formato da Folha" [level=4] [ref=e437]:
+                  - text: Formato da Folha
+                  - generic [ref=e438]:
+                    - link "Link to heading":
+                      - /url: "#formato-da-folha"
+                - paragraph [ref=e439]:
+                  - text: Se impresso, o trabalho deve utilizar papel no formato
+                  - strong [ref=e440]: A4 (21 cm × 29,7 cm)
+                  - text: . O texto deve ser apresentado em cor preta.
+              - paragraph [ref=e445]:
+                - strong [ref=e446]: "Documentos de referência:"
+                - text: Artigo científico — Apresentação (2018), Informação e documentação — Projeto de pesquisa — Apresentação (2025)
+              - group [ref=e449]:
+                - generic "check check_circle icon Trechos que sustentam a resposta chevron_right" [ref=e450] [cursor=pointer]:
+                  - generic [ref=e451]:
+                    - generic [ref=e452]: check
+                    - paragraph [ref=e456]:
+                      - img "check_circle icon" [ref=e457]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e458]: chevron_right
+        - generic [ref=e176]:
+          - generic [ref=e177]: person
+          - generic "Chat message from user" [ref=e462]:
+            - paragraph [ref=e467]: Qual o tamanho do recuo necessário?
+        - generic [ref=e469]:
+          - generic [ref=e470]: auto_awesome
+          - generic "Chat message from assistant" [ref=e473]:
+            - generic [ref=e474]:
+              - generic [ref=e592]:
+                - paragraph [ref=e593]:
+                  - text: Com base nos trechos fornecidos, o documento trata das regras para a redação e apresentação de
+                  - strong [ref=e594]: Resumos, Resenhas e Recensões
+                  - text: ", conforme as diretrizes da ABNT."
+                - paragraph [ref=e595]: "Os pontos principais abordados são:"
+                - paragraph [ref=e596]:
+                  - strong [ref=e597]: "1. Definições (Seção 2):"
+                  - text: "O documento define os seguintes termos para os efeitos deste documento:"
+                - list [ref=e598]:
+                  - listitem [ref=e599]:
+                    - strong [ref=e600]: "Resumo:"
+                    - text: Apresentação concisa dos pontos relevantes de um documento.
+                  - listitem [ref=e601]:
+                    - strong [ref=e602]: "Resumo indicativo:"
+                    - text: Trabalho que indica os pontos principais sem apresentar detalhes, dispensando a consulta ao original.
+                  - listitem [ref=e603]:
+                    - strong [ref=e604]: "Resenha:"
+                    - text: Análise do conteúdo de um documento, objeto, fato ou evento.
+                  - listitem [ref=e605]:
+                    - strong [ref=e606]: "Recensão:"
+                    - text: Análise crítica, descritiva e/ou comparativa, geralmente elaborada por especialista.
+                - paragraph [ref=e607]:
+                  - strong [ref=e608]: "2. Regras Gerais para Apresentação (Seção 3):"
+                  - text: Os resumos, resenhas e recensões devem ser apresentados de forma concisa, seguindo o padrão gráfico do documento. Deve-se evitar o uso de símbolos, contrações ou fórmulas/equações que não sejam absolutamente necessários.
+                - paragraph [ref=e609]:
+                  - strong [ref=e610]: "3. Regras Específicas para Resumo (Seção 4.1):"
+                - list [ref=e611]:
+                  - listitem [ref=e612]: O resumo deve ressaltar sucintamente o conteúdo do texto e ser composto por frases concisas em parágrafo único.
+                  - listitem [ref=e613]:
+                    - text: Recomenda-se o
+                    - strong [ref=e614]: resumo informativo
+                    - text: em documentos técnicos ou científicos.
+                  - listitem [ref=e615]:
+                    - text: Deve-se usar a
+                    - strong [ref=e616]: terceira pessoa
+                    - text: .
+                  - listitem [ref=e617]: As palavras-chave devem ser listadas após o resumo, precedidas pela expressão "Palavras-chave:", separadas por ponto e vírgula.
+                  - listitem [ref=e618]:
+                    - strong [ref=e619]: "Extensão recomendada:"
+                    - list [ref=e620]:
+                      - listitem [ref=e621]: "Trabalhos acadêmicos e relatórios técnicos/científicos: 150 a 500 palavras."
+                      - listitem [ref=e622]: "Artigos de periódicos: 100 a 250 palavras."
+                      - listitem [ref=e623]: "Documentos não contemplados nas alíneas anteriores: 50 a 100 palavras."
+                - paragraph [ref=e624]:
+                  - strong [ref=e625]: "4. Resenha e Recensão (Seção 4.2):"
+                  - text: Esta seção deve fornecer ao leitor uma ideia do documento ou objeto, analisando e descrevendo-o.
+              - paragraph [ref=e492]:
+                - strong [ref=e493]: "Documento de referência:"
+                - text: Informação e documentação — Resumo, resenha e recensão — Apresentação (2021)
+              - group [ref=e628]:
+                - generic "check check_circle icon Trechos que sustentam a resposta chevron_right" [ref=e629] [cursor=pointer]:
+                  - generic [ref=e630]:
+                    - generic [ref=e631]: check
+                    - paragraph [ref=e635]:
+                      - img "check_circle icon" [ref=e636]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e637]: chevron_right
+        - generic [ref=e640]:
+          - generic [ref=e641]: person
+          - generic "Chat message from user" [ref=e644]:
+            - paragraph [ref=e650]: Como faço isso no Word?
+        - generic [ref=e652]:
+          - generic [ref=e653]: auto_awesome
+          - generic "Chat message from assistant" [ref=e656]:
+            - generic [ref=e657]:
+              - group [ref=e660]:
+                - generic "check Consulta concluída chevron_right" [ref=e671] [cursor=pointer]:
+                  - generic [ref=e662]:
+                    - generic [ref=e672]: check
+                    - paragraph [ref=e665]: Consulta concluída
+                    - generic [ref=e666]: chevron_right
+              - generic [ref=e677]:
+                - paragraph [ref=e678]: Você está se referindo a como aplicar as regras de formatação discutidas anteriormente (como margens, espaçamento e fonte) no Microsoft Word para montar seu TCC.
+                - paragraph [ref=e679]:
+                  - text: Para fazer isso no Word, você precisa utilizar as configurações de
+                  - strong [ref=e680]: Layout
+                  - text: e
+                  - strong [ref=e681]: Parágrafo
+                  - text: "do programa. Abaixo estão os passos gerais para configurar o formato mais comum exigido pelas normas acadêmicas (ABNT):"
+                - heading "1. Configuração das Margens" [level=3] [ref=e683]:
+                  - text: 1. Configuração das Margens
+                  - generic [ref=e684]:
+                    - link "Link to heading":
+                      - /url: "#1-configuracao-das-margens"
+                - paragraph [ref=e685]: "As margens são cruciais e devem ser configuradas no Layout da página:"
+                - list [ref=e686]:
+                  - listitem [ref=e687]:
+                    - text: Vá para a aba
+                    - strong [ref=e688]: Layout
+                    - text: (ou
+                    - strong [ref=e689]: Design
+                    - text: ", dependendo da sua versão do Word)."
+                  - listitem [ref=e690]:
+                    - text: Clique em
+                    - strong [ref=e691]: Margens
+                    - text: .
+                  - listitem [ref=e692]:
+                    - text: Selecione
+                    - strong [ref=e693]: Margens Personalizadas
+                    - text: (ou ajuste as margens diretamente nas opções, se o seu template já estiver configurado).
+                  - listitem [ref=e694]:
+                    - text: "Configure as margens de acordo com a norma ABNT:"
+                    - list [ref=e695]:
+                      - listitem [ref=e696]:
+                        - strong [ref=e697]: "Superior:"
+                        - text: 3 cm
+                      - listitem [ref=e698]:
+                        - strong [ref=e699]: "Esquerda:"
+                        - text: 3 cm
+                      - listitem [ref=e700]:
+                        - strong [ref=e701]: "Inferior:"
+                        - text: 2 cm
+                      - listitem [ref=e702]:
+                        - strong [ref=e703]: "Direita:"
+                        - text: 2 cm
+                - heading "2. Configuração da Fonte e Tamanho" [level=3] [ref=e705]:
+                  - text: 2. Configuração da Fonte e Tamanho
+                  - generic [ref=e706]:
+                    - link "Link to heading":
+                      - /url: "#2-configuracao-da-fonte-e-tamanho"
+                - paragraph [ref=e707]: "Isso deve ser aplicado ao corpo do texto:"
+                - list [ref=e708]:
+                  - listitem [ref=e709]: Selecione todo o texto que você deseja formatar (ou selecione a seção).
+                  - listitem [ref=e710]:
+                    - text: Na aba
+                    - strong [ref=e711]: Página Inicial
+                    - text: ", ajuste o tamanho da fonte para"
+                    - strong [ref=e712]: Tamanho 12
+                    - text: (o padrão recomendado).
+                - heading "3. Configuração do Espaçamento entre Linhas" [level=3] [ref=e714]:
+                  - text: 3. Configuração do Espaçamento entre Linhas
+                  - generic [ref=e715]:
+                    - link "Link to heading":
+                      - /url: "#3-configuracao-do-espacamento-entre-linhas"
+                - paragraph [ref=e716]: "O espaçamento é configurado no menu de Parágrafo:"
+                - list [ref=e717]:
+                  - listitem [ref=e718]: Selecione todo o texto.
+                  - listitem [ref=e719]:
+                    - text: Na aba
+                    - strong [ref=e720]: Página Inicial
+                    - text: ", procure a seção"
+                    - strong [ref=e721]: Parágrafo
+                    - text: .
+                  - listitem [ref=e722]:
+                    - text: Clique no ícone de
+                    - strong [ref=e723]: Espaçamento entre linhas e parágrafos
+                    - text: (geralmente representado por setas verticais com linhas).
+                  - listitem [ref=e724]:
+                    - text: Escolha o espaçamento
+                    - strong [ref=e725]: 1,5
+                    - text: .
+                - heading "4. Formatação Específica para Elementos" [level=3] [ref=e727]:
+                  - text: 4. Formatação Específica para Elementos
+                  - generic [ref=e728]:
+                    - link "Link to heading":
+                      - /url: "#4-formatacao-especifica-para-elementos"
+                - list [ref=e729]:
+                  - listitem [ref=e730]:
+                    - strong [ref=e731]: "Citações longas:"
+                    - text: Se você precisar de um espaçamento simples (1,0) para citações longas ou notas de rodapé, selecione apenas esse trecho e ajuste o espaçamento separadamente.
+                  - listitem [ref=e732]:
+                    - strong [ref=e733]: "Paginação:"
+                    - text: Insira a numeração das páginas no cabeçalho ou rodapé da página (
+                    - strong [ref=e734]: Inserir > Número de Página
+                    - text: ).
+                - paragraph [ref=e735]:
+                  - strong [ref=e736]: "Dica Importante:"
+                  - text: Recomenda-se sempre utilizar os
+                  - strong [ref=e737]: Estilos
+                  - text: do Word (como "Título 1", "Título 2", "Normal") para formatar seu TCC. Isso garante que a estrutura e a formatação das suas seções estejam consistentes e facilitam a criação automática da sua tabela de conteúdo.
+              - paragraph [ref=e742]:
+                - strong [ref=e743]: "Documento de referência:"
+                - text: Informação e documentação — Citações em documentos — Apresentação (2023)
+              - group [ref=e746]:
+                - generic "check check_circle icon Trechos que sustentam a resposta chevron_right" [ref=e747] [cursor=pointer]:
+                  - generic [ref=e748]:
+                    - generic [ref=e749]: check
+                    - paragraph [ref=e753]:
+                      - img "check_circle icon" [ref=e754]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e755]: chevron_right
+      - generic [ref=e142]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [active] [ref=e144]
+        - button "Send message" [disabled] [ref=e146]

@@ -52,6 +52,20 @@ class SynthesisModel:
         )()
 
 
+class RecordingAgent:
+    def __init__(self) -> None:
+        self.payload: dict[str, object] | None = None
+
+    def invoke(self, payload: dict[str, object]) -> dict[str, object]:
+        self.payload = payload
+        return {
+            "messages": [
+                *payload["messages"],
+                {"role": "assistant", "content": "Resposta contextual."},
+            ]
+        }
+
+
 def test_scoped_agent_recovers_from_generic_answer_after_successful_rag() -> None:
     agent = ScopedAgent(FailingAgent(), SynthesisModel(), "Você é um assistente.")
 
@@ -67,3 +81,77 @@ def test_scoped_agent_recovers_from_generic_answer_after_successful_rag() -> Non
     )
 
     assert result["messages"][-1]["content"].startswith("Use a ABNT NBR 6023")
+
+
+def test_scoped_agent_adds_contextual_retrieval_hint_without_rewriting_user_message(
+) -> None:
+    inner = RecordingAgent()
+    agent = ScopedAgent(inner)
+    messages = [
+        {"role": "user", "content": "Como formatar um TCC segundo a ABNT?"},
+        {"role": "assistant", "content": "A formatação inclui recuos."},
+        {"role": "user", "content": "Qual o tamanho do recuo necessário?"},
+    ]
+
+    result = agent.invoke({"messages": messages})
+
+    assert result["messages"][-1]["content"] == "Resposta contextual."
+    assert inner.payload is not None
+    payload_messages = inner.payload["messages"]
+    assert any(
+        message.get("role") == "system"
+        and "Como formatar um TCC" in message.get("content", "")
+        for message in payload_messages
+    )
+    assert payload_messages[-1]["content"] == "Qual o tamanho do recuo necessário?"
+
+
+def test_scoped_agent_recovers_rag_even_when_model_answer_is_not_generic(
+    monkeypatch,
+) -> None:
+    class AnsweringAgent:
+        def invoke(self, payload: dict[str, object]) -> dict[str, object]:
+            return {
+                "messages": [
+                    *payload["messages"],
+                    {"role": "assistant", "content": "O recuo é de 1,25 cm."},
+                ]
+            }
+
+    class RecoverySearch:
+        def invoke(self, _payload: dict[str, object]) -> str:
+            return json.dumps(
+                {
+                    "status": "success",
+                    "documents": [
+                        {
+                            "title": "ABNT NBR 14724",
+                            "evidence": [
+                                {
+                                    "evidence_id": "document:1:page:14",
+                                    "text": "O recuo deve ser verificado na norma.",
+                                }
+                            ],
+                        }
+                    ],
+                }
+            )
+
+    class GroundedModel:
+        def invoke(self, _messages: list[dict[str, str]]) -> object:
+            return type(
+                "Response",
+                (),
+                {"content": "A orientação deve ser confirmada na ABNT NBR 14724."},
+            )()
+
+    monkeypatch.setattr("src.app.agente.rag_document_search", RecoverySearch())
+    agent = ScopedAgent(AnsweringAgent(), GroundedModel(), "Você é um assistente.")
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como formatar um TCC?"}]}
+    )
+
+    assert result["messages"][-1]["content"].startswith(
+        "A orientação deve ser confirmada"
+    )

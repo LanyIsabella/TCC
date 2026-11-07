@@ -1,0 +1,178 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading [level=2] [ref=e16]:
+      - generic [ref=e17]:
+        - img "menu_book icon" [ref=e18]: menu_book
+        - text: Normas Acadêmicas
+    - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+    - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: add
+        - paragraph [ref=e33]: Nova conversa
+    - generic [ref=e35]:
+      - paragraph [ref=e40]:
+        - strong [ref=e41]: Conversa atual
+      - paragraph [ref=e46]: 1 pergunta nesta conversa
+      - paragraph [ref=e995]: "Última pergunta: Quais são as diferenças entre as regras de referências e citações?"
+    - group [ref=e49]:
+      - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: lightbulb
+          - paragraph [ref=e56]: Como posso ajudar?
+    - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e802]:
+          - heading "Comece por uma pergunta" [level=3] [ref=e807]:
+            - text: Comece por uma pergunta
+            - generic [ref=e808]:
+              - link "Link to heading":
+                - /url: "#comece-por-uma-pergunta"
+          - paragraph [ref=e813]: Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem.
+          - radiogroup "Sugestões para começar" [ref=e816]:
+            - radio "format_quote Como fazer uma citação direta curta?" [ref=e817] [cursor=pointer]:
+              - generic [ref=e819]:
+                - generic [ref=e820]: format_quote
+                - paragraph [ref=e824]: Como fazer uma citação direta curta?
+            - radio "menu_book Como montar as referências?" [ref=e825] [cursor=pointer]:
+              - generic [ref=e827]:
+                - generic [ref=e828]: menu_book
+                - paragraph [ref=e832]: Como montar as referências?
+            - radio "article Como formatar o TCC?" [ref=e833] [cursor=pointer]:
+              - generic [ref=e835]:
+                - generic [ref=e836]: article
+                - paragraph [ref=e840]: Como formatar o TCC?
+        - generic [ref=e1005]:
+          - generic [ref=e1006]: person
+          - generic "Chat message from user" [ref=e1009]:
+            - paragraph [ref=e1015]: Quais são as diferenças entre as regras de referências e citações?
+        - generic [ref=e1017]:
+          - generic [ref=e1018]: auto_awesome
+          - generic "Chat message from assistant" [ref=e1021]:
+            - generic [ref=e1022]:
+              - group [ref=e1025]:
+                - generic "check Consulta concluída chevron_right" [ref=e1033] [cursor=pointer]:
+                  - generic [ref=e1027]:
+                    - generic [ref=e1034]: check
+                    - paragraph [ref=e1030]: Consulta concluída
+                    - generic [ref=e1031]: chevron_right
+              - generic [ref=e1039]:
+                - paragraph [ref=e1040]:
+                  - text: O principal ponto de distinção entre
+                  - strong [ref=e1041]: citações
+                  - text: e
+                  - strong [ref=e1042]: referências
+                  - text: "no contexto das normas acadêmicas (como a ABNT) reside na função que cada um desempenha dentro do seu trabalho:"
+                - list [ref=e1043]:
+                  - listitem [ref=e1044]:
+                    - paragraph [ref=e1045]:
+                      - strong [ref=e1046]: "Citação:"
+                    - list [ref=e1047]:
+                      - listitem [ref=e1048]:
+                        - strong [ref=e1049]: "Função:"
+                        - text: É a menção a uma ideia, trecho, dado, conceito ou informação extraído de uma fonte externa. Serve para dar crédito à autoria da ideia utilizada no corpo do seu texto.
+                      - listitem [ref=e1050]:
+                        - strong [ref=e1051]: "Onde aparece:"
+                        - text: Geralmente aparece
+                        - strong [ref=e1052]: dentro do corpo do texto
+                        - text: ", entre aspas ou em parênteses, indicando a origem da informação."
+                      - listitem [ref=e1053]:
+                        - strong [ref=e1054]: "Exemplo:"
+                        - text: Citar diretamente um trecho de um autor ("citação direta") ou parafrasear uma ideia ("citação indireta").
+                  - listitem [ref=e1055]:
+                    - paragraph [ref=e1056]:
+                      - strong [ref=e1057]: "Referência:"
+                    - list [ref=e1058]:
+                      - listitem [ref=e1059]:
+                        - strong [ref=e1060]: "Função:"
+                        - text: É a lista completa e detalhada de todas as fontes (livros, artigos, sites, etc.) que foram citadas ou consultadas no trabalho. Serve para permitir ao leitor localizar e verificar as obras mencionadas na seção de citações.
+                      - listitem [ref=e1061]:
+                        - strong [ref=e1062]: "Onde aparece:"
+                        - text: Aparece em uma seção separada do trabalho, geralmente intitulada
+                        - strong [ref=e1063]: "\"Referências\""
+                        - text: ou
+                        - strong [ref=e1064]: "\"Bibliografia\""
+                        - text: ", localizada ao final do documento."
+                - heading "Resumo das Diferenças" [level=3] [ref=e1066]:
+                  - text: Resumo das Diferenças
+                  - generic [ref=e1067]:
+                    - link "Link to heading":
+                      - /url: "#resumo-das-diferencas"
+                - table [ref=e1068]:
+                  - rowgroup [ref=e1069]:
+                    - row [ref=e1070]:
+                      - columnheader "Característica" [ref=e1071]
+                      - columnheader "Citação" [ref=e1072]
+                      - columnheader "Referência" [ref=e1073]
+                  - rowgroup [ref=e1074]:
+                    - row [ref=e1075]:
+                      - cell [ref=e1076]:
+                        - strong [ref=e1077]: O que é?
+                      - cell "Menção a uma ideia, trecho ou dado de outra fonte." [ref=e1078]
+                      - cell "Lista completa e detalhada das fontes consultadas." [ref=e1079]
+                    - row [ref=e1080]:
+                      - cell [ref=e1081]:
+                        - strong [ref=e1082]: Localização
+                      - cell "Dentro do corpo do texto." [ref=e1083]
+                      - cell "Ao final do trabalho (lista separada)." [ref=e1084]
+                    - row [ref=e1085]:
+                      - cell [ref=e1086]:
+                        - strong [ref=e1087]: Objetivo
+                      - cell "Dar crédito à autoria da informação utilizada no argumento." [ref=e1088]
+                      - cell "Permitir a localização exata das fontes citadas." [ref=e1089]
+                - paragraph [ref=e1090]:
+                  - text: Em resumo, você
+                  - strong [ref=e1091]: cita
+                  - text: o que leu enquanto escreve (no meio do texto) e você lista as fontes que você leu ao final (na seção de referências).
+              - paragraph [ref=e1096]:
+                - strong [ref=e1097]: "Documento de referência:"
+                - text: Informação e documentação — Citações em documentos — Apresentação (2023)
+              - group [ref=e1100]:
+                - generic "check check_circle icon Trechos que sustentam a resposta keyboard_arrow_down" [active] [ref=e1111] [cursor=pointer]:
+                  - generic [ref=e1102]:
+                    - generic [ref=e1103]: check
+                    - paragraph [ref=e1107]:
+                      - img "check_circle icon" [ref=e1108]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e1112]: keyboard_arrow_down
+                - generic [ref=e1115]:
+                  - paragraph [ref=e1120]:
+                    - strong [ref=e1121]: Trecho 1
+                  - blockquote [ref=e1126]:
+                    - heading "NORMA BRASILEIRA" [level=2] [ref=e1128]:
+                      - text: NORMA BRASILEIRA
+                      - generic [ref=e1129]:
+                        - link "Link to heading":
+                          - /url: "#norma-brasileira"
+                    - heading "Informação e documentação - Citações em documentos - Apresentação" [level=2] [ref=e1131]:
+                      - text: Informação e documentação - Citações em documentos - Apresentação
+                      - generic [ref=e1132]:
+                        - link "Link to heading":
+                          - /url: "#informacao-e-documentacao-citacoes-em-documentos-apresentacao"
+                    - heading "1 Escopo" [level=2] [ref=e1134]:
+                      - text: 1 Escopo
+                      - generic [ref=e1135]:
+                        - link "Link to heading":
+                          - /url: "#1-escopo"
+                    - paragraph [ref=e1136]: Esta Norma especi  ca a
+                  - separator [ref=e1141]
+                  - paragraph [ref=e1146]:
+                    - strong [ref=e1147]: Trecho 2
+                  - blockquote [ref=e1152]:
+                    - paragraph [ref=e1153]: Na lista de referências
+                    - paragraph [ref=e1154]: "1 GALLOIS, Dominique Tilkin; GRUPIONI, Denise Fajardo. Povos indígenas no Amapá e norte do Pará : quem são, onde estão"
+      - generic [ref=e142]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [ref=e144]
+        - button "Send message" [disabled] [ref=e146]

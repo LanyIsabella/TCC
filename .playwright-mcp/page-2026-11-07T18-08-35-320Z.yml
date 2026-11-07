@@ -1,0 +1,250 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading [level=2] [ref=e16]:
+      - generic [ref=e17]:
+        - img "menu_book icon" [ref=e18]: menu_book
+        - text: Normas Acadêmicas
+    - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+    - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: add
+        - paragraph [ref=e33]: Nova conversa
+    - generic [ref=e35]:
+      - paragraph [ref=e40]:
+        - strong [ref=e41]: Conversa atual
+      - paragraph [ref=e46]: 2 perguntas nesta conversa
+      - paragraph [ref=e154]: "Última pergunta: Qual o tamanho do recuo necessário?"
+    - group [ref=e49]:
+      - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: lightbulb
+          - paragraph [ref=e56]: Como posso ajudar?
+    - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e358]:
+          - generic [ref=e359]: person
+          - generic "Chat message from user" [ref=e362]:
+            - paragraph [ref=e368]: Quais são as principais regras de formatação de um TCC?
+        - generic [ref=e164]:
+          - generic [ref=e165]: auto_awesome
+          - generic "Chat message from assistant" [ref=e371]:
+            - generic [ref=e169]:
+              - generic [ref=e173]:
+                - paragraph [ref=e174]: "Com base nas informações fornecidas no contexto, que parecem seguir as normas da ABNT (Associação Brasileira de Normas Técnicas), apresento um resumo sobre a estrutura e o formato de trabalhos acadêmicos:"
+                - heading "Estrutura Geral e Formato" [level=3] [ref=e373]:
+                  - text: Estrutura Geral e Formato
+                  - generic [ref=e374]:
+                    - link "Link to heading":
+                      - /url: "#estrutura-geral-e-formato"
+                - paragraph [ref=e375]:
+                  - text: O documento refere-se às diretrizes para a apresentação de projetos de pesquisa, seguindo padrões como a
+                  - strong [ref=e376]: ABNT NBR 15287:2025
+                  - text: .
+                - heading "Margens" [level=4] [ref=e378]:
+                  - text: Margens
+                  - generic [ref=e379]:
+                    - link "Link to heading":
+                      - /url: "#margens"
+                - paragraph [ref=e380]: "As margens devem seguir regras específicas dependendo se a folha é o anverso ou o verso:"
+                - list [ref=e381]:
+                  - listitem [ref=e382]:
+                    - strong [ref=e383]: "Anverso (Verso da folha):"
+                    - text: Margem esquerda e superior de 3 cm, e direita e inferior de 2 cm.
+                  - listitem [ref=e384]:
+                    - strong [ref=e385]: "Verso (Frente da folha):"
+                    - text: Margem direita e superior de 3 cm, e esquerda e inferior de 2 cm.
+                - heading "Fonte e Espaçamento" [level=4] [ref=e387]:
+                  - text: Fonte e Espaçamento
+                  - generic [ref=e388]:
+                    - link "Link to heading":
+                      - /url: "#fonte-e-espacamento"
+                - list [ref=e389]:
+                  - listitem [ref=e390]:
+                    - strong [ref=e391]: "Fonte:"
+                    - text: Recomenda-se que o texto seja digitado em
+                    - strong [ref=e392]: tamanho 12
+                    - text: para todo o trabalho, incluindo a capa (se houver).
+                  - listitem [ref=e393]:
+                    - strong [ref=e394]: "Espaçamento entre linhas:"
+                    - text: O corpo do texto deve ter espaçamento de
+                    - strong [ref=e395]: 1,5 entre as linhas
+                    - text: .
+                  - listitem [ref=e396]:
+                    - strong [ref=e397]: "Exceções ao Espaçamento:"
+                    - text: "O espaçamento simples é exigido para:"
+                    - list [ref=e398]:
+                      - listitem [ref=e399]: Citações com mais de três linhas.
+                      - listitem [ref=e400]: Notas de rodapé.
+                      - listitem [ref=e401]: Referências.
+                      - listitem [ref=e402]: Títulos das ilustrações e tabelas, fontes e legendas das ilustrações e tabelas.
+                - heading "Paginação e Estrutura de Seções" [level=4] [ref=e404]:
+                  - text: Paginação e Estrutura de Seções
+                  - generic [ref=e405]:
+                    - link "Link to heading":
+                      - /url: "#paginacao-e-estrutura-de-secoes"
+                - list [ref=e406]:
+                  - listitem [ref=e407]:
+                    - strong [ref=e408]: "Paginação:"
+                    - text: A paginação deve ser observada conforme as regras estabelecidas.
+                  - listitem [ref=e409]:
+                    - strong [ref=e410]: "Indicativos de Seção:"
+                    - text: O indicativo numérico (em algarismo arábico) de uma seção deve preceder seu título, alinhado à esquerda e separado por um espaço de caractere. As seções primárias devem começar em
+                    - strong [ref=e411]: página ímpar (anverso)
+                    - text: ", na parte superior da margem gráfica."
+                - heading "Elementos Pré-textuais" [level=4] [ref=e413]:
+                  - text: Elementos Pré-textuais
+                  - generic [ref=e414]:
+                    - link "Link to heading":
+                      - /url: "#elementos-pre-textuais"
+                - list [ref=e415]:
+                  - listitem [ref=e416]: Os elementos pré-textuais devem iniciar no anverso da folha.
+                  - listitem [ref=e417]: Na folha de rosto, o tipo de projeto de pesquisa e o nome da entidade a que o trabalho é submetido devem ser alinhados do meio da margem gráfica até a margem direita.
+                - heading "Citações e Referências" [level=4] [ref=e419]:
+                  - text: Citações e Referências
+                  - generic [ref=e420]:
+                    - link "Link to heading":
+                      - /url: "#citacoes-e-referencias"
+                - list [ref=e421]:
+                  - listitem [ref=e422]:
+                    - strong [ref=e423]: "Citações:"
+                    - text: Devem ser citadas no texto, inseridas o mais próximo possível do trecho a que se referem, e padronizadas conforme as normas vigentes (como ABNT NBR 10520 para tabelas).
+                  - listitem [ref=e424]:
+                    - strong [ref=e425]: "Referências:"
+                    - text: As referências devem ser separadas entre si por um espaço simples em branco ao final do trabalho.
+                - heading "Anexos e Apêndices" [level=4] [ref=e427]:
+                  - text: Anexos e Apêndices
+                  - generic [ref=e428]:
+                    - link "Link to heading":
+                      - /url: "#anexos-e-apendices"
+                - list [ref=e429]:
+                  - listitem [ref=e430]:
+                    - strong [ref=e431]: "Apêndices:"
+                    - text: Devem ser precedidos pela palavra
+                    - strong [ref=e432]: APÊNDICE
+                    - text: ", identificados por letras maiúsculas consecutivas, travessão e pelo respectivo título."
+                  - listitem [ref=e433]:
+                    - strong [ref=e434]: "Anexos:"
+                    - text: Devem ser precedidos pela palavra
+                    - strong [ref=e435]: ANEXO
+                    - text: ", identificados por letras maiúsculas consecutivas, travessão e pelo respectivo título."
+                - heading "Formato da Folha" [level=4] [ref=e437]:
+                  - text: Formato da Folha
+                  - generic [ref=e438]:
+                    - link "Link to heading":
+                      - /url: "#formato-da-folha"
+                - paragraph [ref=e439]:
+                  - text: Se impresso, o trabalho deve utilizar papel no formato
+                  - strong [ref=e440]: A4 (21 cm × 29,7 cm)
+                  - text: . O texto deve ser apresentado em cor preta.
+              - paragraph [ref=e445]:
+                - strong [ref=e446]: "Documentos de referência:"
+                - text: Artigo científico — Apresentação (2018), Informação e documentação — Projeto de pesquisa — Apresentação (2025)
+              - group [ref=e449]:
+                - generic "check check_circle icon Trechos que sustentam a resposta chevron_right" [ref=e450] [cursor=pointer]:
+                  - generic [ref=e451]:
+                    - generic [ref=e452]: check
+                    - paragraph [ref=e456]:
+                      - img "check_circle icon" [ref=e457]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e458]: chevron_right
+        - generic [ref=e176]:
+          - generic [ref=e177]: person
+          - generic "Chat message from user" [ref=e462]:
+            - paragraph [ref=e467]: Qual o tamanho do recuo necessário?
+        - generic [ref=e469]:
+          - generic [ref=e470]: auto_awesome
+          - generic "Chat message from assistant" [ref=e473]:
+            - generic [ref=e474]:
+              - group [ref=e477]:
+                - generic "check Consulta concluída chevron_right" [ref=e485] [cursor=pointer]:
+                  - generic [ref=e479]:
+                    - generic [ref=e486]: check
+                    - paragraph [ref=e482]: Consulta concluída
+                    - generic [ref=e483]: chevron_right
+              - generic [ref=e491]:
+                - paragraph [ref=e492]:
+                  - text: Com base nos trechos fornecidos, o documento trata das regras para a redação e apresentação de
+                  - strong [ref=e493]: Resumos, Resenhas e Recensões
+                  - text: ", conforme as diretrizes da ABNT."
+                - paragraph [ref=e494]: "Os pontos principais abordados são:"
+                - paragraph [ref=e495]:
+                  - strong [ref=e496]: "1. Definições (Seção 2):"
+                  - text: "O documento define os seguintes termos para os efeitos deste documento:"
+                - list [ref=e497]:
+                  - listitem [ref=e498]:
+                    - strong [ref=e499]: "Resumo:"
+                    - text: Apresentação concisa dos pontos relevantes de um documento.
+                  - listitem [ref=e500]:
+                    - strong [ref=e501]: "Resumo indicativo:"
+                    - text: Trabalho que indica os pontos principais sem apresentar detalhes, dispensando a consulta ao original.
+                  - listitem [ref=e502]:
+                    - strong [ref=e503]: "Resenha:"
+                    - text: Análise do conteúdo de um documento, objeto, fato ou evento.
+                  - listitem [ref=e504]:
+                    - strong [ref=e505]: "Recensão:"
+                    - text: Análise crítica, descritiva e/ou comparativa, geralmente elaborada por especialista.
+                - paragraph [ref=e506]:
+                  - strong [ref=e507]: "2. Regras Gerais para Apresentação (Seção 3):"
+                  - text: Os resumos, resenhas e recensões devem ser apresentados de forma concisa, seguindo o padrão gráfico do documento. Deve-se evitar o uso de símbolos, contrações ou fórmulas/equações que não sejam absolutamente necessários.
+                - paragraph [ref=e508]:
+                  - strong [ref=e509]: "3. Regras Específicas para Resumo (Seção 4.1):"
+                - list [ref=e510]:
+                  - listitem [ref=e511]: O resumo deve ressaltar sucintamente o conteúdo do texto e ser composto por frases concisas em parágrafo único.
+                  - listitem [ref=e512]:
+                    - text: Recomenda-se o
+                    - strong [ref=e513]: resumo informativo
+                    - text: em documentos técnicos ou científicos.
+                  - listitem [ref=e514]:
+                    - text: Deve-se usar a
+                    - strong [ref=e515]: terceira pessoa
+                    - text: .
+                  - listitem [ref=e516]: As palavras-chave devem ser listadas após o resumo, precedidas pela expressão "Palavras-chave:", separadas por ponto e vírgula.
+                  - listitem [ref=e517]:
+                    - strong [ref=e518]: "Extensão recomendada:"
+                    - list [ref=e519]:
+                      - listitem [ref=e520]: "Trabalhos acadêmicos e relatórios técnicos/científicos: 150 a 500 palavras."
+                      - listitem [ref=e521]: "Artigos de periódicos: 100 a 250 palavras."
+                      - listitem [ref=e522]: "Documentos não contemplados nas alíneas anteriores: 50 a 100 palavras."
+                - paragraph [ref=e523]:
+                  - strong [ref=e524]: "4. Resenha e Recensão (Seção 4.2):"
+                  - text: Esta seção deve fornecer ao leitor uma ideia do documento ou objeto, analisando e descrevendo-o.
+              - paragraph [ref=e529]:
+                - strong [ref=e530]: "Documento de referência:"
+                - text: Informação e documentação — Resumo, resenha e recensão — Apresentação (2021)
+              - group [ref=e533]:
+                - generic "check check_circle icon Trechos que sustentam a resposta keyboard_arrow_down" [active] [ref=e544] [cursor=pointer]:
+                  - generic [ref=e535]:
+                    - generic [ref=e536]: check
+                    - paragraph [ref=e540]:
+                      - img "check_circle icon" [ref=e541]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e545]: keyboard_arrow_down
+                - generic [ref=e548]:
+                  - paragraph [ref=e553]:
+                    - strong [ref=e554]: Trecho 1
+                  - blockquote [ref=e559]:
+                    - paragraph [ref=e560]: b) fórmulas, equações, diagrams, entre outros, que não sejam absolutamente necessários, e, quando seu emprego for imprescindível, defini-los na primeira vez que aparecerem.
+                    - paragraph [ref=e561]: 4 Resumo, resenha e recensão
+                    - paragraph [ref=e562]: De
+                  - separator [ref=e567]
+                  - paragraph [ref=e572]:
+                    - strong [ref=e573]: Trecho 2
+                  - blockquote [ref=e578]:
+                    - paragraph [ref=e579]: resumo apresentação concisa dos pontos relevantes de um documento
+                    - paragraph [ref=e580]: 2.5 resumo indicativo trabalho que indica os pontos principais do documento sem apresentar detalhamentos, como dados qualitativos e quantitativos, e que, de modo geral, não dispensa
+      - generic [ref=e142]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [ref=e144]
+        - button "Send message" [disabled] [ref=e146]

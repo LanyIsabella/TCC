@@ -1,0 +1,174 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading [level=2] [ref=e16]:
+      - generic [ref=e17]:
+        - img "menu_book icon" [ref=e18]: menu_book
+        - text: Normas Acadêmicas
+    - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+    - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: add
+        - paragraph [ref=e33]: Nova conversa
+    - generic [ref=e35]:
+      - paragraph [ref=e40]:
+        - strong [ref=e41]: Conversa atual
+      - paragraph [ref=e46]: 1 pergunta nesta conversa
+      - paragraph [ref=e845]: "Última pergunta: Qual a diferença entre citação direta e indireta?"
+    - group [ref=e49]:
+      - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: lightbulb
+          - paragraph [ref=e56]: Como posso ajudar?
+    - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e802]:
+          - heading "Comece por uma pergunta" [level=3] [ref=e807]:
+            - text: Comece por uma pergunta
+            - generic [ref=e808]:
+              - link "Link to heading":
+                - /url: "#comece-por-uma-pergunta"
+          - paragraph [ref=e813]: Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem.
+          - radiogroup "Sugestões para começar" [ref=e816]:
+            - radio "format_quote Como fazer uma citação direta curta?" [ref=e817] [cursor=pointer]:
+              - generic [ref=e819]:
+                - generic [ref=e820]: format_quote
+                - paragraph [ref=e824]: Como fazer uma citação direta curta?
+            - radio "menu_book Como montar as referências?" [ref=e825] [cursor=pointer]:
+              - generic [ref=e827]:
+                - generic [ref=e828]: menu_book
+                - paragraph [ref=e832]: Como montar as referências?
+            - radio "article Como formatar o TCC?" [ref=e833] [cursor=pointer]:
+              - generic [ref=e835]:
+                - generic [ref=e836]: article
+                - paragraph [ref=e840]: Como formatar o TCC?
+        - generic [ref=e855]:
+          - generic [ref=e856]: person
+          - generic "Chat message from user" [ref=e859]:
+            - paragraph [ref=e865]: Qual a diferença entre citação direta e indireta?
+        - generic [ref=e867]:
+          - generic [ref=e868]: auto_awesome
+          - generic "Chat message from assistant" [ref=e871]:
+            - generic [ref=e872]:
+              - group [ref=e875]:
+                - generic "check Consulta concluída chevron_right" [ref=e883] [cursor=pointer]:
+                  - generic [ref=e877]:
+                    - generic [ref=e884]: check
+                    - paragraph [ref=e880]: Consulta concluída
+                    - generic [ref=e881]: chevron_right
+              - generic [ref=e889]:
+                - paragraph [ref=e890]: Olá! A diferença fundamental entre citação direta e citação indireta reside na forma como você incorpora o texto de outro autor em seu próprio trabalho, e isso está intimamente ligado às regras de formatação e à correta atribuição de autoria nas normas acadêmicas (como a ABNT).
+                - paragraph [ref=e891]:
+                  - text: Em resumo, a distinção se baseia na
+                  - strong [ref=e892]: forma
+                  - text: "como você reproduz a informação original:"
+                - heading "1. Citação Direta" [level=3] [ref=e894]:
+                  - text: 1. Citação Direta
+                  - generic [ref=e895]:
+                    - link "Link to heading":
+                      - /url: "#1-citacao-direta"
+                - paragraph [ref=e896]:
+                  - text: A citação direta é a transcrição
+                  - strong [ref=e897]: exata
+                  - text: de um trecho do texto original do autor. Você copia literalmente as palavras que deseja incluir no seu trabalho.
+                - list [ref=e898]:
+                  - listitem [ref=e899]:
+                    - strong [ref=e900]: "Como fazer:"
+                    - text: Você deve usar aspas duplas (" ") para indicar o trecho copiado.
+                  - listitem [ref=e901]:
+                    - strong [ref=e902]: "Características:"
+                    - text: É a reprodução literal da fonte.
+                  - listitem [ref=e903]:
+                    - strong [ref=e904]: "Quando usar:"
+                    - text: Quando a formulação exata do autor é crucial para sua argumentação ou análise (por exemplo, ao citar uma definição específica, uma frase polêmica ou um dado exato).
+                  - listitem [ref=e905]:
+                    - strong [ref=e906]: "Regra Importante:"
+                    - text: Sempre que for utilizar citação direta, é obrigatório indicar a fonte completa (autor, ano e o número da página) de onde o trecho foi retirado.
+                - heading "2. Citação Indireta" [level=3] [ref=e908]:
+                  - text: 2. Citação Indireta
+                  - generic [ref=e909]:
+                    - link "Link to heading":
+                      - /url: "#2-citacao-indireta"
+                - paragraph [ref=e910]: A citação indireta é a reprodução das ideias ou conceitos do autor com suas próprias palavras. Você parafraseia o conteúdo original para integrá-lo ao seu texto.
+                - list [ref=e911]:
+                  - listitem [ref=e912]:
+                    - strong [ref=e913]: "Como fazer:"
+                    - text: Você reescreve a ideia do autor, utilizando sua própria linguagem e estrutura frasal.
+                  - listitem [ref=e914]:
+                    - strong [ref=e915]: "Características:"
+                    - text: É uma paráfrase da ideia.
+                  - listitem [ref=e916]:
+                    - strong [ref=e917]: "Quando usar:"
+                    - text: Na maioria das vezes, é preferível utilizar a citação indireta, pois demonstra que você compreendeu o material lido e permite que você desenvolva a ideia com sua voz acadêmica.
+                  - listitem [ref=e918]:
+                    - strong [ref=e919]: "Regra Importante:"
+                    - text: Mesmo sendo uma reformulação, a ideia central ainda pertence ao autor original. Portanto, é
+                    - strong [ref=e920]: obrigatório
+                    - text: citar a fonte (autor, ano) da qual a ideia foi retirada.
+                - heading "Quadro Comparativo Resumido" [level=3] [ref=e922]:
+                  - text: Quadro Comparativo Resumido
+                  - generic [ref=e923]:
+                    - link "Link to heading":
+                      - /url: "#quadro-comparativo-resumido"
+                - table [ref=e924]:
+                  - rowgroup [ref=e925]:
+                    - row [ref=e926]:
+                      - columnheader "Característica" [ref=e927]
+                      - columnheader "Citação Direta" [ref=e928]
+                      - columnheader "Citação Indireta" [ref=e929]
+                  - rowgroup [ref=e930]:
+                    - row [ref=e931]:
+                      - cell [ref=e932]:
+                        - strong [ref=e933]: Forma
+                      - cell "Reprodução exata do texto original." [ref=e934]
+                      - cell "Reformulação da ideia com suas próprias palavras (paráfrase)." [ref=e935]
+                    - row [ref=e936]:
+                      - cell [ref=e937]:
+                        - strong [ref=e938]: Marcador
+                      - cell "Uso obrigatório de aspas (\" \")." [ref=e939]
+                      - cell "Não usa aspas, mas exige citação da fonte." [ref=e940]
+                    - row [ref=e941]:
+                      - cell [ref=e942]:
+                        - strong [ref=e943]: Ênfase
+                      - cell "Na palavra exata do autor." [ref=e944]
+                      - cell "Na sua interpretação e reescrita da ideia." [ref=e945]
+                    - row [ref=e946]:
+                      - cell [ref=e947]:
+                        - strong [ref=e948]: Requisito
+                      - cell "Exige a indicação da página." [ref=e949]
+                      - cell "Exige a indicação da fonte (autor e ano)." [ref=e950]
+                - paragraph [ref=e951]: "Ao escolher entre as duas, lembre-se: citação direta é para quando você precisa da precisão literal, e citação indireta é para quando você quer integrar o pensamento do autor de forma fluida ao seu argumento."
+              - paragraph [ref=e956]:
+                - strong [ref=e957]: "Documento de referência:"
+                - text: Informação e documentação — Índice — Apresentação (2005)
+              - group [ref=e960]:
+                - generic "check check_circle icon Trechos que sustentam a resposta keyboard_arrow_down" [active] [ref=e971] [cursor=pointer]:
+                  - generic [ref=e962]:
+                    - generic [ref=e963]: check
+                    - paragraph [ref=e967]:
+                      - img "check_circle icon" [ref=e968]: check_circle
+                      - text: Trechos que sustentam a resposta
+                    - generic [ref=e972]: keyboard_arrow_down
+                - generic [ref=e975]:
+                  - paragraph [ref=e980]:
+                    - strong [ref=e981]: Trecho 1
+                  - blockquote [ref=e986]:
+                    - paragraph [ref=e987]: Informação e documentação – Índice – Apresentação
+                    - paragraph [ref=e988]: 1 Objetivo
+                    - paragraph [ref=e989]: Esta Norma estabelece os requisitos de apresentação e os critérios básicos para a elaboração de índices.
+                    - paragraph [ref=e990]: Esta Norma aplica-se, no
+      - generic [ref=e142]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [ref=e144]
+        - button "Send message" [disabled] [ref=e146]

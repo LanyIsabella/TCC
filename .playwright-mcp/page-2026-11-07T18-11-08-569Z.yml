@@ -1,0 +1,273 @@
+- generic [ref=e2]:
+  - generic [ref=e7]:
+    - button "keyboard_double_arrow_left" [ref=e799] [cursor=pointer]
+    - generic [ref=e11]:
+      - heading [level=2] [ref=e16]:
+        - generic [ref=e17]:
+          - img "menu_book icon" [ref=e18]: menu_book
+          - text: Normas Acadêmicas
+      - paragraph [ref=e23]: Documentos normativos acadêmicos de forma simples, clara e confiável.
+      - button "add Nova conversa" [ref=e26] [cursor=pointer]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: add
+          - paragraph [ref=e33]: Nova conversa
+      - generic [ref=e35]:
+        - paragraph [ref=e40]:
+          - strong [ref=e41]: Conversa atual
+        - paragraph [ref=e46]: 1 pergunta nesta conversa
+        - paragraph [ref=e1200]: "Última pergunta: O que é fotossíntese?"
+      - group [ref=e49]:
+        - generic "lightbulb Como posso ajudar?" [ref=e50] [cursor=pointer]:
+          - generic [ref=e51]:
+            - generic [ref=e52]: lightbulb
+            - paragraph [ref=e56]: Como posso ajudar?
+      - paragraph [ref=e61]: Baseado no conteúdo acadêmico disponível para o projeto.
+  - generic [ref=e3]:
+    - banner [ref=e64]:
+      - generic [ref=e67]:
+        - button "Deploy" [ref=e69] [cursor=pointer]
+        - button "Main menu" [ref=e73] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - heading "Normas Acadêmicas" [level=1] [ref=e84]:
+          - generic [ref=e86]: menu_book
+          - text: Normas Acadêmicas
+          - generic [ref=e88]:
+            - link "Link to heading":
+              - /url: "#normas-academicas"
+        - paragraph [ref=e93]: Seu espaço para consultar documentos normativos acadêmicos, estruturar trabalhos e escrever com mais segurança.
+        - generic [ref=e802]:
+          - heading "Comece por uma pergunta" [level=3] [ref=e807]:
+            - text: Comece por uma pergunta
+            - generic [ref=e808]:
+              - link "Link to heading":
+                - /url: "#comece-por-uma-pergunta"
+          - paragraph [ref=e813]: Escolha um exemplo abaixo ou escreva sua dúvida no campo de mensagem.
+          - radiogroup "Sugestões para começar" [ref=e816]:
+            - radio "format_quote Como fazer uma citação direta curta?" [ref=e817] [cursor=pointer]:
+              - generic [ref=e819]:
+                - generic [ref=e820]: format_quote
+                - paragraph [ref=e824]: Como fazer uma citação direta curta?
+            - radio "menu_book Como montar as referências?" [ref=e825] [cursor=pointer]:
+              - generic [ref=e827]:
+                - generic [ref=e828]: menu_book
+                - paragraph [ref=e832]: Como montar as referências?
+            - radio "article Como formatar o TCC?" [ref=e833] [cursor=pointer]:
+              - generic [ref=e835]:
+                - generic [ref=e836]: article
+                - paragraph [ref=e840]: Como formatar o TCC?
+        - generic [ref=e1210]:
+          - generic [ref=e1211]: person
+          - generic "Chat message from user" [ref=e1214]:
+            - paragraph [ref=e1220]: O que é fotossíntese?
+        - generic [ref=e1222]:
+          - generic [ref=e1223]: auto_awesome
+          - generic "Chat message from assistant" [ref=e1226]:
+            - generic [ref=e1227]:
+              - group [ref=e1230]:
+                - generic "check Consulta concluída chevron_right" [ref=e1238] [cursor=pointer]:
+                  - generic [ref=e1232]:
+                    - generic [ref=e1239]: check
+                    - paragraph [ref=e1235]: Consulta concluída
+                    - generic [ref=e1236]: chevron_right
+              - generic [ref=e1244]:
+                - paragraph [ref=e1245]: A fotossíntese é o processo fundamental pelo qual plantas, algas e algumas bactérias convertem a energia luminosa em energia química. É um processo vital para a vida na Terra, pois produz o alimento que sustenta praticamente toda a cadeia alimentar e libera oxigênio na atmosfera.
+                - heading "O Processo Básico da Fotossíntese" [level=3] [ref=e1247]:
+                  - text: O Processo Básico da Fotossíntese
+                  - generic [ref=e1248]:
+                    - link "Link to heading":
+                      - /url: "#o-processo-basico-da-fotossintese"
+                - paragraph [ref=e1249]: "De forma simplificada, a fotossíntese pode ser resumida pela seguinte equação:"
+                - paragraph [ref=e1250]:
+                  - generic [ref=e1251]:
+                    - math [ref=e1253]:
+                      - generic [ref=e1255]:
+                        - generic [ref=e1256]: Energia Luminosa
+                        - generic [ref=e1257]: +
+                        - generic [ref=e1258]:
+                          - generic [ref=e1259]:
+                            - generic [ref=e1260]: A
+                            - generic [ref=e1261]: ˊ
+                          - generic [ref=e1262]: gua
+                        - generic [ref=e1263]: +
+                        - generic [ref=e1264]:
+                          - generic [ref=e1265]: Di
+                          - generic [ref=e1266]:
+                            - generic [ref=e1267]: o
+                            - generic [ref=e1268]: ˊ
+                          - generic [ref=e1269]: xido de Carbono
+                        - generic [ref=e1270]: ⟶
+                        - generic [ref=e1271]:
+                          - generic [ref=e1272]: Glicose (A
+                          - generic [ref=e1273]:
+                            - generic [ref=e1274]: c
+                            - generic [ref=e1275]: ¸
+                          - generic [ref=e1276]:
+                            - generic [ref=e1277]: u
+                            - generic [ref=e1278]: ˊ
+                          - generic [ref=e1279]: car)
+                        - generic [ref=e1280]: +
+                        - generic [ref=e1281]:
+                          - generic [ref=e1282]: Oxig
+                          - generic [ref=e1283]:
+                            - generic [ref=e1284]: e
+                            - generic [ref=e1285]: ˆ
+                          - generic [ref=e1286]: nio
+                    - generic [aria-hidden] [ref=e1287]:
+                      - generic [ref=e1288]:
+                        - generic [ref=e1289]: Energia Luminosa
+                        - text: +
+                      - generic [ref=e1290]:
+                        - generic [ref=e1291]:
+                          - generic [ref=e1295]:
+                            - generic [ref=e1296]: A
+                            - text: ˊ
+                          - text: gua
+                        - text: +
+                      - generic [ref=e1297]:
+                        - generic [ref=e1298]:
+                          - text: Di
+                          - generic [ref=e1302]:
+                            - generic [ref=e1303]: o
+                            - text: ˊ
+                          - text: xido de Carbono
+                        - text: ⟶
+                      - generic [ref=e1304]:
+                        - generic [ref=e1305]:
+                          - text: Glicose (A
+                          - generic [ref=e1309]:
+                            - generic [ref=e1310]: c
+                            - text: ¸
+                          - generic [ref=e1317]:
+                            - generic [ref=e1318]: u
+                            - text: ˊ
+                          - text: car)
+                        - text: +
+                      - generic [ref=e1320]:
+                        - text: Oxig
+                        - generic [ref=e1324]:
+                          - generic [ref=e1325]: e
+                          - text: ˆ
+                        - text: nio
+                - heading "Componentes e Fases do Processo" [level=3] [ref=e1327]:
+                  - text: Componentes e Fases do Processo
+                  - generic [ref=e1328]:
+                    - link "Link to heading":
+                      - /url: "#componentes-e-fases-do-processo"
+                - paragraph [ref=e1329]: "O processo ocorre principalmente nas plantas e envolve algumas etapas cruciais:"
+                - list [ref=e1330]:
+                  - listitem [ref=e1331]:
+                    - paragraph [ref=e1332]:
+                      - strong [ref=e1333]: "Reagentes:"
+                    - list [ref=e1334]:
+                      - listitem [ref=e1335]:
+                        - strong [ref=e1336]: "Luz Solar:"
+                        - text: É a fonte de energia que impulsiona toda a reação.
+                      - listitem [ref=e1337]:
+                        - strong [ref=e1338]:
+                          - text: Água (
+                          - generic [ref=e1339]:
+                            - math [ref=e1341]:
+                              - generic [ref=e1343]:
+                                - generic [ref=e1344]:
+                                  - generic [ref=e1345]: H
+                                  - generic [ref=e1346]: "2"
+                                - generic [ref=e1347]: O
+                            - generic [ref=e1349]:
+                              - generic [ref=e1350]:
+                                - generic [ref=e1351]: H
+                                - generic [ref=e1352]: "2"
+                              - generic [ref=e1360]: O
+                          - text: "):"
+                        - text: Absorvida pelas raízes da planta.
+                      - listitem [ref=e1361]:
+                        - strong [ref=e1362]:
+                          - text: Dióxido de Carbono (
+                          - generic [ref=e1363]:
+                            - math [ref=e1365]:
+                              - generic [ref=e1368]:
+                                - generic [ref=e1369]: CO
+                                - generic [ref=e1370]: "2"
+                            - generic [ref=e1373]:
+                              - generic [ref=e1374]: CO
+                              - generic [ref=e1375]: "2"
+                          - text: "):"
+                        - text: Absorvido do ar através de pequenos poros nas folhas (estômatos).
+                  - listitem [ref=e1383]:
+                    - paragraph [ref=e1384]:
+                      - strong [ref=e1385]: "Localização:"
+                    - list [ref=e1386]:
+                      - listitem [ref=e1387]:
+                        - text: A fotossíntese ocorre nos
+                        - strong [ref=e1388]: cloroplastos
+                        - text: ", organelas presentes nas células das folhas das plantas, onde se encontra a clorofila (o pigmento responsável por capturar a luz)."
+                  - listitem [ref=e1389]:
+                    - paragraph [ref=e1390]:
+                      - strong [ref=e1391]: "Produtos:"
+                    - list [ref=e1392]:
+                      - listitem [ref=e1393]:
+                        - strong [ref=e1394]:
+                          - text: Glicose (
+                          - generic [ref=e1395]:
+                            - math [ref=e1397]:
+                              - generic [ref=e1399]:
+                                - generic [ref=e1400]:
+                                  - generic [ref=e1401]: C
+                                  - generic [ref=e1402]: "6"
+                                - generic [ref=e1403]:
+                                  - generic [ref=e1404]: H
+                                  - generic [ref=e1405]: "12"
+                                - generic [ref=e1406]:
+                                  - generic [ref=e1407]: O
+                                  - generic [ref=e1408]: "6"
+                            - generic [ref=e1410]:
+                              - generic [ref=e1411]:
+                                - generic [ref=e1412]: C
+                                - generic [ref=e1413]: "6"
+                              - generic [ref=e1421]:
+                                - generic [ref=e1422]: H
+                                - generic [ref=e1423]: "12"
+                              - generic [ref=e1432]:
+                                - generic [ref=e1433]: O
+                                - generic [ref=e1434]: "6"
+                          - text: "):"
+                        - text: É o alimento produzido pela planta, uma forma de energia química armazenada que serve como base para o seu crescimento e metabolismo.
+                      - listitem [ref=e1442]:
+                        - strong [ref=e1443]:
+                          - text: Oxigênio (
+                          - generic [ref=e1444]:
+                            - math [ref=e1446]:
+                              - generic [ref=e1449]:
+                                - generic [ref=e1450]: O
+                                - generic [ref=e1451]: "2"
+                            - generic [ref=e1454]:
+                              - generic [ref=e1455]: O
+                              - generic [ref=e1456]: "2"
+                          - text: "):"
+                        - text: É liberado como subproduto na atmosfera, essencial para a respiração da maioria dos seres vivos.
+                - heading "Fases Detalhadas" [level=3] [ref=e1465]:
+                  - text: Fases Detalhadas
+                  - generic [ref=e1466]:
+                    - link "Link to heading":
+                      - /url: "#fases-detalhadas"
+                - paragraph [ref=e1467]: "A fotossíntese é geralmente dividida em duas fases principais que ocorrem sequencialmente dentro do cloroplasto:"
+                - list [ref=e1468]:
+                  - listitem [ref=e1469]:
+                    - strong [ref=e1470]: "Fase Fotoquímica (Dependente da Luz):"
+                    - text: Ocorre nas membranas dos tilacoides, onde a energia da luz é capturada e convertida em energia química (ATP e NADPH).
+                  - listitem [ref=e1471]:
+                    - strong [ref=e1472]: "Fase Química (Ciclo de Calvin):"
+                    - text: Ocorre no estroma do cloroplasto. Nesta fase, a energia capturada na primeira fase é usada para converter o dióxido de carbono (
+                    - generic [ref=e1473]:
+                      - math [ref=e1475]:
+                        - generic [ref=e1478]:
+                          - generic [ref=e1479]: CO
+                          - generic [ref=e1480]: "2"
+                      - generic [ref=e1483]:
+                        - generic [ref=e1484]: CO
+                        - generic [ref=e1485]: "2"
+                    - text: ) em glicose (açúcar).
+                - paragraph [ref=e1493]: Em resumo, a fotossíntese é o mecanismo pelo qual os organismos autotróficos produzem seu próprio alimento utilizando a luz solar para transformar matéria inorgânica em matéria orgânica.
+      - generic [ref=e142]:
+        - textbox "Pergunte sobre citações, referências ou formatação ABNT..." [active] [ref=e144]
+        - button "Send message" [disabled] [ref=e146]
