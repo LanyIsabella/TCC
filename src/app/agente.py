@@ -9,7 +9,12 @@ from langchain.agents import create_agent
 from .client import Client
 from .evidence import AgentAnswer, looks_like_guarded_answer
 from .prompt import load_prompt_sys
-from .query_planner import contextualize_query
+from .query_planner import (
+    answer_matches_question,
+    contextualize_query,
+    is_broad_question,
+    plan_queries,
+)
 from .scope_guard import (
     ScopeDecision,
     classify_messages,
@@ -54,7 +59,21 @@ class ScopedAgent:
                 result,
                 self._retrieval_query(messages),
             )
-        if self._needs_synthesis(result):
+        synthesis_attempted = False
+        question = self._last_user_question(messages)
+        if self._needs_adherence_recovery(result, question):
+            logger.warning(
+                "answer_adherence_gap=True question=%r answer=%r",
+                question[:240],
+                self._last_assistant_text(result)[:240],
+            )
+            result = self._synthesize_from_retrieval(
+                payload,
+                result,
+                adherence_retry=True,
+            )
+            synthesis_attempted = True
+        if not synthesis_attempted and self._needs_synthesis(result):
             return self._synthesize_from_retrieval(payload, result)
         return result
 
@@ -224,6 +243,8 @@ class ScopedAgent:
         return ""
 
     def _needs_synthesis(self, result: Any) -> bool:
+        if isinstance(result, Mapping) and result.get("_synthesis_attempted"):
+            return False
         tool_payloads = self._tool_payloads(result)
         if self._fallback_model is None or not tool_payloads:
             return False
@@ -249,6 +270,16 @@ class ScopedAgent:
             len(answer),
         )
         return not answer or looks_like_guarded_answer(answer)
+
+    def _needs_adherence_recovery(self, result: Any, question: str) -> bool:
+        if self._fallback_model is None or not question:
+            return False
+        if not self._tool_payloads(result):
+            return False
+        answer = self._last_assistant_text(result)
+        if not answer or looks_like_guarded_answer(answer):
+            return False
+        return not answer_matches_question(question, answer)
 
     def _needs_retrieval_recovery(
         self,
@@ -309,7 +340,11 @@ class ScopedAgent:
         return recovered
 
     def _synthesize_from_retrieval(
-        self, payload: dict[str, Any], result: dict[str, Any]
+        self,
+        payload: dict[str, Any],
+        result: dict[str, Any],
+        *,
+        adherence_retry: bool = False,
     ) -> dict[str, Any]:
         """Recupera a síntese quando o modelo falha após receber ToolMessage."""
 
@@ -341,14 +376,42 @@ class ScopedAgent:
         ][-6:]
         if history and history[-1]["role"] in {"user", "human"}:
             history = history[:-1]
-        context = json.dumps(
-            {"status": "success", "documents": [
+        context_documents = [
+            document
+            for tool_payload in tool_payloads
+            for document in tool_payload.get("documents", [])
+            if isinstance(document, Mapping)
+        ]
+        primary_document = ""
+        if is_broad_question(question):
+            primary_documents = [
                 document
-                for tool_payload in tool_payloads
-                for document in tool_payload.get("documents", [])
-            ]},
+                for document in context_documents
+                if float(
+                    (document.get("rerank_components") or {}).get(
+                        "title_relevance", 0.0
+                    )
+                )
+                >= 0.5
+            ]
+            if primary_documents:
+                context_documents = primary_documents[:2]
+                primary_document = str(
+                    context_documents[0].get("title")
+                    or context_documents[0].get("standard_label")
+                    or ""
+                )
+        context = json.dumps(
+            {"status": "success", "documents": context_documents},
             ensure_ascii=False,
         )
+        coverage_hint = ""
+        if is_broad_question(question):
+            coverage_hint = (
+                "\n\nFacetas planejadas para esta pergunta ampla; cubra pelo menos "
+                "duas quando houver evidência e não deixe uma delas dominar: "
+                + " | ".join(plan_queries(question)[1:])
+            )
         synthesis_messages = [
             {
                 "role": "system",
@@ -360,6 +423,21 @@ class ScopedAgent:
                     "fontes, rodapés ou chamadas de ferramentas no texto."
                 ),
             },
+            *(
+                [
+                    {
+                        "role": "system",
+                        "content": (
+                            "A resposta anterior desviou da intencao. Reescreva "
+                            "com foco na pergunta original, cubra os aspectos "
+                            "centrais e ignore paginas de subtemas secundarios, "
+                            "sumarios, prefacios e direitos autorais."
+                        ),
+                    }
+                ]
+                if adherence_retry
+                else []
+            ),
             *[
                 {
                     "role": "assistant" if message["role"] == "ai" else message["role"],
@@ -371,7 +449,13 @@ class ScopedAgent:
                 "role": "user",
                 "content": (
                     f"Pergunta do usuário: {question}\n\n"
-                    f"Contexto RAG validado:\n{context}"
+                    f"Contexto RAG validado:\n{context}{coverage_hint}"
+                    + (
+                        f"\n\nDocumento primário selecionado para a intenção: "
+                        f"{primary_document}. Use-o como eixo da resposta."
+                        if primary_document
+                        else ""
+                    )
                 ),
             },
         ]
@@ -396,6 +480,7 @@ class ScopedAgent:
         ]
         recovered.pop("structured_response", None)
         recovered.pop("_force_synthesis", None)
+        recovered["_synthesis_attempted"] = True
         return recovered
 
 

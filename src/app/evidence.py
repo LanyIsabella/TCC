@@ -94,6 +94,12 @@ EVIDENCE_STOPWORDS = {
     "um",
     "uma",
 }
+EVIDENCE_NEUTRAL_TERMS = {
+    "resposta",
+    "fundamentada",
+    "contextualizada",
+    "informacao",
+}
 
 
 @dataclass(frozen=True)
@@ -230,6 +236,26 @@ def _normalized_terms(value: str) -> set[str]:
     }
 
 
+def _related_term(left: str, right: str) -> bool:
+    if left == right:
+        return True
+    prefix_length = max(4, min(len(left), len(right)) - 2)
+    return left[:prefix_length] == right[:prefix_length]
+
+
+def _semantic_overlap(
+    answer_terms: set[str], evidence_terms: set[str]
+) -> set[str]:
+    return {
+        answer_term
+        for answer_term in answer_terms
+        if any(
+            _related_term(answer_term, evidence_term)
+            for evidence_term in evidence_terms
+        )
+    }
+
+
 def looks_like_guarded_answer(answer: str) -> bool:
     normalized = unicodedata.normalize("NFD", answer.casefold())
     normalized = "".join(
@@ -274,8 +300,8 @@ def _fallback_evidence_ids(
             )
         )
         evidence_terms = _normalized_terms(evidence_text)
-        overlap = answer_terms & evidence_terms
-        if len(overlap) < 2:
+        overlap = _semantic_overlap(answer_terms, evidence_terms)
+        if len(overlap) < 2 or not _supports_answer(answer, evidence):
             continue
         precision = len(overlap) / max(len(evidence_terms), 1)
         recall = len(overlap) / max(len(answer_terms), 1)
@@ -290,17 +316,39 @@ def _fallback_evidence_ids(
 def _supports_answer(answer: str, evidence: EvidenceRecord) -> bool:
     """Aplica uma validação conservadora para IDs escolhidos pelo modelo."""
 
-    if str(evidence.get("matched_text") or "").strip():
-        return True
     answer_terms = _normalized_terms(answer)
+    if len(answer_terms) < 2:
+        return True
+    if not answer_terms - EVIDENCE_NEUTRAL_TERMS:
+        return True
     evidence_terms = _normalized_terms(
         " ".join(
             str(evidence.get(key) or "")
             for key in ("title", "standard_id", "version", "section", "text")
         )
     )
-    overlap = answer_terms & evidence_terms
-    return len(overlap) >= 2
+    overlap = _semantic_overlap(answer_terms, evidence_terms)
+    if len(overlap) < 2:
+        return False
+    normalized_evidence = unicodedata.normalize(
+        "NFD", str(evidence.get("text") or "").casefold()
+    )
+    normalized_evidence = "".join(
+        character
+        for character in normalized_evidence
+        if unicodedata.category(character) != "Mn"
+    )
+    has_supporting_language = bool(
+        re.search(
+            r"\b(deve|devem|recomenda-se|estabelece|compreende|inclui|"
+            r"consiste|sao)\b",
+            normalized_evidence,
+        )
+    )
+    answer_coverage = len(overlap) / max(len(answer_terms), 1)
+    return answer_coverage >= 0.12 and (
+        has_supporting_language or len(overlap) >= 3
+    )
 
 
 def _extract_answer(result: Mapping[str, Any]) -> str:

@@ -155,3 +155,80 @@ def test_scoped_agent_recovers_rag_even_when_model_answer_is_not_generic(
     assert result["messages"][-1]["content"].startswith(
         "A orientação deve ser confirmada"
     )
+
+
+def test_scoped_agent_retries_once_when_answer_is_related_but_not_adherent() -> None:
+    class OffTopicAgent:
+        def invoke(self, payload: dict[str, object]) -> dict[str, object]:
+            return {
+                "messages": [
+                    *payload["messages"],
+                    {
+                        "role": "tool",
+                        "name": "rag_document_search",
+                        "content": json.dumps(
+                            {
+                                "status": "success",
+                                "documents": [
+                                    {
+                                        "title": "Trabalhos acadêmicos",
+                                        "evidence": [
+                                            {
+                                                "evidence_id": "document:14724:page:11",
+                                                "text": (
+                                                    "As margens devem ser esquerda "
+                                                    "e superior de 3 cm."
+                                                ),
+                                            }
+                                        ],
+                                    }
+                                ],
+                            }
+                        ),
+                    },
+                    {
+                        "role": "assistant",
+                        "content": "A resposta trata apenas de lombadas.",
+                    },
+                ]
+            }
+
+    class CorrectiveModel:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def invoke(self, _messages: list[dict[str, str]]) -> object:
+            self.calls += 1
+            return type(
+                "Response",
+                (),
+                {
+                    "content": (
+                        "A formatação geral inclui margens, fonte, espaçamento "
+                        "e paginação, conforme as passagens recuperadas."
+                    )
+                },
+            )()
+
+    corrective_model = CorrectiveModel()
+    agent = ScopedAgent(
+        OffTopicAgent(),
+        corrective_model,
+        "Você é um assistente acadêmico.",
+    )
+
+    result = agent.invoke(
+        {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": (
+                        "Quais são as principais regras de formatação de um TCC?"
+                    ),
+                }
+            ]
+        }
+    )
+
+    assert corrective_model.calls == 1
+    assert "margens" in result["messages"][-1]["content"]

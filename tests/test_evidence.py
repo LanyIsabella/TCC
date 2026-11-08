@@ -221,3 +221,70 @@ def test_extract_agent_result_rejects_semantically_unrelated_selected_evidence(
     extracted = extract_agent_result(result)
 
     assert extracted.evidences == []
+
+
+def test_extract_agent_result_rejects_matched_text_without_semantic_support() -> None:
+    result = {
+        "messages": [
+            {
+                "role": "tool",
+                "name": "rag_document_search",
+                "content": json.dumps(
+                    {
+                        "status": "success",
+                        "documents": [
+                            {
+                                "title": "ABNT NBR 12225 — Lombada",
+                                "evidence": [
+                                    {
+                                        "evidence_id": "document:12225:page:5",
+                                        "text": (
+                                            "A lombada identifica o trabalho "
+                                            "encadernado."
+                                        ),
+                                        "matched_text": "margens e espaçamento",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ),
+            }
+        ],
+        "structured_response": AgentAnswer(
+            answer="As margens e o espaçamento devem seguir a formatação geral.",
+            evidence_ids=["document:12225:page:5"],
+        ),
+    }
+
+    assert extract_agent_result(result).evidences == []
+
+
+def test_compact_document_prefers_normative_page_over_summary() -> None:
+    document = _compact_document(
+        {
+            "id": 7,
+            "document_id": 7,
+            "title": "Trabalhos acadêmicos — Apresentação",
+            "page_context": [
+                {
+                    "page_number": 3,
+                    "direct_match": True,
+                    "page_text": "Sumário\n\n4 Formatação e margens",
+                },
+                {
+                    "page_number": 11,
+                    "direct_match": False,
+                    "page_text": (
+                        "As margens devem ser: esquerda e superior de 3 cm, "
+                        "e direita e inferior de 2 cm."
+                    ),
+                },
+            ],
+        },
+        "Quais são as regras de formatação de um TCC?",
+    )
+
+    assert document is not None
+    assert document["evidence"][0]["page_number"] == 11
+    assert "As margens devem ser" in document["evidence"][0]["text"]

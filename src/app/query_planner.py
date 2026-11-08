@@ -23,6 +23,69 @@ BROAD_QUERY_TERMS = {
     "trabalho",
     "trabalhos",
 }
+FOCUSED_TOPIC_TERMS = {
+    "citacao",
+    "citacoes",
+    "referencia",
+    "referencias",
+    "lombada",
+    "lombadas",
+    "margem",
+    "margens",
+    "paginacao",
+    "pagina",
+    "sumario",
+    "resumo",
+    "capa",
+    "folha",
+    "folhas",
+    "secao",
+    "secoes",
+}
+ACADEMIC_SCOPE_TERMS = {
+    "academico",
+    "academicos",
+    "tcc",
+    "trabalho",
+    "trabalhos",
+    "monografia",
+    "dissertacao",
+    "tese",
+}
+PLANNER_STOPWORDS = {
+    "a",
+    "as",
+    "ao",
+    "aos",
+    "com",
+    "como",
+    "da",
+    "das",
+    "de",
+    "do",
+    "dos",
+    "e",
+    "em",
+    "essa",
+    "esse",
+    "esta",
+    "este",
+    "mais",
+    "na",
+    "nas",
+    "no",
+    "nos",
+    "o",
+    "os",
+    "para",
+    "por",
+    "qual",
+    "quais",
+    "que",
+    "segundo",
+    "uma",
+    "um",
+}
 QUESTION_WORDS = {
     "como",
     "qual",
@@ -51,7 +114,7 @@ MAX_CONTEXT_MESSAGE_CHARS = 500
 
 
 def normalize_text(value: str) -> str:
-    """Normaliza caixa, acentos e espaços para o planejamento."""
+    """Normaliza caixa, acentos e espacos para o planejamento."""
 
     normalized = unicodedata.normalize("NFD", value.casefold())
     normalized = "".join(
@@ -60,6 +123,17 @@ def normalize_text(value: str) -> str:
         if unicodedata.category(character) != "Mn"
     )
     return " ".join(normalized.split())
+
+
+def meaningful_terms(value: str) -> set[str]:
+    """Retorna termos uteis para comparar intencao, contexto e resposta."""
+
+    terms = set(re.findall(r"[\wÀ-ÿ]+", normalize_text(value)))
+    return {
+        term
+        for term in terms
+        if len(term) >= 3 and term not in PLANNER_STOPWORDS
+    }
 
 
 def _message_value(message: Any, key: str) -> Any:
@@ -85,13 +159,94 @@ def _user_history(history: list[Any] | None) -> list[str]:
 
 
 def is_broad_question(question: str) -> bool:
-    """Identifica perguntas que precisam de maior cobertura de recuperação."""
+    """Identifica perguntas que precisam de maior cobertura de recuperacao."""
 
-    terms = set(re.findall(r"[\wÀ-ÿ]+", normalize_text(question)))
+    normalized = normalize_text(question)
+    terms = set(re.findall(r"[\wÀ-ÿ]+", normalized))
+    if re.search(r"\b(?:abnt\s+)?nbr\s*\d{3,5}", normalized):
+        return False
+
+    focused_terms = terms & FOCUSED_TOPIC_TERMS
+    has_academic_scope = bool(terms & ACADEMIC_SCOPE_TERMS)
+    if focused_terms and not (
+        "formatacao" in terms and has_academic_scope
+    ):
+        return False
     return (
         len(terms & BROAD_QUERY_TERMS) >= 2
         or ("quais" in terms and len(terms) >= 6)
     )
+
+
+def _academic_scope_terms(question: str) -> set[str]:
+    terms = meaningful_terms(question)
+    if "tcc" in terms:
+        terms.update({"trabalho", "trabalhos", "academico", "academicos"})
+    if "formatacao" in terms:
+        terms.add("apresentacao")
+    return terms
+
+
+def _term_matches(left: str, right: str) -> bool:
+    if left == right:
+        return True
+    prefix_length = max(4, min(len(left), len(right)) - 2)
+    return left[:prefix_length] == right[:prefix_length]
+
+
+def answer_matches_question(question: str, answer: str) -> bool:
+    """Verifica aderencia minima sem pedir uma segunda avaliacao ao modelo."""
+
+    if not answer.strip() or not is_broad_question(question):
+        return bool(answer.strip())
+
+    expected_terms = _academic_scope_terms(" ".join(plan_queries(question)))
+    answer_terms = meaningful_terms(answer)
+    overlap = {
+        expected
+        for expected in expected_terms
+        if any(_term_matches(expected, actual) for actual in answer_terms)
+    }
+    topical_terms = expected_terms - {
+        "principais",
+        "regras",
+        "formatacao",
+        "apresentacao",
+        "trabalho",
+        "trabalhos",
+        "academico",
+        "academicos",
+    }
+    topical_overlap = overlap & topical_terms
+    base_match = len(topical_overlap) >= 2 or (
+        len(overlap) >= 3 and bool(topical_overlap)
+    )
+    if not base_match:
+        return False
+    planned_queries = plan_queries(question)
+    if len(planned_queries) <= 2:
+        return True
+    facet_stopwords = {
+        "abnt",
+        "academico",
+        "academicos",
+        "apresentacao",
+        "pre",
+        "pos",
+        "textuais",
+        "trabalho",
+        "trabalhos",
+    }
+    facet_count = 0
+    for facet_query in planned_queries[1:]:
+        facet_terms = meaningful_terms(facet_query) - facet_stopwords
+        if any(
+            _term_matches(expected, actual)
+            for expected in facet_terms
+            for actual in answer_terms
+        ):
+            facet_count += 1
+    return facet_count >= 2
 
 
 def is_contextual_follow_up(question: str) -> bool:
@@ -112,7 +267,7 @@ def contextualize_query(
     question: str,
     history: list[Any] | None = None,
 ) -> str:
-    """Acrescenta contexto mínimo à consulta sem alterar a pergunta original."""
+    """Acrescenta contexto minimo a consulta sem alterar a pergunta original."""
 
     current = question.strip()
     previous_messages = _user_history(history)
@@ -146,7 +301,7 @@ def plan_queries(
     question: str,
     history: list[Any] | None = None,
 ) -> list[str]:
-    """Gera consultas semânticas preservando a intenção original."""
+    """Gera consultas semanticas preservando a intencao original."""
 
     question = question.strip()
     if not question:
@@ -158,22 +313,38 @@ def plan_queries(
 
     normalized = normalize_text(question)
     if "formatacao" in normalized:
-        expansion = (
-            "trabalhos acadêmicos estrutura formato margens fonte "
-            "espaçamento paginação citações referências"
-        )
+        queries = [
+            retrieval_question,
+            (
+                "trabalhos acadêmicos apresentação estrutura elementos "
+                "pré-textuais textuais pós-textuais"
+            ),
+            (
+                "trabalhos acadêmicos formatação margens fonte tamanho "
+                "espaçamento paginação anverso verso"
+            ),
+            (
+                "trabalhos acadêmicos citações referências "
+                "ABNT NBR 10520 ABNT NBR 6023"
+            ),
+        ]
     else:
-        expansion = (
-            f"{retrieval_question} trabalhos acadêmicos apresentação "
-            "requisitos estrutura"
-        )
-    return [retrieval_question, expansion]
+        queries = [
+            retrieval_question,
+            (
+                f"{retrieval_question} trabalhos acadêmicos apresentação "
+                "requisitos estrutura"
+            ),
+        ]
+    return list(dict.fromkeys(queries))
 
 
 __all__ = [
+    "answer_matches_question",
     "contextualize_query",
     "is_broad_question",
     "is_contextual_follow_up",
+    "meaningful_terms",
     "normalize_text",
     "plan_queries",
 ]

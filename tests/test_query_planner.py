@@ -1,6 +1,7 @@
 import json
 
 from src.app.query_planner import (
+    answer_matches_question,
     contextualize_query,
     is_broad_question,
     plan_queries,
@@ -13,9 +14,11 @@ def test_broad_question_gets_generic_expansion() -> None:
     assert is_broad_question(question)
     queries = plan_queries(question)
 
-    assert len(queries) == 2
+    assert len(queries) == 4
     assert "trabalhos acadêmicos" in queries[1]
     assert "estrutura" in queries[1]
+    assert "margens" in queries[2]
+    assert "citações" in queries[3]
 
 
 def test_specific_question_is_not_expanded() -> None:
@@ -161,3 +164,26 @@ def test_adaptive_merge_deduplicates_documents_without_adding_rrf_scores(
     ]
     assert document["rrf_score"] == 0.02
     assert document["pages"] == [8, 9]
+
+
+def test_focused_academic_topics_do_not_trigger_broad_decomposition() -> None:
+    assert not is_broad_question("Quais são as principais regras de lombadas?")
+    assert not is_broad_question("Como fazer citações diretas segundo a ABNT?")
+    assert not is_broad_question("Como montar referências bibliográficas?")
+    assert len(plan_queries("Quais são as principais regras de lombadas?")) == 1
+
+
+def test_broad_answer_requires_more_than_one_planned_facet() -> None:
+    question = "Quais são as principais regras de formatação de um TCC?"
+
+    assert not answer_matches_question(
+        question,
+        "As citações devem usar o sistema autor-data ou numérico.",
+    )
+    assert answer_matches_question(
+        question,
+        (
+            "A apresentação inclui estrutura e elementos do trabalho. "
+            "Também há regras de margens, fonte, espaçamento e paginação."
+        ),
+    )
