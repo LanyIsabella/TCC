@@ -1,0 +1,10 @@
+Name                                Stmts   Miss  Cover
+-------------------------------------------------------
+src\api\schemas\agent.py               37      0   100%
+src\api\services\agent_service.py      28      1    96%
+src\app\agente.py                     145     11    92%
+src\app\evidence.py                   221     11    95%
+src\app\grounding.py                  183      1    99%
+src\terminal\main.py                  200    132    34%
+-------------------------------------------------------
+TOTAL                                 814    156    81%

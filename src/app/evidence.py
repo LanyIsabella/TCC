@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
-import re
-import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
+
+from .grounding import INSUFFICIENT_EVIDENCE, GroundingDecision, Verifier, ground_answer
+from .scope_guard import ScopeDecision, classify_messages, normalize_text
 
 logger = logging.getLogger(__name__)
 
@@ -36,65 +39,6 @@ class AgentAnswer(BaseModel):
 
 EvidenceRecord = dict[str, Any]
 
-EVIDENCE_STOPWORDS = {
-    "a",
-    "as",
-    "ao",
-    "aos",
-    "com",
-    "da",
-    "das",
-    "de",
-    "do",
-    "dos",
-    "e",
-    "em",
-    "entre",
-    "essa",
-    "esse",
-    "esta",
-    "este",
-    "academico",
-    "academica",
-    "acordo",
-    "apresentacao",
-    "deve",
-    "devem",
-    "documento",
-    "documentos",
-    "elemento",
-    "elementos",
-    "forma",
-    "informacao",
-    "item",
-    "itens",
-    "mais",
-    "na",
-    "nas",
-    "no",
-    "nos",
-    "o",
-    "os",
-    "para",
-    "por",
-    "qual",
-    "que",
-    "se",
-    "sem",
-    "ser",
-    "sao",
-    "segundo",
-    "sobre",
-    "norma",
-    "normas",
-    "pode",
-    "podem",
-    "trabalho",
-    "trabalhos",
-    "um",
-    "uma",
-}
-
 
 @dataclass(frozen=True)
 class AgentResult:
@@ -102,6 +46,13 @@ class AgentResult:
 
     answer: str
     evidences: list[EvidenceRecord]
+
+
+@dataclass(frozen=True)
+class EvidenceTurn:
+    id: str
+    question: str
+    question_sha256: str
 
 
 def _message_value(message: Any, key: str) -> Any:
@@ -129,6 +80,78 @@ def _normalize_content(content: Any) -> str:
     return str(content).strip() if content is not None else ""
 
 
+def message_role(message: Any) -> str:
+    return str(_message_value(message, "role") or _message_value(message, "type") or "")
+
+
+def begin_turn(payload: Mapping[str, Any]) -> tuple[dict[str, Any], EvidenceTurn]:
+    messages = list(payload["messages"])
+    index = next(
+        i
+        for i in range(len(messages) - 1, -1, -1)
+        if message_role(messages[i]) in {"user", "human"}
+    )
+    message = messages[index]
+    question = _normalize_content(_message_value(message, "content"))
+    turn = EvidenceTurn(
+        uuid4().hex, question, hashlib.sha256(question.encode()).hexdigest()
+    )
+    if isinstance(message, Mapping):
+        messages[index] = {**message, "id": turn.id}
+    elif hasattr(message, "model_copy"):
+        messages[index] = message.model_copy(update={"id": turn.id})
+    else:
+        messages[index] = {
+            "role": "user",
+            "content": _message_value(message, "content"),
+            "id": turn.id,
+        }
+    return {**payload, "messages": messages}, turn
+
+
+def bind_turn(
+    result: Any, payload: dict[str, Any], turn: EvidenceTurn
+) -> dict[str, Any]:
+    if not isinstance(result, Mapping):
+        raise RuntimeError("O agente retornou um formato de resposta invalido.")
+    bound = {**result, "_turn": turn}
+    if not any(
+        _message_value(message, "id") == turn.id
+        for message in result.get("messages", [])
+    ):
+        # Unbound tool events cannot prove which invocation produced them.
+        bound["messages"] = [
+            *payload["messages"],
+            {"role": "assistant", "content": _extract_answer(result)},
+        ]
+    return bound
+
+
+def current_turn_messages(result: Mapping[str, Any]) -> list[Any]:
+    messages = result.get("messages", [])
+    if not isinstance(messages, list):
+        return []
+    turn = result.get("_turn")
+    index = next(
+        (
+            i
+            for i in range(len(messages) - 1, -1, -1)
+            if message_role(messages[i]) in {"user", "human"}
+        ),
+        -1,
+    )
+    if isinstance(turn, EvidenceTurn):
+        if index < 0:
+            return []
+        current = messages[index]
+        if (
+            _message_value(current, "id") != turn.id
+            or _normalize_content(_message_value(current, "content")) != turn.question
+        ):
+            return []
+    return messages[index + 1 :]
+
+
 def _structured_data(result: Mapping[str, Any]) -> Mapping[str, Any] | None:
     structured = result.get("structured_response")
     if structured is None:
@@ -141,102 +164,125 @@ def _structured_data(result: Mapping[str, Any]) -> Mapping[str, Any] | None:
     return None
 
 
-def _tool_payloads(result: Mapping[str, Any]) -> list[Mapping[str, Any]]:
-    payloads: list[Mapping[str, Any]] = []
-    messages = result.get("messages")
-    if not isinstance(messages, list):
-        return payloads
-
-    for message in messages:
-        role = str(
-            _message_value(message, "role")
-            or _message_value(message, "type")
-            or ""
-        )
-        name = _message_value(message, "name")
-        if role != "tool" or (name and name != "rag_document_search"):
-            continue
-
-        content = _message_value(message, "content")
-        if isinstance(content, Mapping):
-            payload = content
-        else:
-            text = _normalize_content(content)
-            try:
-                payload = json.loads(text)
-            except (TypeError, ValueError, json.JSONDecodeError):
-                continue
-        if isinstance(payload, Mapping):
-            payloads.append(payload)
-    return payloads
+def _parse_tool_content(content: Any) -> Mapping[str, Any] | None:
+    if isinstance(content, Mapping):
+        return content
+    try:
+        payload = json.loads(_normalize_content(content))
+    except (TypeError, ValueError):
+        return None
+    return payload if isinstance(payload, Mapping) else None
 
 
-def _collect_evidences(result: Mapping[str, Any]) -> dict[str, EvidenceRecord]:
-    evidences: dict[str, EvidenceRecord] = {}
-    for payload in _tool_payloads(result):
-        documents = payload.get("documents")
-        if not isinstance(documents, list):
-            continue
-        for document in documents:
-            if not isinstance(document, Mapping):
-                continue
-            raw_evidences = document.get("evidence")
-            if not isinstance(raw_evidences, list):
-                continue
-            for evidence in raw_evidences:
-                if not isinstance(evidence, Mapping):
-                    continue
-                evidence_id = evidence.get("evidence_id")
-                text = evidence.get("text")
-                if not isinstance(evidence_id, str) or not evidence_id.strip():
-                    continue
-                if not isinstance(text, str) or not text.strip():
-                    continue
-                document_metadata = {
-                    key: document.get(key)
-                    for key in (
-                        "document_id",
-                        "rag_document_id",
-                        "title",
-                        "standard_id",
-                        "version",
-                        "issuer",
-                    )
-                    if document.get(key) is not None
-                }
-                evidences.setdefault(
-                    evidence_id,
-                    {
-                        **document_metadata,
-                        **dict(evidence),
-                        "evidence_id": evidence_id.strip(),
-                        "text": text,
-                    },
-                )
-    return evidences
+def _rag_event(
+    message: Any, calls: Mapping[str, Any], bound: bool
+) -> Mapping[str, Any] | None:
+    name = _message_value(message, "name")
+    if message_role(message) != "tool" or name != "rag_document_search":
+        return None
+    call_id = _message_value(message, "tool_call_id")
+    if bound and not call_id:
+        return None
+    if call_id is not None and calls.get(call_id, {}).get("name") != name:
+        return None
+    return _parse_tool_content(_message_value(message, "content"))
 
 
-def _normalized_terms(value: str) -> set[str]:
-    normalized = unicodedata.normalize("NFD", value.casefold())
-    normalized = "".join(
-        character
-        for character in normalized
-        if unicodedata.category(character) != "Mn"
-    )
+def _execution(
+    turn: Any, call_id: str | None, call: Mapping[str, Any], payload: Mapping[str, Any]
+) -> dict:
+    args = call.get("args")
+    if not isinstance(args, Mapping):
+        args = {}
     return {
-        term
-        for term in re.findall(r"[\wÀ-ÿ]{4,}", normalized, flags=re.UNICODE)
-        if term not in EVIDENCE_STOPWORDS
+        "turn_id": turn.id if isinstance(turn, EvidenceTurn) else None,
+        "question_sha256": turn.question_sha256
+        if isinstance(turn, EvidenceTurn)
+        else None,
+        "tool_call_id": call_id,
+        "query": args.get("question", payload.get("query")),
     }
 
 
+def _tool_payloads(result: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    payloads = []
+    calls = {}
+    turn = result.get("_turn")
+    for message in current_turn_messages(result):
+        for call in _message_value(message, "tool_calls") or []:
+            if isinstance(call, Mapping):
+                calls[call.get("id")] = call
+        payload = _rag_event(message, calls, isinstance(turn, EvidenceTurn))
+        if payload is not None:
+            call_id = _message_value(message, "tool_call_id")
+            payloads.append(
+                {
+                    **payload,
+                    "_execution": _execution(
+                        turn, call_id, calls.get(call_id, {}), payload
+                    ),
+                }
+            )
+    return payloads
+
+
+def _document_evidences(payload: Mapping[str, Any]):
+    documents = payload.get("documents")
+    if not isinstance(documents, list):
+        return
+    for document in documents:
+        if not isinstance(document, Mapping):
+            continue
+        raw = document.get("evidence")
+        if isinstance(raw, list):
+            for evidence in raw:
+                if isinstance(evidence, Mapping):
+                    yield document, evidence
+
+
+def _evidence_record(
+    document: Mapping[str, Any], evidence: Mapping[str, Any], execution: dict
+) -> EvidenceRecord | None:
+    identifier, text = evidence.get("evidence_id"), evidence.get("text")
+    if not isinstance(identifier, str) or not identifier.strip():
+        return None
+    if not isinstance(text, str) or not text.strip():
+        return None
+    metadata = {
+        key: document[key]
+        for key in (
+            "document_id",
+            "rag_document_id",
+            "title",
+            "standard_id",
+            "version",
+            "issuer",
+        )
+        if document.get(key) is not None
+    }
+    return {
+        **metadata,
+        **evidence,
+        "evidence_id": identifier.strip(),
+        "text": text,
+        **execution,
+    }
+
+
+def _collect_evidences(result: Mapping[str, Any]) -> dict[str, EvidenceRecord]:
+    evidences = {}
+    for payload in _tool_payloads(result):
+        if payload.get("status") != "success" or payload.get("evidence_found") is False:
+            continue
+        for document, evidence in _document_evidences(payload):
+            record = _evidence_record(document, evidence, payload.get("_execution", {}))
+            if record is not None:
+                evidences.setdefault(record["evidence_id"], record)
+    return evidences
+
+
 def looks_like_guarded_answer(answer: str) -> bool:
-    normalized = unicodedata.normalize("NFD", answer.casefold())
-    normalized = "".join(
-        character
-        for character in normalized
-        if unicodedata.category(character) != "Mn"
-    )
+    normalized = normalize_text(answer)
     normalized = " ".join(normalized.split())
     return (
         ("por favor" in normalized and "pergunta" in normalized)
@@ -249,60 +295,6 @@ def looks_like_guarded_answer(answer: str) -> bool:
     )
 
 
-def _fallback_evidence_ids(
-    answer: str, available: Mapping[str, EvidenceRecord]
-) -> list[str]:
-    """Seleciona evidências por sobreposição textual quando o modelo não retorna IDs."""
-
-    if looks_like_guarded_answer(answer):
-        return []
-    answer_terms = _normalized_terms(answer)
-    if len(answer_terms) < 2:
-        return []
-
-    ranked: list[tuple[float, int, str]] = []
-    for position, (evidence_id, evidence) in enumerate(available.items()):
-        evidence_text = " ".join(
-            str(evidence.get(key) or "")
-            for key in (
-                "title",
-                "standard_id",
-                "version",
-                "section",
-                "matched_text",
-                "text",
-            )
-        )
-        evidence_terms = _normalized_terms(evidence_text)
-        overlap = answer_terms & evidence_terms
-        if len(overlap) < 2:
-            continue
-        precision = len(overlap) / max(len(evidence_terms), 1)
-        recall = len(overlap) / max(len(answer_terms), 1)
-        score = (precision * 0.65) + (recall * 0.35)
-        if score >= 0.08:
-            ranked.append((score, position, evidence_id))
-
-    ranked.sort(key=lambda item: (-item[0], item[1]))
-    return [evidence_id for _, _, evidence_id in ranked[:3]]
-
-
-def _supports_answer(answer: str, evidence: EvidenceRecord) -> bool:
-    """Aplica uma validação conservadora para IDs escolhidos pelo modelo."""
-
-    if str(evidence.get("matched_text") or "").strip():
-        return True
-    answer_terms = _normalized_terms(answer)
-    evidence_terms = _normalized_terms(
-        " ".join(
-            str(evidence.get(key) or "")
-            for key in ("title", "standard_id", "version", "section", "text")
-        )
-    )
-    overlap = answer_terms & evidence_terms
-    return len(overlap) >= 2
-
-
 def _extract_answer(result: Mapping[str, Any]) -> str:
     structured = _structured_data(result)
     if structured is not None:
@@ -310,70 +302,124 @@ def _extract_answer(result: Mapping[str, Any]) -> str:
         if answer:
             return answer
 
-    messages = result.get("messages")
-    if isinstance(messages, list):
-        for message in reversed(messages):
-            role = str(
-                _message_value(message, "role")
-                or _message_value(message, "type")
-                or ""
-            )
-            if role in {"assistant", "ai"}:
-                answer = _normalize_content(_message_value(message, "content"))
-                if answer:
-                    return answer
+    for message in reversed(current_turn_messages(result)):
+        if message_role(message) in {"assistant", "ai"}:
+            answer = _normalize_content(_message_value(message, "content"))
+            if answer:
+                return answer
     raise RuntimeError("O agente nao retornou uma resposta do assistente.")
 
 
-def extract_agent_result(result: Any) -> AgentResult:
-    """Extrai a resposta e aceita somente evidências retornadas e selecionadas."""
+@dataclass(frozen=True)
+class GroundingSeal:
+    fingerprint: str
+    decision: GroundingDecision
 
+
+def last_user_question(messages: list[Any]) -> str:
+    message = next(
+        (m for m in reversed(messages) if message_role(m) in {"user", "human"}), None
+    )
+    return _normalize_content(_message_value(message, "content"))
+
+
+def _fingerprint(
+    result: Mapping[str, Any], answer: str, available: Mapping[str, Any]
+) -> str:
+    turn = result.get("_turn")
+    data = {
+        "turn_id": turn.id if isinstance(turn, EvidenceTurn) else None,
+        "question": last_user_question(result.get("messages", [])),
+        "answer": answer,
+        "evidences": available,
+        "normative_context": _normative_context(result),
+    }
+    return hashlib.sha256(
+        json.dumps(data, sort_keys=True, ensure_ascii=False).encode()
+    ).hexdigest()
+
+
+def _normative_context(result: Mapping[str, Any]) -> bool:
+    return classify_messages(result.get("messages", [])) == ScopeDecision.IN_SCOPE
+
+
+def _decision(
+    result: Mapping[str, Any],
+    verifier: Verifier | None = None,
+    question: str | None = None,
+) -> GroundingDecision:
+    answer = _extract_answer(result)
+    available = _collect_evidences(result)
+    original_question = last_user_question(result.get("messages", []))
+    question = original_question if question is None else question
+    seal = result.get("_grounding")
+    if (
+        question == original_question
+        and isinstance(seal, GroundingSeal)
+        and seal.fingerprint == _fingerprint(result, answer, available)
+    ):
+        return seal.decision
+    decision = ground_answer(
+        answer,
+        available,
+        question,
+        verifier,
+        normative_context=_normative_context(result),
+    )
+    logger.info(
+        "grounding status=%s available=%d supported=%d",
+        decision.status,
+        len(available),
+        len(decision.evidence_ids),
+    )
+    return decision
+
+
+def finalize_grounding(
+    result: dict[str, Any], verifier: Verifier | None = None
+) -> dict[str, Any]:
+    """Só publica a decisão central; eventos internos mantêm os pares de tools."""
+    try:
+        decision = _decision(result, verifier)
+    except RuntimeError:
+        decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
+    current_ids = {id(message) for message in current_turn_messages(result)}
+    messages = []
+    for message in result.get("messages", []):
+        if id(message) in current_ids and message_role(message) in {"ai", "assistant"}:
+            if not _message_value(message, "tool_calls"):
+                continue
+            message = _without_content(message)
+        messages.append(message)
+    finalized = {
+        **result,
+        "messages": [*messages, {"role": "assistant", "content": decision.answer}],
+        "structured_response": AgentAnswer(
+            answer=decision.answer, evidence_ids=list(decision.evidence_ids)
+        ),
+    }
+    finalized["_grounding"] = GroundingSeal(
+        _fingerprint(finalized, decision.answer, _collect_evidences(finalized)),
+        decision,
+    )
+    return finalized
+
+
+def _without_content(message: Any) -> Any:
+    if isinstance(message, Mapping):
+        return {**message, "content": ""}
+    return message.model_copy(update={"content": ""})
+
+
+def extract_agent_result(result: Any, *, question: str | None = None) -> AgentResult:
+    """Aplica a mesma política para UI, API, terminal e adaptadores isolados."""
     if not isinstance(result, Mapping):
         raise RuntimeError("O agente retornou um formato de resposta invalido.")
-
-    answer = _extract_answer(result)
-    structured = _structured_data(result)
+    decision = _decision(result, question=question)
     available = _collect_evidences(result)
-    if structured is None:
-        selected_ids = _fallback_evidence_ids(answer, available)
-    else:
-        selected_ids = structured.get("evidence_ids", [])
-        if not isinstance(selected_ids, list):
-            selected_ids = []
-    validated: list[EvidenceRecord] = []
-    seen_ids: set[str] = set()
-    rejected_ids: list[str] = []
-    for evidence_id in selected_ids:
-        if not isinstance(evidence_id, str):
-            continue
-        evidence_id = evidence_id.strip()
-        if evidence_id in seen_ids:
-            continue
-        if evidence_id not in available:
-            rejected_ids.append(evidence_id)
-            continue
-        if structured is not None and not _supports_answer(
-            answer, available[evidence_id]
-        ):
-            rejected_ids.append(evidence_id)
-            continue
-        seen_ids.add(evidence_id)
-        validated.append(available[evidence_id])
-
-    if rejected_ids:
-        logger.warning(
-            "evidence_ids_rejected count=%d ids=%s",
-            len(rejected_ids),
-            rejected_ids[:5],
-        )
-    logger.info(
-        "evidence_selection available=%d selected=%d structured=%s",
-        len(available),
-        len(validated),
-        structured is not None,
+    return AgentResult(
+        decision.answer, [available[key] for key in decision.evidence_ids]
     )
-
-    return AgentResult(answer=answer, evidences=validated)
 
 
 __all__ = [

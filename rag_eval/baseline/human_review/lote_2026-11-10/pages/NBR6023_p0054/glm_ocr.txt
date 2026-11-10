@@ -1,0 +1,41 @@
+8.7.2.4 Em partes de publicações, devem-se indicar os números das folhas ou páginas inicial e final, precedidos da abreviatura f. ou p. Se a publicação for em volumes, indica-se o número do volume, precedido da abreviatura v. Se necessário, indicar outra forma de individualizar a parte referenciada.
+
+EXEMPLO 1
+
+REGO, L. L. B. O desenvolvimento cognitivo e a prontidão para a alfabetização. In: CARRARO, T. N. (org.). Aprender pensando. 6. ed. Petrópolis: Vozes, 1991. p. 31-40.
+
+EXEMPLO 2
+
+TOURINHO FILHO, F. C. Processo penal. 16. ed. rev. e atual. São Paulo: Saraiva, 1994. v. 2.
+
+8.7.2.5 Quando a publicação não for paginada, indica-se, caso seja necessário, a quantidade de páginas entre colchetes. Caso a numeração de páginas seja irregular, indica-se a sequência apresentada no documento.
+
+EXEMPLO 1
+
+REDE EAD SENAC. Curso de especialização em Educação a Distância: manual do tutor. Rio de Janeiro: [Senac Nacional], 2005. [46] p.
+
+EXEMPLO 2
+
+LUCCI, E. A. Viver e aprender: estudos sociais 3: exemplar do professor. 3. ed. São Paulo: Saraiva, 1994. 96, 7 p.
+
+8.7.3 Documento em meio eletrônico
+
+Recomenda-se indicar o tipo de suporte ou meio eletrônico em que o documento está disponível.
+
+Para redes sociais, especificar o nome da rede e o perfil ou página acessados, separados por dois pontos. Para os demais documentos, seguir o descrito em 8.7.1.
+
+EXEMPLO 1
+
+PODCAST LXX: Brasil: parte 3: a república. [Locução de]: Christian Gutner. Escriba Café, 19 mar. 2010. Podcast. Disponível em: http://www.escribacafe.com/podcast-lxx-brasil-parte-3-a-republica/. Acesso em: 4 out. 2010.
+
+EXEMPLO 2
+
+DIRETOR do SciELO, Abel Packer, apresenta hoje palestra na 4ª edição dos Simpósios Temáticos do Programa de Pós-Graduação em Química da UFMG. [São Paulo], 27 fev. 2015. Twitter: @redescielo. Disponível em: https://twitter.com/redescielo/status/571261986882899969. Acesso em: 5 mar. 2015.
+
+EXEMPLO 3
+
+CID, Rodrigo. Deus: argumentos da impossibilidade e da incompatibilidade. In: CARVALHO, Mário Augusto Queiroz et al. Blog investigação filosófica. Rio de Janeiro, 23 abr. 2011. Disponível em: http://investigacao-filosofica.blogspot.com/search/label/Postagens. Acesso em: 23 ago. 2011.
+
+EXEMPLO 4
+
+ALMEIDA, M. P. S. Fichas para MARC. Destinatário: Maria Teresa Reis Mendes. 12 jan. 2002. 1 mensagem eletrônica.

@@ -1,0 +1,5 @@
+{
+  "threshold": 9.999,
+  "fresh_combined_lcov_only": true,
+  "exit_code": 2
+}

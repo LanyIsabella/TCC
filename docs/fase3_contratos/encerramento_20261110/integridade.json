@@ -1,0 +1,14 @@
+{
+  "compared_to_start_files": 1255,
+  "changed_preexisting_files": [],
+  "phase3_production_hashes_match_delivery": true,
+  "baseline_frozen_files": 24,
+  "snapshot_sha256": "ba555e70267df221683c429d7ab6c965d03b73e64e7d1d2e52dbe0d1ace9ba99",
+  "human_package_files": 63,
+  "pdfs": 10,
+  "outside_scope_source_hashes": 40,
+  "live_database": "preservacao_banco.json",
+  "production_source_or_tests_modified_in_this_review": false,
+  "old_reports_modified": false,
+  "no_ingestion_ocr_embeddings_migrations_or_production_writes": true
+}

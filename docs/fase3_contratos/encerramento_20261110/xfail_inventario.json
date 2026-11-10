@@ -1,0 +1,47 @@
+[
+  {
+    "nodeid": "tests/baseline/test_defect_agent.py::test_f6_contract_answer_bearing_rule_survives_compaction[late-in-page]",
+    "reason": "F6: prefix compaction loses a late rule even on matched pages",
+    "strict": true
+  },
+  {
+    "nodeid": "tests/baseline/test_defect_agent.py::test_f6_contract_answer_bearing_rule_survives_compaction[late-in-document]",
+    "reason": "F6: prefix compaction loses a late rule even on matched pages",
+    "strict": true
+  },
+  {
+    "nodeid": "tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[review]",
+    "reason": "F1: Gold gate ignores review, score and evaluation method",
+    "strict": true
+  },
+  {
+    "nodeid": "tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[no-score]",
+    "reason": "F1: Gold gate ignores review, score and evaluation method",
+    "strict": true
+  },
+  {
+    "nodeid": "tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[legacy-fallback]",
+    "reason": "F1: Gold gate ignores review, score and evaluation method",
+    "strict": true
+  },
+  {
+    "nodeid": "tests/baseline/test_defect_pipeline.py::test_f2_contract_changed_content_invalidates_score",
+    "reason": "F2: forced text replacement preserves stale successful evaluation",
+    "strict": true
+  },
+  {
+    "nodeid": "tests/baseline/test_defect_pipeline.py::test_f2_contract_force_content_is_evaluated_again",
+    "reason": "F2: evaluator only selects pending/error and skips changed content",
+    "strict": true
+  },
+  {
+    "nodeid": "tests/baseline/test_defect_pipeline.py::test_f2_contract_changed_provenance_creates_new_extraction[source-bytes]",
+    "reason": "F2: extraction identity lacks source hash and effective configuration",
+    "strict": true
+  },
+  {
+    "nodeid": "tests/baseline/test_defect_pipeline.py::test_f2_contract_changed_provenance_creates_new_extraction[extractor-config]",
+    "reason": "F2: extraction identity lacks source hash and effective configuration",
+    "strict": true
+  }
+]

@@ -1,0 +1,113 @@
+No coverage data for src/app/grounding.py; its sites are uncovered. Pass --no-coverage to run them anyway.
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.edn
+UNCOVERED src/app/grounding.py:77 True -> False
+UNCOVERED src/app/grounding.py:91 False -> True
+UNCOVERED src/app/grounding.py:92 + -> -
+UNCOVERED src/app/grounding.py:92 + -> -
+UNCOVERED src/app/grounding.py:92 or -> and
+UNCOVERED src/app/grounding.py:94 or -> and
+UNCOVERED src/app/grounding.py:95 or -> and
+UNCOVERED src/app/grounding.py:106 + -> -
+UNCOVERED src/app/grounding.py:107 + -> -
+UNCOVERED src/app/grounding.py:108 + -> -
+UNCOVERED src/app/grounding.py:112 and -> or
+UNCOVERED src/app/grounding.py:113 and -> or
+UNCOVERED src/app/grounding.py:113 delete not
+UNCOVERED src/app/grounding.py:113 + -> -
+UNCOVERED src/app/grounding.py:113 + -> -
+UNCOVERED src/app/grounding.py:114 and -> or
+UNCOVERED src/app/grounding.py:114 delete not
+UNCOVERED src/app/grounding.py:187 * -> /
+UNCOVERED src/app/grounding.py:202 delete not
+UNCOVERED src/app/grounding.py:202 or -> and
+UNCOVERED src/app/grounding.py:202 delete not
+UNCOVERED src/app/grounding.py:227 and -> or
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentExecutor.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentService.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.ScopedAgent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.evidence.edn
+UNCOVERED src/app/grounding.py:228 True -> False
+UNCOVERED src/app/grounding.py:231 and -> or
+UNCOVERED src/app/grounding.py:234 True -> False
+UNCOVERED src/app/grounding.py:236 + -> -
+UNCOVERED src/app/grounding.py:236 + -> -
+UNCOVERED src/app/grounding.py:247 and -> or
+UNCOVERED src/app/grounding.py:248 True -> False
+UNCOVERED src/app/grounding.py:250 and -> or
+UNCOVERED src/app/grounding.py:251 True -> False
+UNCOVERED src/app/grounding.py:252 False -> True
+UNCOVERED src/app/grounding.py:257 delete not
+UNCOVERED src/app/grounding.py:260 != -> ==
+UNCOVERED src/app/grounding.py:279 delete not
+UNCOVERED src/app/grounding.py:289 or -> and
+UNCOVERED src/app/grounding.py:298 == -> !=
+UNCOVERED src/app/grounding.py:298 or -> and
+UNCOVERED src/app/grounding.py:302 False -> True
+UNCOVERED src/app/grounding.py:315 and -> or
+UNCOVERED src/app/grounding.py:316 and -> or
+UNCOVERED src/app/grounding.py:316 1 -> 0
+UNCOVERED src/app/grounding.py:316 == -> !=
+UNCOVERED src/app/grounding.py:316 1 -> 0
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.grounding.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.ChatSession.edn
+UNCOVERED src/app/grounding.py:340 delete not
+UNCOVERED src/app/grounding.py:345 1 -> 0
+UNCOVERED src/app/grounding.py:351 or -> and
+UNCOVERED src/app/grounding.py:352 or -> and
+UNCOVERED src/app/grounding.py:353 delete not
+UNCOVERED src/app/grounding.py:353 or -> and
+UNCOVERED src/app/grounding.py:353 delete not
+UNCOVERED src/app/grounding.py:358 or -> and
+UNCOVERED src/app/grounding.py:359 and -> or
+UNCOVERED src/app/grounding.py:374 delete not
+UNCOVERED src/app/grounding.py:374 or -> and
+UNCOVERED src/app/grounding.py:379 0 -> 1
+UNCOVERED src/app/grounding.py:379 <= -> <
+UNCOVERED src/app/grounding.py:379 < -> <=
+UNCOVERED src/app/grounding.py:379 and -> or
+UNCOVERED src/app/grounding.py:379 == -> !=
+UNCOVERED src/app/grounding.py:379 1 -> 0
+UNCOVERED src/app/grounding.py:380 or -> and
+UNCOVERED src/app/grounding.py:392 or -> and
+UNCOVERED src/app/grounding.py:397 delete not
+UNCOVERED src/app/grounding.py:399 == -> !=
+UNCOVERED src/app/grounding.py:412 False -> True
+UNCOVERED src/app/grounding.py:417 or -> and
+UNCOVERED src/app/grounding.py:418 or -> and
+UNCOVERED src/app/grounding.py:418 delete not
+UNCOVERED src/app/grounding.py:418 or -> and
+Function             Namespace      Killed  Survived  Uncovered  Sites   Score
+------------------------------------------------------------------------------
+_assess              app.grounding       0         0          0      0    n/a
+_assessment_data     app.grounding       0         0          2      2    n/a
+_canonical           app.grounding       0         0          0      0    n/a
+_claim_support       app.grounding       0         0          9      9    n/a
+_claims              app.grounding       0         0          0      0    n/a
+_compatible          app.grounding       0         0          2      2    n/a
+_compose             app.grounding       0         0          3      3    n/a
+_conversational      app.grounding       0         0          1      1    n/a
+_literal_form        app.grounding       0         0          0      0    n/a
+_literal_in_source   app.grounding       0         0          3      3    n/a
+_literal_quantity    app.grounding       0         0          0      0    n/a
+_literal_support     app.grounding       0         0          1      1    n/a
+_modality_conflict   app.grounding       0         0          5      5    n/a
+_numeric_conflict    app.grounding       0         0          3      3    n/a
+_optional_permission app.grounding       0         0          5      5    n/a
+_plain_text_rewrite  app.grounding       0         0         10     10    n/a
+_polarity            app.grounding       0         0          0      0    n/a
+_qualifier_conflict  app.grounding       0         0          6      6    n/a
+_qualifiers          app.grounding       0         0          0      0    n/a
+_quantities          app.grounding       0         0          0      0    n/a
+_quantity_value      app.grounding       0         0          1      1    n/a
+_quote_context       app.grounding       0         0          0      0    n/a
+_scoped_quote        app.grounding       0         0          1      1    n/a
+_verified_support    app.grounding       0         0          7      7    n/a
+ground_answer        app.grounding       0         0          5      5    n/a
+needs_support        app.grounding       0         0          6      6    n/a
+------------------------------------------------------------------------------
+Total                                    0         0         70     70     n/a

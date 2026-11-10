@@ -1,0 +1,21 @@
+.............xx.x.x.x.x..xx...xxx.x.x..xx............................... [ 46%]
+................................s....................................... [ 92%]
+...........                                                              [100%]
+=========================== short test summary info ===========================
+XFAIL tests/baseline/test_defect_agent.py::test_f6_contract_answer_bearing_rule_survives_compaction[late-in-page] - F6: prefix compaction loses a late rule even on matched pages
+XFAIL tests/baseline/test_defect_agent.py::test_f6_contract_answer_bearing_rule_survives_compaction[late-in-document] - F6: prefix compaction loses a late rule even on matched pages
+XFAIL tests/baseline/test_defect_agent.py::test_f10_contract_empty_recovery_withholds_normative_answer - F10: no_evidence recovery preserves an unsupported normative answer
+XFAIL tests/baseline/test_defect_agent.py::test_f11_contract_contradictory_evidence_cannot_validate_answer - F11: matched_text bypasses support checking for a contradictory number
+XFAIL tests/baseline/test_defect_agent.py::test_f11_contract_no_evidence_requires_abstention_or_rejection - F11: result extraction returns an unsupported normative answer unchanged
+XFAIL tests/baseline/test_defect_agent.py::test_f12_contract_new_question_triggers_current_retrieval - F12: previous-turn tool evidence suppresses current retrieval
+XFAIL tests/baseline/test_defect_agent.py::test_f13_contract_public_history_rejects_privileged_roles[system] - F13: public history accepts client-controlled system/tool roles
+XFAIL tests/baseline/test_defect_agent.py::test_f13_contract_public_history_rejects_privileged_roles[tool] - F13: public history accepts client-controlled system/tool roles
+XFAIL tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[review] - F1: Gold gate ignores review, score and evaluation method
+XFAIL tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[no-score] - F1: Gold gate ignores review, score and evaluation method
+XFAIL tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[legacy-fallback] - F1: Gold gate ignores review, score and evaluation method
+XFAIL tests/baseline/test_defect_pipeline.py::test_f2_contract_changed_content_invalidates_score - F2: forced text replacement preserves stale successful evaluation
+XFAIL tests/baseline/test_defect_pipeline.py::test_f2_contract_force_content_is_evaluated_again - F2: evaluator only selects pending/error and skips changed content
+XFAIL tests/baseline/test_defect_pipeline.py::test_f2_contract_changed_provenance_creates_new_extraction[source-bytes] - F2: extraction identity lacks source hash and effective configuration
+XFAIL tests/baseline/test_defect_pipeline.py::test_f2_contract_changed_provenance_creates_new_extraction[extractor-config] - F2: extraction identity lacks source hash and effective configuration
+SKIPPED [1] tests\test_gedweb_playwright.py:16: defina RUN_GEDWEB_PLAYWRIGHT=1 para executar o teste real
+139 passed, 1 skipped, 15 xfailed in 9.09s

@@ -1,0 +1,33 @@
+{
+  "status": "bounded_real_model_smoke_completed",
+  "configured_model": "gemma4:e2b",
+  "local_ollama_cli_installed": true,
+  "availability_probes": [
+    {
+      "timeout_seconds": 2,
+      "result": "URLError: timed out"
+    },
+    {
+      "timeout_seconds": 5,
+      "result": "URLError: WinError 10061 connection refused"
+    }
+  ],
+  "serve_launch": {
+    "executed": false,
+    "rejected_by": "automatic approval review",
+    "reason": "blocked by policy"
+  },
+  "download_or_model_install_executed": false,
+  "real_inference_executed": true,
+  "user_runtime_question_pending": false,
+  "scientific_conclusion": "V5 matched 24/24 synthetic expected statuses; intermediate V3 optional-use false refusal preserved and addressed by directed proof. Final code replay 24/24, not new inference or universal fidelity.",
+  "resolved_at": "2026-11-10T14:12:52.801782+00:00",
+  "resolved_by": "User started the preinstalled Ollama server; model already present, no download.",
+  "final_real_model_run": {
+    "file": "experiment_final.jsonl",
+    "cases": 24,
+    "matched": 24,
+    "protocol": "experiment_protocol_v5.json"
+  },
+  "final_code_replay": "experiment_final_code_replay.json"
+}

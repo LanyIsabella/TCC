@@ -34,9 +34,7 @@ def test_scope_guard_accepts_academic_questions() -> None:
 
 
 def test_scope_guard_accepts_broad_tcc_formatting_question() -> None:
-    question = (
-        "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
-    )
+    question = "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
 
     assert classify_messages([{"role": "user", "content": question}]) == (
         ScopeDecision.IN_SCOPE
@@ -50,28 +48,23 @@ def test_scope_guard_rejects_unrelated_questions() -> None:
 
 
 def test_scope_guard_leaves_unrecognized_questions_for_model_interpretation() -> None:
-    assert classify_messages(
-        [{"role": "user", "content": "Explique fotossíntese."}]
-    ) == ScopeDecision.UNCERTAIN
+    assert (
+        classify_messages([{"role": "user", "content": "Explique fotossíntese."}])
+        == ScopeDecision.UNCERTAIN
+    )
 
 
 def test_scope_guard_rejects_ambiguous_terms_in_nonacademic_context() -> None:
     assert (
-        classify_messages(
-            [{"role": "user", "content": "Qual é o resumo do filme?"}]
-        )
+        classify_messages([{"role": "user", "content": "Qual é o resumo do filme?"}])
         == ScopeDecision.OUT_OF_SCOPE
     )
     assert (
-        classify_messages(
-            [{"role": "user", "content": "Qual é a margem de lucro?"}]
-        )
+        classify_messages([{"role": "user", "content": "Qual é a margem de lucro?"}])
         == ScopeDecision.OUT_OF_SCOPE
     )
     assert (
-        classify_messages(
-            [{"role": "user", "content": "Qual é a norma de trânsito?"}]
-        )
+        classify_messages([{"role": "user", "content": "Qual é a norma de trânsito?"}])
         == ScopeDecision.OUT_OF_SCOPE
     )
 
@@ -136,9 +129,8 @@ def test_scoped_agent_does_not_accept_placeholder_for_academic_question(
                 ]
             }
 
-    question = (
-        "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
-    )
+    question = "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
+
     class RecoverySearch:
         def invoke(self, _payload: dict[str, object]) -> str:
             return json.dumps(
@@ -183,6 +175,15 @@ def test_scoped_agent_recovers_rag_when_model_skips_tool(monkeypatch) -> None:
                             "standard_label": "ABNT NBR 14724",
                             "version": "2024",
                             "pages": [14],
+                            "evidence": [
+                                {
+                                    "evidence_id": "doc:1:page:14",
+                                    "text": (
+                                        "A ABNT NBR 14724 orienta "
+                                        "a apresentação do trabalho."
+                                    ),
+                                }
+                            ],
                             "page_context": [
                                 {
                                     "page_number": 14,
@@ -212,9 +213,7 @@ def test_scoped_agent_recovers_rag_when_model_skips_tool(monkeypatch) -> None:
 
     monkeypatch.setattr("src.app.agente.rag_document_search", RecoverySearch())
     inner = RecoveringAgent()
-    question = (
-        "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
-    )
+    question = "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
 
     class RecoveryModel:
         def invoke(self, _messages: list[dict[str, str]]) -> object:
@@ -252,9 +251,8 @@ def test_scoped_agent_rejects_full_greeting_placeholder(monkeypatch) -> None:
                 ]
             }
 
-    question = (
-        "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
-    )
+    question = "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
+
     class RecoverySearch:
         def invoke(self, _payload: dict[str, object]) -> str:
             return json.dumps(

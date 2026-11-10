@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "C:\Users\lany_\.codex\tooling\ub_cli.py", line 112, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "C:\Users\lany_\.codex\tooling\ub_cli.py", line 103, in main
+    code = importlib.import_module(tool+'.cli').run(sys.argv[2:])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\cli.py", line 587, in run
+    return _mutate_files(options, root, files)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\cli.py", line 537, in _mutate_files
+    result = mutate_file(
+             ^^^^^^^^^^^^
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\engine.py", line 299, in mutate_file
+    failure = _apply_selected(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\engine.py", line 232, in _apply_selected
+    run_mutants(
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\workers.py", line 446, in run_mutants
+    delete_tree(base)
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\workers.py", line 106, in delete_tree
+    delete_tree(child)
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\workers.py", line 106, in delete_tree
+    delete_tree(child)
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\workers.py", line 106, in delete_tree
+    delete_tree(child)
+  File "C:\Users\lany_\.codex\tooling\ub-tools\Lib\site-packages\mutator\workers.py", line 107, in delete_tree
+    path.rmdir()
+  File "C:\Users\lany_\AppData\Local\Programs\Python\Python312\Lib\pathlib.py", line 1351, in rmdir
+    os.rmdir(self)
+PermissionError: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\target\\mutation-workers\\run-300a8ad7-5cc7-49d9-9e39-54b04b491784\\worker-0\\src\\api'

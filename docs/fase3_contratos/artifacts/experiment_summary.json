@@ -1,0 +1,658 @@
+{
+  "scope": "synthetic development smoke of real-model verifier plus grounding; no full RAG or corpus fidelity validation",
+  "model": "gemma4:e2b",
+  "temperature": 0.7,
+  "independent_holdout": false,
+  "general_factual_fidelity_proven": false,
+  "runs": [
+    {
+      "file": "experiment_before.jsonl",
+      "protocol": "experiment_protocol.json",
+      "source_sha256": {
+        "src/app/grounding.py": "d81ae776c81cb233ac2c32828e58888ed5b57671dbec2d79db101a3d97649359",
+        "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+        "src/app/agente.py": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d",
+        "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+        "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+        "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+      },
+      "cases": 18,
+      "matched_contract": 9,
+      "model_calls": 16,
+      "elapsed_case_seconds": 77.76017750000074,
+      "mismatches": [
+        "faithful_paraphrase",
+        "equivalent_units",
+        "condition_in_question",
+        "optional_not_mandatory",
+        "equivalent_negated_minimum",
+        "optional_paraphrase",
+        "markdown_short_answer",
+        "faithful_negative_paraphrase",
+        "faithful_prohibition"
+      ]
+    },
+    {
+      "file": "experiment_after_1.jsonl",
+      "protocol": "experiment_protocol.json",
+      "source_sha256": {
+        "src/app/grounding.py": "dc3de44fb613d2ea26871c72b64475febf51b51a7dd848a49c804b8423d182dd",
+        "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+        "src/app/agente.py": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d",
+        "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+        "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+        "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+      },
+      "cases": 18,
+      "matched_contract": 18,
+      "model_calls": 15,
+      "elapsed_case_seconds": 67.2948853999992,
+      "mismatches": []
+    },
+    {
+      "file": "experiment_after_2.jsonl",
+      "protocol": "experiment_protocol_v2.json",
+      "source_sha256": {
+        "src/app/grounding.py": "34d7fc9b14fef6328aa641a4f70c3d4d60cf7c58c808c4d64d588c3a5957b111",
+        "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+        "src/app/agente.py": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d",
+        "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+        "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+        "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+      },
+      "cases": 19,
+      "matched_contract": 19,
+      "model_calls": 16,
+      "elapsed_case_seconds": 70.18988169999875,
+      "mismatches": []
+    },
+    {
+      "file": "experiment_after_3.jsonl",
+      "protocol": "experiment_protocol_v3.json",
+      "source_sha256": {
+        "src/app/grounding.py": "fc5cacc9aa63508b2d6161e785de9ddab5c52acaf88c062724f3a39e8611ee8d",
+        "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+        "src/app/agente.py": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d",
+        "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+        "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+        "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+      },
+      "cases": 21,
+      "matched_contract": 20,
+      "model_calls": 17,
+      "elapsed_case_seconds": 74.43846519999943,
+      "mismatches": [
+        "optional_paraphrase"
+      ]
+    },
+    {
+      "file": "experiment_after_4.jsonl",
+      "protocol": "experiment_protocol_v4.json",
+      "source_sha256": {
+        "src/app/grounding.py": "9a1b070cf9637472946cb69dd037096a8c82480abcbd890ab799b491f9cb3adb",
+        "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+        "src/app/agente.py": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d",
+        "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+        "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+        "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+      },
+      "cases": 21,
+      "matched_contract": 21,
+      "model_calls": 16,
+      "elapsed_case_seconds": 76.79716239999743,
+      "mismatches": []
+    },
+    {
+      "file": "experiment_final.jsonl",
+      "protocol": "experiment_protocol_v5.json",
+      "source_sha256": {
+        "src/app/grounding.py": "07d1cd31b0bf347897f03df73e100b46a3f30b626454010c4743b67b95efa489",
+        "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+        "src/app/agente.py": "6c7c78d0f2abe2aea6c04f96cf75e8b1762e2a37bcec7947ff554b47ae07bf5d",
+        "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+        "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+        "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+      },
+      "cases": 24,
+      "matched_contract": 24,
+      "model_calls": 16,
+      "elapsed_case_seconds": 75.77200810000068,
+      "mismatches": []
+    }
+  ],
+  "case_matrix": {
+    "literal_control": {
+      "experiment_before.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "faithful_paraphrase": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "equivalent_units": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "condition_in_question": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "optional_not_mandatory": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "numeric_contradiction": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "negation_contradiction": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "omitted_condition": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "omitted_exception": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "same_number_wrong_entity": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "swapped_entity_values": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "supported_partial": {
+      "experiment_before.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      }
+    },
+    "equivalent_negated_minimum": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "optional_paraphrase": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "markdown_short_answer": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "faithful_negative_paraphrase": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "faithful_prohibition": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": false
+      },
+      "experiment_after_1.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "no_current_evidence": {
+      "experiment_before.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_1.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_2.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "partial_paraphrase_with_unsupported_addition": {
+      "experiment_after_2.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      },
+      "experiment_after_3.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "partial",
+        "matches_expected": true
+      }
+    },
+    "singular_unit_literal": {
+      "experiment_after_3.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "supported",
+        "matches_expected": true
+      }
+    },
+    "singular_unit_contradiction": {
+      "experiment_after_3.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_after_4.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      },
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "plain_text_rewrite": {
+      "experiment_final.jsonl": {
+        "status": "conversational",
+        "matches_expected": true
+      }
+    },
+    "normative_rewrite_needs_proof": {
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    },
+    "implicit_font_needs_proof": {
+      "experiment_final.jsonl": {
+        "status": "insufficient",
+        "matches_expected": true
+      }
+    }
+  },
+  "final_code_replay": "experiment_final_code_replay.json"
+}

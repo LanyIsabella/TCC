@@ -1,0 +1,121 @@
+[
+  {
+    "id": 1,
+    "controle": "Seis contratos F10–F13",
+    "classificacao": "Aprovado",
+    "evidencias": [
+      "contratos.xml",
+      "contratos.log"
+    ],
+    "conclusao": "6 aprovados em execução atual, sem xfail aplicado aos contratos corrigidos."
+  },
+  {
+    "id": 2,
+    "controle": "Regressão completa",
+    "classificacao": "Aprovado com ressalvas",
+    "evidencias": [
+      "regressao.xml",
+      "regressao.log"
+    ],
+    "conclusao": "291 aprovados; 1 integração externa ignorada e 9 xfail conhecidos. Sem falha inesperada ou XPASS estrito."
+  },
+  {
+    "id": 3,
+    "controle": "Escopo dos nove xfail",
+    "classificacao": "Aprovado",
+    "evidencias": [
+      "xfail_inventario.json"
+    ],
+    "conclusao": "F1:3, F2:4, F6:2, todos strict=True; nenhum F10–F13 pendente."
+  },
+  {
+    "id": 4,
+    "controle": "Crapper e impactos indiretos",
+    "classificacao": "Aprovado com ressalvas",
+    "evidencias": [
+      "complexidade_verificada.json",
+      "impactos_funcoes_antigas.json",
+      "impactos.xml",
+      "crapper_isolado.edn"
+    ],
+    "conclusao": "67 funções alteradas abaixo de 10, máximo 9. Cinco corpos antigos iguais ao HEAD; um alerta resolvido por cobertura suplementar; quatro violações antigas persistem. Gate de arquivos inteiros não aprovado."
+  },
+  {
+    "id": 5,
+    "controle": "Coverage no Stop hook",
+    "classificacao": "Bloqueado por infraestrutura",
+    "evidencias": [
+      "ambientes_coverage_confirmados.json",
+      "coverage_ferramentas.json",
+      "infraestrutura.json",
+      "stop_crapper.log"
+    ],
+    "conclusao": "Venv do projeto não contém coverage; ferramentas já têm 7.17.2. Instalação automática é bloqueada. LCOVs históricos também colidem. Medição manual isolada válida, hook sem correção global."
+  },
+  {
+    "id": 6,
+    "controle": "Dryer",
+    "classificacao": "Aprovado com ressalvas",
+    "evidencias": [
+      "dryer_manual.log",
+      "dryer_revisao.json",
+      "stop_dryer.log"
+    ],
+    "conclusao": "Wrappers de campos distintos permanecem semelhantes; regra foi centralizada. Getters e par do pipeline são preexistentes. Detecção global não equivale a gate sem duplicações."
+  },
+  {
+    "id": 7,
+    "controle": "Mutator automático",
+    "classificacao": "Bloqueado por infraestrutura",
+    "evidencias": [
+      "stop_report.json",
+      "stop_mutator.log",
+      "infraestrutura.json",
+      "mutacao_revisao.json"
+    ],
+    "conclusao": "Prazo compartilhado de 50 segundos e reexecução integral. 160 pontos não cobertos/não concluídos não são sobreviventes. Contagens persistentes não provam execução nesta rodada."
+  },
+  {
+    "id": 8,
+    "controle": "Sobreviventes ensure_ascii",
+    "classificacao": "Aprovado com ressalvas",
+    "evidencias": [
+      "mutantes_ascii.log",
+      "mutacao_revisao.json",
+      "test_impactos.py",
+      "impactos.xml"
+    ],
+    "conclusao": "2 selecionados novamente executados e sobreviventes; JSON preserva dados, texto ao LLM muda. Não são classificados como eliminados ou formalmente equivalentes. Lacuna experimental de sensibilidade do modelo."
+  },
+  {
+    "id": 9,
+    "controle": "Preservação",
+    "classificacao": "Aprovado com ressalvas",
+    "evidencias": [
+      "integridade.json",
+      "preservacao_banco.json",
+      "inicio.json"
+    ],
+    "conclusao": "1255 arquivos prévios preservados; baseline, PDFs e fontes fora do escopo conferidos; Gold/índice iguais ao snapshot em transação read-only. Valores de embeddings não estavam no snapshot e não têm comparação histórica byte a byte."
+  },
+  {
+    "id": 10,
+    "controle": "Prontidão para iniciar reconstrução isolada",
+    "classificacao": "Aprovado com ressalvas",
+    "evidencias": [
+      "PARECER.md",
+      "auditoria_conclusao.json"
+    ],
+    "conclusao": "Sem novo defeito bloqueante demonstrado na Fase 3. Pode encerrar tecnicamente com ressalvas e iniciar planejamento/desenvolvimento isolado da ingestão; não autoriza ativação produtiva nem declara Stop aprovado."
+  },
+  {
+    "id": "legado",
+    "controle": "Confiabilidade atual da ingestão/compactação F1/F2/F6",
+    "classificacao": "Reprovado por defeito real",
+    "evidencias": [
+      "regressao.log",
+      "xfail_inventario.json"
+    ],
+    "conclusao": "Defeitos preexistentes reproduzidos; devem integrar critérios da reconstrução e validação anterior a qualquer ativação produtiva. Não foram corrigidos nesta revisão."
+  }
+]

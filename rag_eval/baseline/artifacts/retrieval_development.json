@@ -1,0 +1,343 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-10T02:04:28.777213+00:00",
+  "stage": "retrieval",
+  "split": "development",
+  "readiness": {
+    "ready": false,
+    "reason": "ollama_unavailable"
+  },
+  "dataset_sha256": "c8792a25989c0a7ed0a6549210f4f85597b3cff9e511b4b5f9bd162b512e9182",
+  "initial_state_sha256": "ba555e70267df221683c429d7ab6c965d03b73e64e7d1d2e52dbe0d1ace9ba99",
+  "implementation_source_hashes": {
+    "config/glmocr.yaml": "7636e0e7e5bd479687c20ca03f0a5febbad2ef900821343e3f7474f1223cff01",
+    "data/bronze_postgres.py": "c47fec018225118a3e6fc682d37cee5e8fb183600e14ac4fe917dd8fa757e5e9",
+    "data/corpus_manifest.yaml": "ff9ac11125e618c53aceb5e4fe05804c5af231461a403aa947b5fb8b0672c2c0",
+    "data/pdf_extractor.py": "54147d4cda334fe5ec84bf99c78e2716ff9f85f200255d9374727639551fb132",
+    "data/rag_pipeline.py": "a5c5455f992e73e467d5463fd0839e384f41ff3edca74cd96525e2fbb348fd22",
+    "data/rag_schema.sql": "c86b30c7a74d654ba46e24808dc5a163b6f648739e3663ce2c78f781a7dc5d06",
+    "data/run_pipeline.py": "ab072843511b71dc0b8eb9792f05076e864382781068179d4cbe26b36ba3e4c8",
+    "pyproject.toml": "74785ff84436ec33e632fbbdb444655c1c809be5872780967da54153eeb0f135",
+    "rag_eval/pyproject.toml": "0ce659d951d8399c3ae247a5e080a9e99373a3fe178f3d84e09738e67e0238af",
+    "src/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/api/README.md": "33e3e2820bcd90023554f64d82930b4f4f7c6385805ab6e3077e47731371c5ae",
+    "src/api/__init__.py": "4680c1b5e28bb78401ff2bf974e9501747a0ac683f6da11d3dd81bf303ca6723",
+    "src/api/core/__init__.py": "1f0eb243a8059673104255210e4e364b19d25b59a73a228e107a4bde2ebd6eb6",
+    "src/api/core/config.py": "76725a44d73a5d9020bb3f1cd04860f94cb8412581e986c107eddbda3c81b8d6",
+    "src/api/core/exceptions.py": "6836c9b7fbecc8fb38bd0d6649ac7a5d80224a9df26d2cfccbf912a9afdaaeaf",
+    "src/api/dependencies.py": "df19e7b6f5f2ff368b82c003d814ad185178eca77ec43c73282ed35b9f507f1a",
+    "src/api/main.py": "9bf9f45bb2f39ced1066e418814c689c3c22d8e766948a45859a026f4748d168",
+    "src/api/routers/__init__.py": "af7a61f361e1b085f7af14f04f76d3146f599e7f4cc72dfb4c277a3a1c9b8ed4",
+    "src/api/routers/agent.py": "45397620f004073f2bb760276060cd786efca2b736b69bbe8a49c390c073c872",
+    "src/api/routers/health.py": "ce00e81c4c6dc7e2993780c86f0a693cbd78fa8920394f2bfc3228fe621cc0dc",
+    "src/api/schemas/__init__.py": "790578a026e72e6426be646fe75f2cdcc84c621971420c1d1416fb865d3a501f",
+    "src/api/schemas/agent.py": "5b9678d3c14917ce87d1f8c8ec08a84cb3cc2cb100eebef6c930dcfc80de5436",
+    "src/api/schemas/common.py": "09211063ed69107d3085290eee2aa8003c21da2e40c31a5c599d3d22a016a344",
+    "src/api/schemas/health.py": "218bcc6998cfd5f5e46ec44b50f045ff7d930b2bb33d837b5269eb477a240d90",
+    "src/api/services/__init__.py": "b007fee19acccfed614f2d1f3087de6bbf18b10fb4766167616d6a1ab5e5dc10",
+    "src/api/services/agent_service.py": "8b869c4f39f9d22c2caa254ab17c680c8845738fc8d186614e4eeabaca184637",
+    "src/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/app/agente.py": "0d5e4fdbcd5418a6473259c2ab08a31b75affb8034d160bed30c63836826f0e1",
+    "src/app/citation_validator.py": "df0d76d062028f52bf7690e6fce7ed5984442eda0a78fb3e38a36d17a126df81",
+    "src/app/client.py": "114aefba47b05d97f8c195117312a03e9fe9a380bbb923fd960af8ecf0a591d0",
+    "src/app/evidence.py": "237a07b994ad422707f8b15625568f61bc850067283547103e70ce7821babae0",
+    "src/app/prompt/__init__.py": "fc5d1828b42fc6b313abaf1d4320d419a10d9c2d0bcf32b746351b786ce4d175",
+    "src/app/prompt/prompt_sys.yaml": "69d594fe9d3aefb5083f341134f87164aadf14d6e0b8765274a245189ed554d9",
+    "src/app/query_planner.py": "5469ade60090b6f4e30936d9d50800c0a46d16bb3a952f765a30a1d888ec1a9b",
+    "src/app/scope_guard.py": "99265b740ff5149453c955f2e441dbb36abc5297f054dca8629fc4e89920a545",
+    "src/app/tools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/app/tools/gedweb_access.py": "952473985d8309ca3f860d963ccdd083d8ec5ffc8b54c2d8727e771d66fbfe0d",
+    "src/app/tools/rag_search.py": "3d4de05d0ea9ae67d4be6b9818b1cf2db4ae3adb3935f1ad3d91d39dd4287955",
+    "src/app/tools/vpn_acess.py": "2bb46c582cdf62fc04ca5fde3421c648c4325adb64226fc8b4565a6f3ac24cd8",
+    "src/app/tools/web_search.py": "678727b077f528d758c0cc1d954e21743e97b4d635e8166487ab817bf7aeea6e",
+    "src/app/utils/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/terminal/history_export.py": "eeac3bc81f9c8cdf9213dc3a489e387a09c754d0bb553ee59b60d37db0b2fed8",
+    "src/terminal/main.py": "91c0ee7fd33771473c0ef058558ee06869abf5c382ee8e7a76a329037d6a4fd3",
+    "src/ui/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/ui/app.py": "708c5f4e9341a6371a06af68d54dd6ca4585afbe0e7876b350c0379f05069425",
+    "uv.lock": "f14c36df9f2196eebb85d55a06fd875aba28b5ec4118b38523d0452a0884b133"
+  },
+  "experimental_validation_complete": false,
+  "cases": [
+    {
+      "case_id": "specific_10520_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_10520_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_12225_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_12225_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_14724_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_14724_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_15287_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_15287_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6022_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6022_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6023_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6023_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6024_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6024_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6027_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6027_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6028_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6028_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6034_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "specific_6034_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "broad_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "broad_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "broad_03",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "broad_04",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "broad_05",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "broad_06",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "dialogue_01_t1",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "dialogue_01_t2",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "dialogue_02_t1",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "dialogue_02_t2",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "dialogue_03_t1",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "dialogue_03_t2",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "dialogue_04_t1",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "dialogue_04_t2",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "boundary_01",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "boundary_02",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "boundary_03",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "boundary_11",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "boundary_12",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    },
+    {
+      "case_id": "boundary_13",
+      "stage": "retrieval",
+      "status": "blocked",
+      "reason": "ollama_unavailable",
+      "metrics": null
+    }
+  ]
+}

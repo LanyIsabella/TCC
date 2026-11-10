@@ -1,0 +1,79 @@
+KILLED    src/app/grounding.py:66 True -> False
+KILLED    src/app/grounding.py:80 False -> True
+KILLED    src/app/grounding.py:84 + -> -
+KILLED    src/app/grounding.py:84 + -> -
+KILLED    src/app/grounding.py:84 or -> and
+KILLED    src/app/grounding.py:146 * -> /
+KILLED    src/app/grounding.py:154 delete not
+KILLED    src/app/grounding.py:154 or -> and
+KILLED    src/app/grounding.py:154 delete not
+KILLED    src/app/grounding.py:179 and -> or
+KILLED    src/app/grounding.py:180 True -> False
+KILLED    src/app/grounding.py:183 and -> or
+KILLED    src/app/grounding.py:186 True -> False
+KILLED    src/app/grounding.py:188 + -> -
+KILLED    src/app/grounding.py:188 + -> -
+KILLED    src/app/grounding.py:199 and -> or
+KILLED    src/app/grounding.py:200 True -> False
+KILLED    src/app/grounding.py:202 and -> or
+KILLED    src/app/grounding.py:203 True -> False
+KILLED    src/app/grounding.py:204 False -> True
+KILLED    src/app/grounding.py:209 delete not
+KILLED    src/app/grounding.py:212 != -> ==
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.agente.ScopedAgent.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.evidence.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.grounding.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/rag_eval.baseline.audit.edn
+KILLED    src/app/grounding.py:231 delete not
+KILLED    src/app/grounding.py:241 or -> and
+KILLED    src/app/grounding.py:250 == -> !=
+KILLED    src/app/grounding.py:252 False -> True
+KILLED    src/app/grounding.py:277 delete not
+KILLED    src/app/grounding.py:277 or -> and
+KILLED    src/app/grounding.py:277 delete not
+KILLED    src/app/grounding.py:282 or -> and
+KILLED    src/app/grounding.py:283 and -> or
+KILLED    src/app/grounding.py:298 delete not
+KILLED    src/app/grounding.py:298 or -> and
+KILLED    src/app/grounding.py:303 0 -> 1
+KILLED    src/app/grounding.py:303 <= -> <
+KILLED    src/app/grounding.py:303 < -> <=
+KILLED    src/app/grounding.py:303 and -> or
+KILLED    src/app/grounding.py:303 == -> !=
+KILLED    src/app/grounding.py:303 1 -> 0
+KILLED    src/app/grounding.py:304 or -> and
+KILLED    src/app/grounding.py:316 or -> and
+KILLED    src/app/grounding.py:321 delete not
+KILLED    src/app/grounding.py:323 == -> !=
+KILLED    src/app/grounding.py:336 False -> True
+KILLED    src/app/grounding.py:339 or -> and
+KILLED    src/app/grounding.py:339 delete not
+KILLED    src/app/grounding.py:340 or -> and
+Function            Namespace      Killed  Survived  Uncovered  Sites   Score
+-----------------------------------------------------------------------------
+_assess             app.grounding       0         0          0      0    n/a
+_canonical          app.grounding       0         0          0      0    n/a
+_claims             app.grounding       0         0          0      0    n/a
+_polarity           app.grounding       0         0          0      0    n/a
+_qualifiers         app.grounding       0         0          0      0    n/a
+_quote_context      app.grounding       0         0          0      0    n/a
+_claim_support      app.grounding       9         0          0      9 100.0%
+_compatible         app.grounding       2         0          0      2 100.0%
+_compose            app.grounding       3         0          0      3 100.0%
+_conversational     app.grounding       1         0          0      1 100.0%
+_literal_in_source  app.grounding       2         0          0      2 100.0%
+_literal_support    app.grounding       1         0          0      1 100.0%
+_modality_conflict  app.grounding       5         0          0      5 100.0%
+_numeric_conflict   app.grounding       3         0          0      3 100.0%
+_qualifier_conflict app.grounding       6         0          0      6 100.0%
+_quantities         app.grounding       1         0          0      1 100.0%
+_scoped_quote       app.grounding       1         0          0      1 100.0%
+_verified_support   app.grounding       5         0          0      5 100.0%
+ground_answer       app.grounding       4         0          0      4 100.0%
+needs_support       app.grounding       4         0          0      4 100.0%
+-----------------------------------------------------------------------------
+Total                                  47         0          0     47  100.0%

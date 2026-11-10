@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="8" time="0.231" timestamp="2026-11-10T11:54:39.242274-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_plain_user_text_rewrite_does_not_require_documentary_norms" time="0.062"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'Esta pesquis... entrevistas.'&#10;  &#10;  - Esta pesquisa analisa entrevistas.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">def test_plain_user_text_rewrite_does_not_require_documentary_norms():
+        question = "Reescreva com clareza para o TCC: Esta pesquisa busca analisar entrevistas."
+        answer = "Esta pesquisa analisa entrevistas."
+        value = ground_answer(answer, {}, question, normative_context=True)
+&gt;       assert value.answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'Esta pesquis... entrevistas.'
+E         
+E         - Esta pesquisa analisa entrevistas.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:621: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva segundo a ABNT: A margem mede 7 cm.-A margem direita deve medir 7 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: Esta pesquisa analisa entrevistas.-A fonte deve ter 99 pontos.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: A fonte \xe9 Arial.-Arial.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva isso.-Arial.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_implicit_normative_fields_still_need_current_evidence[Qual a fonte?-Arial.]" time="0.001"><failure message="AssertionError: assert 'conversational' == 'insufficient'&#10;  &#10;  - insufficient&#10;  + conversational">question = 'Qual a fonte?', answer = 'Arial.'
+
+    @pytest.mark.parametrize("question,answer", [
+        ("Qual a fonte?", "Arial."),
+        ("Qual o recuo?", "Dois centímetros."),
+        ("Qual o tipo de letra?", "Arial."),
+    ])
+    def test_implicit_normative_fields_still_need_current_evidence(question, answer):
+&gt;       assert ground_answer(answer, {}, question).status == "insufficient"
+E       AssertionError: assert 'conversational' == 'insufficient'
+E         
+E         - insufficient
+E         + conversational
+
+tests\test_grounding_policy.py:641: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_implicit_normative_fields_still_need_current_evidence[Qual o recuo?-Dois cent\xedmetros.]" time="0.001"><failure message="AssertionError: assert 'conversational' == 'insufficient'&#10;  &#10;  - insufficient&#10;  + conversational">question = 'Qual o recuo?', answer = 'Dois centímetros.'
+
+    @pytest.mark.parametrize("question,answer", [
+        ("Qual a fonte?", "Arial."),
+        ("Qual o recuo?", "Dois centímetros."),
+        ("Qual o tipo de letra?", "Arial."),
+    ])
+    def test_implicit_normative_fields_still_need_current_evidence(question, answer):
+&gt;       assert ground_answer(answer, {}, question).status == "insufficient"
+E       AssertionError: assert 'conversational' == 'insufficient'
+E         
+E         - insufficient
+E         + conversational
+
+tests\test_grounding_policy.py:641: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_implicit_normative_fields_still_need_current_evidence[Qual o tipo de letra?-Arial.]" time="0.001"><failure message="AssertionError: assert 'conversational' == 'insufficient'&#10;  &#10;  - insufficient&#10;  + conversational">question = 'Qual o tipo de letra?', answer = 'Arial.'
+
+    @pytest.mark.parametrize("question,answer", [
+        ("Qual a fonte?", "Arial."),
+        ("Qual o recuo?", "Dois centímetros."),
+        ("Qual o tipo de letra?", "Arial."),
+    ])
+    def test_implicit_normative_fields_still_need_current_evidence(question, answer):
+&gt;       assert ground_answer(answer, {}, question).status == "insufficient"
+E       AssertionError: assert 'conversational' == 'insufficient'
+E         
+E         - insufficient
+E         + conversational
+
+tests\test_grounding_policy.py:641: AssertionError</failure></testcase></testsuite></testsuites>

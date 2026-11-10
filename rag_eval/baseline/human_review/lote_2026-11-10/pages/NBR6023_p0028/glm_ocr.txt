@@ -1,0 +1,37 @@
+ABNT NBR 6023:2025
+
+EXEMPLO 2
+
+— Elementos essenciais
+
+BRASIL. Superior Tribunal de Justiça (1. Seção). Súmula n° 333. Cabe mandado de segurança contra ato praticado em licitação promovida por sociedade de economia mista ou empresa pública. Diário da Justiça: seção 1, Brasília, DF, ano 82, n. 32, p. 246, 14 fev. 2007.
+
+NOTA A súmula é publicada em três dias consecutivos. Indicar a data da fonte consultada.
+
+7.11.4 Jurisprudência em meio eletrônico
+
+As referências devem obedecer aos padrões indicados para jurisprudência, de acordo com 7.11.3, acrescidas de informações relativas à descrição física do meio eletrônico (disquetes, CD-ROM, DVD, online e outros). Quando se tratar de obras consultadas online, ver 6.6.
+
+NOTA Se a fonte consultada não for a fonte oficial, destaca-se o tipo do ato.
+
+EXEMPLO 1
+
+— Elementos complementares
+
+BRASIL. Supremo Tribunal Federal (2. Turma). Recurso Extraordinário 313060/SP. Leis 10.927/91 e 11.262 do município de São Paulo. Seguro obrigatório contra furto e roubo de automóveis. Shopping centers, lojas de departamento, supermercados e empresas com estacionamento para mais de cinquenta veículos. Inconstitucionalidade. Recorrente: Banco do Estado de São Paulo S/A – BANESPA. Recorrido: Município de São Paulo. Relatora: Min. Ellen Gracie, julgado em 29 nov. 2005. Brasília, DF: Superior Tribunal de Justiça, [2006]. Disponível em: http://redir.stf.jus.br/paginadorpub/paginador.jsp?docTP=AC&docID=260670. Acesso em: 19 ago. 2011.
+
+EXEMPLO 2
+
+— Elementos essenciais
+
+BRASIL. Superior Tribunal de Justiça (1. Seção). Súmula n° 333. Cabe mandado de segurança contra ato praticado em licitação promovida por sociedade de economia mista ou empresa pública. Brasília, DF: Superior Tribunal de Justiça, [2007]. Disponível em: http://www.stj.jus.br/SCON/sumanot/toc.jsp?&b=TEMA &p=true&t=&l=10&i=340#TIT333TEMA0. Acesso em: 19 ago. 2011.
+
+EXEMPLO 3
+
+— Elementos essenciais
+
+BRASIL. Supremo Tribunal Federal. Recurso Extraordinário 628137 RG/RJ – Rio de Janeiro. Repercussão geral no Recurso Extraordinário. Administrativo. Incidência dos juros progressivos sobre conta vinculada de Fundo de Garantia por Tempo de Serviço – FGTS. Aplicação dos efeitos da ausência de repercussão geral tendo em vista tratar-se de divergência solucionável pela aplicação da legislação federal. Inexistência de repercussão geral. Relatora: Min. Ellen Gracie, julgado em 21 out. 2010. Brasília, DF: Superior Tribunal de Justiça, 2010. Disponível em: http://www.stf.jus.br/portal/jurisprudencia/listarJurisprudencia.asp?s1=fgts&base=baseRepercussao. Acesso em: 20 ago. 2011.
+
+7.11.5 Atos administrativos normativos
+
+Inclui ato normativo, aviso, circular, contrato, decreto, deliberação, despacho, edital, estatuto, instrução normativa, ofício, ordem de serviço, parecer, parecer normativo, parecer técnico, portaria, regimento, regulamento e resolução, entre outros.

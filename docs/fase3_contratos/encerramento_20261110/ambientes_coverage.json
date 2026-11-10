@@ -1,0 +1,14 @@
+[
+  {
+    "requested_executable": "C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe",
+    "exit": 0,
+    "stdout": "{\"executable\": \"C:\\\\Users\\\\lany_\\\\OneDrive\\\\Desktop\\\\TCC\\\\.venv\\\\Scripts\\\\python.exe\", \"version\": \"3.13.13 (main, Apr 14 2026, 14:30:19) [MSC v.1944 64 bit (AMD64)]\", \"coverage_origin\": null}\n",
+    "stderr": ""
+  },
+  {
+    "requested_executable": "C:\\Users\\lany_\\.codex\\tooling\\ub-tools\\Scripts\\python.exe",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\Users\\lany_\\AppData\\Roaming\\uv\\python\\cpython-3.13-windows-x86_64-none\\Lib\\json\\__init__.py\", line 106, in <module>\n    from .decoder import JSONDecoder, JSONDecodeError\n  File \"C:\\Users\\lany_\\AppData\\Roaming\\uv\\python\\cpython-3.13-windows-x86_64-none\\Lib\\json\\decoder.py\", line 3, in <module>\n    import re\n  File \"C:\\Users\\lany_\\AppData\\Roaming\\uv\\python\\cpython-3.13-windows-x86_64-none\\Lib\\re\\__init__.py\", line 126, in <module>\n    from . import _compiler, _parser\n  File \"C:\\Users\\lany_\\AppData\\Roaming\\uv\\python\\cpython-3.13-windows-x86_64-none\\Lib\\re\\_compiler.py\", line 18, in <module>\n    assert _sre.MAGIC == MAGIC, \"SRE module mismatch\"\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError: SRE module mismatch\n"
+  }
+]

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="7" time="0.236" timestamp="2026-11-10T10:50:39.485571-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_real_model_json_code_fence_is_a_valid_assessment_envelope" time="0.068"><failure message="AssertionError: assert 'insufficient' == 'supported'&#10;  &#10;  - supported&#10;  + insufficient">def test_real_model_json_code_fence_is_a_valid_assessment_envelope():
+        source = "A margem direita deve medir 2 cm."
+        raw = '```json\n{"claims":[{"index":0,"supported":true,"evidence_id":"e1",' \
+              '"quote":"A margem direita deve medir 2 cm."}]}\n```'
+        value = ground_answer("A margem direita mede dois centímetros.", evidence(source), QUESTION,
+                              lambda *_: raw)
+&gt;       assert value.status == "supported"
+E       AssertionError: assert 'insufficient' == 'supported'
+E         
+E         - supported
+E         + insufficient
+
+tests\test_grounding_policy.py:405: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_code_fence_handling_does_not_accept_prose_or_invalid_payload[Texto livre ```json\n{&quot;claims&quot;:[]}\n```]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_code_fence_handling_does_not_accept_prose_or_invalid_payload[```json\n{&quot;claims&quot;:[]}\n``` texto adicional]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_code_fence_handling_does_not_accept_prose_or_invalid_payload[```json\nnot json\n```]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_equivalent_unit_only_change_has_deterministic_literal_proof" time="0.000"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir... medir 20 mm.'&#10;  &#10;  - A margem direita deve medir 20 mm.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">def test_equivalent_unit_only_change_has_deterministic_literal_proof():
+        source = "A margem direita deve medir 2 cm."
+        answer = "A margem direita deve medir 20 mm."
+        value = ground_answer(answer, evidence(source), QUESTION)
+&gt;       assert value.answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir... medir 20 mm.'
+E         
+E         - A margem direita deve medir 20 mm.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:423: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_equivalent_negated_numeric_limits_are_not_polarity_conflicts[O resumo deve conter no m\xednimo 150 palavras.-O resumo n\xe3o deve conter menos de 150 palavras.]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'O resumo não...150 palavras.'&#10;  &#10;  - O resumo não deve conter menos de 150 palavras.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source = 'O resumo deve conter no mínimo 150 palavras.'
+answer = 'O resumo não deve conter menos de 150 palavras.'
+
+    @pytest.mark.parametrize("source,answer", [
+        ("O resumo deve conter no mínimo 150 palavras.",
+         "O resumo não deve conter menos de 150 palavras."),
+        ("O resumo deve conter no máximo 500 palavras.",
+         "O resumo não deve conter mais de 500 palavras."),
+    ])
+    def test_equivalent_negated_numeric_limits_are_not_polarity_conflicts(source, answer):
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source)).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'O resumo não...150 palavras.'
+E         
+E         - O resumo não deve conter menos de 150 palavras.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:434: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_equivalent_negated_numeric_limits_are_not_polarity_conflicts[O resumo deve conter no m\xe1ximo 500 palavras.-O resumo n\xe3o deve conter mais de 500 palavras.]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'O resumo não...500 palavras.'&#10;  &#10;  - O resumo não deve conter mais de 500 palavras.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source = 'O resumo deve conter no máximo 500 palavras.'
+answer = 'O resumo não deve conter mais de 500 palavras.'
+
+    @pytest.mark.parametrize("source,answer", [
+        ("O resumo deve conter no mínimo 150 palavras.",
+         "O resumo não deve conter menos de 150 palavras."),
+        ("O resumo deve conter no máximo 500 palavras.",
+         "O resumo não deve conter mais de 500 palavras."),
+    ])
+    def test_equivalent_negated_numeric_limits_are_not_polarity_conflicts(source, answer):
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source)).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'O resumo não...500 palavras.'
+E         
+E         - O resumo não deve conter mais de 500 palavras.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:434: AssertionError</failure></testcase></testsuite></testsuites>

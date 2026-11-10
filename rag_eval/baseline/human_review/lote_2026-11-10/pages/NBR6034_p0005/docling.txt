@@ -1,0 +1,30 @@
+## Informação e documentação - Índice - Apresentação
+
+## 1 Objetivo
+
+Esta Norma estabelece os requisitos de apresentação e os critérios básicos para a elaboração de índices.
+
+Esta Norma aplica-se, no que couber, aos índices automatizados.
+
+## 2 Referências normativas
+
+As normas relacionadas a seguir contêm disposições que, ao serem citadas neste texto, constituem prescrições para esta Norma. As edições indicadas estavam em vigor no momento desta publicação. Como toda norma está sujeita à revisão, recomenda-se àqueles que realizam acordos com base nesta que verifiquem a conveniência de se usarem as edições mais recentes das normas citadas a seguir. A ABNT possui a informação das normas em vigor em um dado momento.
+
+ABNT NBR 6033:1989 - Ordem alfabética - Procedimento
+
+CÓDIGO de Catalogação Anglo-Americano. 2. ed. São Paulo: FEBAB, 1983-1985.
+
+## 3 Definições
+
+Para os efeitos desta Norma, aplicam-se as seguintes definições:
+
+- 3.1 cabeçalho: Palavra(s) ou símbolo(s) que determina(m) a entrada.
+- 3.2 cabeçalho simples: Cabeçalho formado de uma só palavra ou símbolo.
+- 3.3 cabeçalho composto: Cabeçalho formado por duas ou mais palavras ou símbolos, dos quais, pelo menos o primeiro, tem um significado próprio ou independente.
+- 3.4 entrada: Unidade do índice que consiste em cabeçalho e indicativo de sua localização no texto.
+- 3.5 indicativo: Número(s), da(s) página(s) ou outra(s) indicação(ões) especificada(s), do local onde os itens podem ser localizados no texto.
+- 3.6 índice: Relação de palavras ou frases, ordenadas segundo determinado critério, que localiza e remete para as informações contidas num texto.
+7. NOTA Não confundir índice com sumário e lista.
+- 3.7 remissiva: Indicação que remete de um cabeçalho ou subcabeçalho para outro, através das expressões ver ou ver também.
+- 3.7.1 remissiva ver: Indicação que elimina uma forma de cabeçalho, remetendo ao cabeçalho adotado.
+- 3.7.2 remissiva ver também: Indicação que amplia as opções de consulta, remetendo a cabeçalhos correlatos.

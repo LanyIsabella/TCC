@@ -90,10 +90,28 @@ def test_agent_service_requires_assistant_answer() -> None:
         service.chat(AgentChatRequest(message="Explique ABNT"))
 
 
+def test_agent_service_rejects_empty_message_list_with_specific_error():
+    class Executor:
+        def invoke(self, payload):
+            return {"messages": []}
+
+    with pytest.raises(AgentResponseError, match="resposta sem mensagens"):
+        AgentService(Executor()).chat(AgentChatRequest(message="Como citar?"))
+
+
+def test_agent_service_rejects_nontext_model_block_with_response_error():
+    class Executor:
+        def invoke(self, payload):
+            return {"messages": [{"role": "assistant", "content": [{"text": None}]}]}
+
+    with pytest.raises(AgentResponseError, match="resposta do assistente"):
+        AgentService(Executor()).chat(AgentChatRequest(message="Como citar?"))
+
+
 def test_agent_service_hides_internal_tool_events() -> None:
     service = AgentService(agent=ToolCallingExecutor())
 
-    response = service.chat(AgentChatRequest(message="Explique ABNT"))
+    response = service.chat(AgentChatRequest(message="Olá"))
 
     assert response.answer == "Resposta fundamentada"
     assert [message.role for message in response.messages] == ["user", "assistant"]
@@ -102,7 +120,7 @@ def test_agent_service_hides_internal_tool_events() -> None:
 def test_agent_service_exposes_structured_answer_as_public_message() -> None:
     service = AgentService(agent=StructuredExecutor())
 
-    response = service.chat(AgentChatRequest(message="Explique ABNT"))
+    response = service.chat(AgentChatRequest(message="Olá"))
 
     assert response.answer == "Resposta estruturada."
     assert [message.role for message in response.messages] == ["user", "assistant"]

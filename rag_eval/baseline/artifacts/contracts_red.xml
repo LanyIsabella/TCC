@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="15" skipped="0" tests="30" time="4.472" timestamp="2026-11-09T23:05:40.700033-03:00" hostname="Lany"><testcase classname="tests.baseline.test_defect_agent" name="test_f6_characterization_compaction_discards_late_rule[late-in-page]" time="0.079" /><testcase classname="tests.baseline.test_defect_agent" name="test_f6_characterization_compaction_discards_late_rule[late-in-document]" time="0.001" /><testcase classname="tests.baseline.test_defect_agent" name="test_f6_contract_answer_bearing_rule_survives_compaction[late-in-page]" time="0.001"><failure message="assert False&#10; +  where False = any(&lt;generator object test_f6_contract_answer_bearing_rule_survives_compaction.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001D172124C70&gt;)">compacted_late_rule = {'context_warning': None, 'document_id': 9001, 'evidence': [{'direct_match': True, 'document_id': 9001, 'evidence_id': 'document:9001:page:1', 'issuer': None, ...}], 'full_text': None, ...}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F6: prefix compaction loses a late rule even on matched pages"
+    )
+    def test_f6_contract_answer_bearing_rule_survives_compaction(compacted_late_rule):
+        assert compacted_late_rule is not None
+&gt;       assert any(
+            LATE_RULE in evidence["text"] for evidence in compacted_late_rule["evidence"]
+        )
+E       assert False
+E        +  where False = any(&lt;generator object test_f6_contract_answer_bearing_rule_survives_compaction.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001D172124C70&gt;)
+
+tests\baseline\test_defect_agent.py:95: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f6_contract_answer_bearing_rule_survives_compaction[late-in-document]" time="0.001"><failure message="assert False&#10; +  where False = any(&lt;generator object test_f6_contract_answer_bearing_rule_survives_compaction.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001D172126190&gt;)">compacted_late_rule = {'context_warning': None, 'document_id': 9001, 'evidence': [{'direct_match': True, 'document_id': 9001, 'evidence_id':...atch': True, 'document_id': 9001, 'evidence_id': 'document:9001:page:3', 'issuer': None, ...}], 'full_text': None, ...}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F6: prefix compaction loses a late rule even on matched pages"
+    )
+    def test_f6_contract_answer_bearing_rule_survives_compaction(compacted_late_rule):
+        assert compacted_late_rule is not None
+&gt;       assert any(
+            LATE_RULE in evidence["text"] for evidence in compacted_late_rule["evidence"]
+        )
+E       assert False
+E        +  where False = any(&lt;generator object test_f6_contract_answer_bearing_rule_survives_compaction.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001D172126190&gt;)
+
+tests\baseline\test_defect_agent.py:95: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f10_characterization_empty_recovery_preserves_normative_answer" time="0.082" /><testcase classname="tests.baseline.test_defect_agent" name="test_f10_contract_empty_recovery_withholds_normative_answer" time="0.001"><failure message="AssertionError: assert 'A margem direita deve medir 7 cm.' != 'A margem direita deve medir 7 cm.'">no_evidence_recovery = {'messages': [{'content': 'Como formatar as margens de um TCC segundo a ABNT?', 'role': 'user'}, {'content': 'A margem direita deve medir 7 cm.', 'role': 'assistant'}]}
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F10: no_evidence recovery preserves an unsupported normative answer",
+    )
+    def test_f10_contract_empty_recovery_withholds_normative_answer(no_evidence_recovery):
+&gt;       assert no_evidence_recovery["messages"][-1]["content"] != NORMATIVE_ANSWER
+E       AssertionError: assert 'A margem direita deve medir 7 cm.' != 'A margem direita deve medir 7 cm.'
+
+tests\baseline\test_defect_agent.py:133: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f11_characterization_nonempty_match_accepts_contradiction" time="0.000" /><testcase classname="tests.baseline.test_defect_agent" name="test_f11_contract_contradictory_evidence_cannot_validate_answer" time="0.000"><failure message="AssertionError: assert [{'evidence_i... 2 cm.', ...}] == []&#10;  &#10;  Left contains one more item: {'evidence_id': 'synthetic:9001:page:1', 'matched_text': 'A margem direita deve medir 2 cm.', 'page_number': 1, 'text': 'A margem direita deve medir 2 cm.', ...}&#10;  Use -v to get more diff">contradictory_result = {'messages': [{'content': '{"status": "success", "documents": [{"title": "Fixture sint\\u00e9tica", "evidence": [{"evi...'}], 'structured_response': {'answer': 'A margem direita deve medir 7 cm.', 'evidence_ids': ['synthetic:9001:page:1']}}
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F11: matched_text bypasses support checking for a contradictory number",
+    )
+    def test_f11_contract_contradictory_evidence_cannot_validate_answer(
+        contradictory_result,
+    ):
+        try:
+            result = extract_agent_result(contradictory_result)
+        except RuntimeError:
+            return  # Explicit rejection is also an acceptable contract.
+&gt;       assert result.evidences == []
+E       AssertionError: assert [{'evidence_i... 2 cm.', ...}] == []
+E         
+E         Left contains one more item: {'evidence_id': 'synthetic:9001:page:1', 'matched_text': 'A margem direita deve medir 2 cm.', 'page_number': 1, 'text': 'A margem direita deve medir 2 cm.', ...}
+E         Use -v to get more diff
+
+tests\baseline\test_defect_agent.py:187: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f11_characterization_answer_without_evidence_is_returned" time="0.000" /><testcase classname="tests.baseline.test_defect_agent" name="test_f11_contract_no_evidence_requires_abstention_or_rejection" time="0.000"><failure message="AssertionError: assert 'A margem direita deve medir 7 cm.' != 'A margem direita deve medir 7 cm.'&#10; +  where 'A margem direita deve medir 7 cm.' = AgentResult(answer='A margem direita deve medir 7 cm.', evidences=[]).answer">@pytest.mark.xfail(
+        strict=True,
+        reason="F11: result extraction returns an unsupported normative answer unchanged",
+    )
+    def test_f11_contract_no_evidence_requires_abstention_or_rejection():
+        try:
+            result = extract_agent_result(
+                {"structured_response": {"answer": NORMATIVE_ANSWER, "evidence_ids": []}}
+            )
+        except RuntimeError:
+            return
+&gt;       assert result.answer != NORMATIVE_ANSWER
+E       AssertionError: assert 'A margem direita deve medir 7 cm.' != 'A margem direita deve medir 7 cm.'
+E        +  where 'A margem direita deve medir 7 cm.' = AgentResult(answer='A margem direita deve medir 7 cm.', evidences=[]).answer
+
+tests\baseline\test_defect_agent.py:209: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f12_characterization_old_tool_suppresses_new_recovery" time="0.000" /><testcase classname="tests.baseline.test_defect_agent" name="test_f12_contract_new_question_triggers_current_retrieval" time="0.001"><failure message="AssertionError: assert [] == [{'question':...ndo a ABNT?'}]&#10;  &#10;  Right contains one more item: {'question': 'Como formatar as margens de um TCC segundo a ABNT?'}&#10;  Use -v to get more diff">recovery_after_previous_turn = ([], {'messages': [{'content': 'Como apresentar referências de livros segundo a ABNT?', 'role': 'user'}, {'content': '...s de um TCC segundo a ABNT?', 'role': 'user'}, {'content': 'A margem direita deve medir 7 cm.', 'role': 'assistant'}]})
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F12: previous-turn tool evidence suppresses current retrieval",
+    )
+    def test_f12_contract_new_question_triggers_current_retrieval(
+        recovery_after_previous_turn,
+    ):
+        calls, _ = recovery_after_previous_turn
+&gt;       assert calls == [{"question": QUESTION}]
+E       AssertionError: assert [] == [{'question':...ndo a ABNT?'}]
+E         
+E         Right contains one more item: {'question': 'Como formatar as margens de um TCC segundo a ABNT?'}
+E         Use -v to get more diff
+
+tests\baseline\test_defect_agent.py:273: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f13_characterization_privileged_client_history_reaches_agent[system]" time="0.000" /><testcase classname="tests.baseline.test_defect_agent" name="test_f13_characterization_privileged_client_history_reaches_agent[tool]" time="0.000" /><testcase classname="tests.baseline.test_defect_agent" name="test_f13_contract_public_history_rejects_privileged_roles[system]" time="0.000"><failure message="Failed: DID NOT RAISE &lt;class 'pydantic_core._pydantic_core.ValidationError'&gt;">role = 'system'
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F13: public history accepts client-controlled system/tool roles",
+    )
+    @pytest.mark.parametrize("role", ["system", "tool"])
+    def test_f13_contract_public_history_rejects_privileged_roles(role):
+&gt;       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'pydantic_core._pydantic_core.ValidationError'&gt;
+
+tests\baseline\test_defect_agent.py:291: Failed</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f13_contract_public_history_rejects_privileged_roles[tool]" time="0.000"><failure message="Failed: DID NOT RAISE &lt;class 'pydantic_core._pydantic_core.ValidationError'&gt;">role = 'tool'
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F13: public history accepts client-controlled system/tool roles",
+    )
+    @pytest.mark.parametrize("role", ["system", "tool"])
+    def test_f13_contract_public_history_rejects_privileged_roles(role):
+&gt;       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'pydantic_core._pydantic_core.ValidationError'&gt;
+
+tests\baseline\test_defect_agent.py:291: Failed</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_characterization_gate_accepts_legacy_success[review]" time="0.000" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_characterization_gate_accepts_legacy_success[no-score]" time="0.000" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_characterization_gate_accepts_legacy_success[legacy-fallback]" time="0.000" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_contract_legacy_untrusted_evaluation_blocks_gold[review]" time="0.000"><failure message="AssertionError: assert not True&#10; +  where True = &lt;function is_gold_ready at 0x000001D149962DE0&gt;('success', 1, 1, ['success'])&#10; +    where &lt;function is_gold_ready at 0x000001D149962DE0&gt; = pipeline.is_gold_ready">legacy_evaluation = {'quality_score': 90, 'requires_manual_review': True, 'status': 'success'}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F1: Gold gate ignores review, score and evaluation method"
+    )
+    @pytest.mark.parametrize("legacy_evaluation", LEGACY_EVALUATIONS, indirect=True)
+    def test_f1_contract_legacy_untrusted_evaluation_blocks_gold(legacy_evaluation):
+&gt;       assert not pipeline.is_gold_ready("success", 1, 1, [legacy_evaluation["status"]])
+E       AssertionError: assert not True
+E        +  where True = &lt;function is_gold_ready at 0x000001D149962DE0&gt;('success', 1, 1, ['success'])
+E        +    where &lt;function is_gold_ready at 0x000001D149962DE0&gt; = pipeline.is_gold_ready
+
+tests\baseline\test_defect_pipeline.py:139: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_contract_legacy_untrusted_evaluation_blocks_gold[no-score]" time="0.000"><failure message="AssertionError: assert not True&#10; +  where True = &lt;function is_gold_ready at 0x000001D149962DE0&gt;('success', 1, 1, ['success'])&#10; +    where &lt;function is_gold_ready at 0x000001D149962DE0&gt; = pipeline.is_gold_ready">legacy_evaluation = {'quality_score': None, 'requires_manual_review': False, 'status': 'success'}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F1: Gold gate ignores review, score and evaluation method"
+    )
+    @pytest.mark.parametrize("legacy_evaluation", LEGACY_EVALUATIONS, indirect=True)
+    def test_f1_contract_legacy_untrusted_evaluation_blocks_gold(legacy_evaluation):
+&gt;       assert not pipeline.is_gold_ready("success", 1, 1, [legacy_evaluation["status"]])
+E       AssertionError: assert not True
+E        +  where True = &lt;function is_gold_ready at 0x000001D149962DE0&gt;('success', 1, 1, ['success'])
+E        +    where &lt;function is_gold_ready at 0x000001D149962DE0&gt; = pipeline.is_gold_ready
+
+tests\baseline\test_defect_pipeline.py:139: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_contract_legacy_untrusted_evaluation_blocks_gold[legacy-fallback]" time="0.000"><failure message="AssertionError: assert not True&#10; +  where True = &lt;function is_gold_ready at 0x000001D149962DE0&gt;('success', 1, 1, ['success'])&#10; +    where &lt;function is_gold_ready at 0x000001D149962DE0&gt; = pipeline.is_gold_ready">legacy_evaluation = {'evaluation_method': 'deterministic_fallback', 'quality_score': 50, 'requires_manual_review': True, 'status': 'success'}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F1: Gold gate ignores review, score and evaluation method"
+    )
+    @pytest.mark.parametrize("legacy_evaluation", LEGACY_EVALUATIONS, indirect=True)
+    def test_f1_contract_legacy_untrusted_evaluation_blocks_gold(legacy_evaluation):
+&gt;       assert not pipeline.is_gold_ready("success", 1, 1, [legacy_evaluation["status"]])
+E       AssertionError: assert not True
+E        +  where True = &lt;function is_gold_ready at 0x000001D149962DE0&gt;('success', 1, 1, ['success'])
+E        +    where &lt;function is_gold_ready at 0x000001D149962DE0&gt; = pipeline.is_gold_ready
+
+tests\baseline\test_defect_pipeline.py:139: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_characterization_force_reuses_evaluation" time="0.073" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_content_invalidates_score" time="0.001"><failure message="AssertionError: assert ('success', 97.0) == ('pending', None)&#10;  &#10;  At index 0 diff: 'success' != 'pending'&#10;  Use -v to get more diff">forced_reextraction = (&lt;sqlite3.Connection object at 0x000001D17242D990&gt;, 1)
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F2: forced text replacement preserves stale successful evaluation",
+    )
+    def test_f2_contract_changed_content_invalidates_score(forced_reextraction):
+        database, extraction_id = forced_reextraction
+        row = database.execute(
+            """SELECT evaluation_status, quality_score FROM silver.silver_page_extractions
+               WHERE extraction_id=?""",
+            (extraction_id,),
+        ).fetchone()
+&gt;       assert row == ("pending", None)
+E       AssertionError: assert ('success', 97.0) == ('pending', None)
+E         
+E         At index 0 diff: 'success' != 'pending'
+E         Use -v to get more diff
+
+tests\baseline\test_defect_pipeline.py:197: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_characterization_evaluator_skips_forced_success" time="0.001" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_force_content_is_evaluated_again" time="0.001"><failure message="assert 0 == 1&#10; +  where 0 = len([])">evaluation_after_force = (&lt;sqlite3.Connection object at 0x000001D17242C5E0&gt;, [])
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F2: evaluator only selects pending/error and skips changed content",
+    )
+    def test_f2_contract_force_content_is_evaluated_again(evaluation_after_force):
+        database, evaluated = evaluation_after_force
+&gt;       assert len(evaluated) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\baseline\test_defect_pipeline.py:231: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_characterization_identity_uses_only_document_extractor_version[source-bytes]" time="0.006" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_characterization_identity_uses_only_document_extractor_version[extractor-config]" time="0.002" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_provenance_creates_new_extraction[source-bytes]" time="0.003"><failure message="assert 1 != 1">changed_extraction_identity = (1, 1)
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F2: extraction identity lacks source hash and effective configuration",
+    )
+    def test_f2_contract_changed_provenance_creates_new_extraction(
+        changed_extraction_identity,
+    ):
+        first, second = changed_extraction_identity
+&gt;       assert second != first
+E       assert 1 != 1
+
+tests\baseline\test_defect_pipeline.py:277: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_provenance_creates_new_extraction[extractor-config]" time="0.003"><failure message="assert 1 != 1">changed_extraction_identity = (1, 1)
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F2: extraction identity lacks source hash and effective configuration",
+    )
+    def test_f2_contract_changed_provenance_creates_new_extraction(
+        changed_extraction_identity,
+    ):
+        first, second = changed_extraction_identity
+&gt;       assert second != first
+E       assert 1 != 1
+
+tests\baseline\test_defect_pipeline.py:277: AssertionError</failure></testcase></testsuite></testsuites>

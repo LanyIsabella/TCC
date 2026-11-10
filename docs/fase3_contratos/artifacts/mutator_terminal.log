@@ -1,0 +1,38 @@
+KILLED    src/terminal/main.py:194 delete not
+KILLED    src/terminal/main.py:197 delete not
+KILLED    src/terminal/main.py:197 or -> and
+KILLED    src/terminal/main.py:197 delete not
+Function              Namespace                  Killed  Survived  Uncovered  Sites   Score
+-------------------------------------------------------------------------------------------
+__init__              terminal.main.ChatSession       0         0          0      0    n/a
+_timestamp            terminal.main.ChatSession       0         0          0      0    n/a
+clear                 terminal.main.ChatSession       0         0          0      0    n/a
+ensure_repo_path      terminal.main                   0         0          0      1    n/a
+export_history        terminal.main.ChatSession       0         0          0      0    n/a
+load_agent            terminal.main                   0         0          0      2    n/a
+load_agente_module    terminal.main                   0         0          0      2    n/a
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentExecutor.edn
+main                  terminal.main                   0         0          0      7    n/a
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentService.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.ScopedAgent.edn
+normalize_content     terminal.main                   0         0          0      2    n/a
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.evidence.edn
+print_answer          terminal.main                   0         0          0      0    n/a
+print_banner          terminal.main                   0         0          0      0    n/a
+print_error           terminal.main                   0         0          0      0    n/a
+print_help            terminal.main                   0         0          0      0    n/a
+print_info            terminal.main                   0         0          0      0    n/a
+print_success         terminal.main                   0         0          0      0    n/a
+render_commands_table terminal.main                   0         0          0      2    n/a
+render_message_panel  terminal.main                   0         0          0      1    n/a
+run_interactive       terminal.main                   0         0          0      4    n/a
+ask                   terminal.main.ChatSession       4         0          0      4 100.0%
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.edn
+-------------------------------------------------------------------------------------------
+Total                                                 4         0          0     25  100.0%
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.ChatSession.edn

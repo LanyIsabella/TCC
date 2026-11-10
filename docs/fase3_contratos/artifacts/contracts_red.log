@@ -1,0 +1,112 @@
+.F.F.F.F..FF                                                             [100%]
+================================== FAILURES ===================================
+_________ test_f10_contract_empty_recovery_withholds_normative_answer _________
+
+no_evidence_recovery = {'messages': [{'content': 'Como formatar as margens de um TCC segundo a ABNT?', 'role': 'user'}, {'content': 'A margem direita deve medir 7 cm.', 'role': 'assistant'}]}
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F10: no_evidence recovery preserves an unsupported normative answer",
+    )
+    def test_f10_contract_empty_recovery_withholds_normative_answer(no_evidence_recovery):
+>       assert no_evidence_recovery["messages"][-1]["content"] != NORMATIVE_ANSWER
+E       AssertionError: assert 'A margem direita deve medir 7 cm.' != 'A margem direita deve medir 7 cm.'
+
+tests\baseline\test_defect_agent.py:133: AssertionError
+_______ test_f11_contract_contradictory_evidence_cannot_validate_answer _______
+
+contradictory_result = {'messages': [{'content': '{"status": "success", "documents": [{"title": "Fixture sint\\u00e9tica", "evidence": [{"evi...'}], 'structured_response': {'answer': 'A margem direita deve medir 7 cm.', 'evidence_ids': ['synthetic:9001:page:1']}}
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F11: matched_text bypasses support checking for a contradictory number",
+    )
+    def test_f11_contract_contradictory_evidence_cannot_validate_answer(
+        contradictory_result,
+    ):
+        try:
+            result = extract_agent_result(contradictory_result)
+        except RuntimeError:
+            return  # Explicit rejection is also an acceptable contract.
+>       assert result.evidences == []
+E       AssertionError: assert [{'evidence_i... 2 cm.', ...}] == []
+E         
+E         Left contains one more item: {'evidence_id': 'synthetic:9001:page:1', 'matched_text': 'A margem direita deve medir 2 cm.', 'page_number': 1, 'text': 'A margem direita deve medir 2 cm.', ...}
+E         Use -v to get more diff
+
+tests\baseline\test_defect_agent.py:187: AssertionError
+_______ test_f11_contract_no_evidence_requires_abstention_or_rejection ________
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F11: result extraction returns an unsupported normative answer unchanged",
+    )
+    def test_f11_contract_no_evidence_requires_abstention_or_rejection():
+        try:
+            result = extract_agent_result(
+                {"structured_response": {"answer": NORMATIVE_ANSWER, "evidence_ids": []}}
+            )
+        except RuntimeError:
+            return
+>       assert result.answer != NORMATIVE_ANSWER
+E       AssertionError: assert 'A margem direita deve medir 7 cm.' != 'A margem direita deve medir 7 cm.'
+E        +  where 'A margem direita deve medir 7 cm.' = AgentResult(answer='A margem direita deve medir 7 cm.', evidences=[]).answer
+
+tests\baseline\test_defect_agent.py:209: AssertionError
+__________ test_f12_contract_new_question_triggers_current_retrieval __________
+
+recovery_after_previous_turn = ([], {'messages': [{'content': 'Como apresentar refer�ncias de livros segundo a ABNT?', 'role': 'user'}, {'content': '...s de um TCC segundo a ABNT?', 'role': 'user'}, {'content': 'A margem direita deve medir 7 cm.', 'role': 'assistant'}]})
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F12: previous-turn tool evidence suppresses current retrieval",
+    )
+    def test_f12_contract_new_question_triggers_current_retrieval(
+        recovery_after_previous_turn,
+    ):
+        calls, _ = recovery_after_previous_turn
+>       assert calls == [{"question": QUESTION}]
+E       AssertionError: assert [] == [{'question':...ndo a ABNT?'}]
+E         
+E         Right contains one more item: {'question': 'Como formatar as margens de um TCC segundo a ABNT?'}
+E         Use -v to get more diff
+
+tests\baseline\test_defect_agent.py:273: AssertionError
+______ test_f13_contract_public_history_rejects_privileged_roles[system] ______
+
+role = 'system'
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F13: public history accepts client-controlled system/tool roles",
+    )
+    @pytest.mark.parametrize("role", ["system", "tool"])
+    def test_f13_contract_public_history_rejects_privileged_roles(role):
+>       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'pydantic_core._pydantic_core.ValidationError'>
+
+tests\baseline\test_defect_agent.py:291: Failed
+_______ test_f13_contract_public_history_rejects_privileged_roles[tool] _______
+
+role = 'tool'
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F13: public history accepts client-controlled system/tool roles",
+    )
+    @pytest.mark.parametrize("role", ["system", "tool"])
+    def test_f13_contract_public_history_rejects_privileged_roles(role):
+>       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'pydantic_core._pydantic_core.ValidationError'>
+
+tests\baseline\test_defect_agent.py:291: Failed
+=========================== short test summary info ===========================
+FAILED tests/baseline/test_defect_agent.py::test_f10_contract_empty_recovery_withholds_normative_answer
+FAILED tests/baseline/test_defect_agent.py::test_f11_contract_contradictory_evidence_cannot_validate_answer
+FAILED tests/baseline/test_defect_agent.py::test_f11_contract_no_evidence_requires_abstention_or_rejection
+FAILED tests/baseline/test_defect_agent.py::test_f12_contract_new_question_triggers_current_retrieval
+FAILED tests/baseline/test_defect_agent.py::test_f13_contract_public_history_rejects_privileged_roles[system]
+FAILED tests/baseline/test_defect_agent.py::test_f13_contract_public_history_rejects_privileged_roles[tool]
+6 failed, 6 passed, 4 deselected in 4.35s

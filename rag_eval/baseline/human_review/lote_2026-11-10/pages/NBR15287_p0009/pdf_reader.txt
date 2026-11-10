@@ -1,0 +1,37 @@
+5
+ABNT NBR 15287:2025
+© ABNT 2025 - T odos os direitos reservados
+4.2.1.3 Lista de tabelas
+Elemento opcional. Deve ser elaborada de acordo com a ordem apresentada no texto. Cada título
+deve ser precedido da palavra T abela, seguida de seu número de ordem de ocorrência no texto
+e travessão. Após o título, informar o respectivo número da folha ou página.
+EXEMPLO
+T abela 1 – Perﬁl socioeconômico da população entrevistada, no período de julho de 2009 a abril de 2010....9
+4.2.1.4 Lista de abreviaturas e siglas
+Elemento opcional. Consiste na relação alfabética das abreviaturas e siglas utilizadas no texto,
+seguidas das palavras ou expressões correspondentes grafadas por extenso. Recomenda-se
+a elaboração de lista própria para cada tipo.
+EXEMPLO
+ABNT Associação Brasileira de Normas Técnicas
+Fil. Filosoﬁa
+IBGE Instituto Brasileiro de Geograﬁa e Estatística
+Inmetro Instituto Nacional de Metrologia, Normalização e Qualidade Industrial
+4.2.1.5 Lista de símbolos
+Elemento opcional. Deve ser elaborada de acordo com a ordem apresentada no texto, com o devido
+signiﬁcado.
+EXEMPLO
+dab Distância euclidiana
+O(n) Ordem de um algoritmo
+4.2.1.6 Sumário
+Elemento obrigatório. Deve ser elaborado conforme a ABNT NBR 6027.
+4.2.2 Elementos textuais
+O texto deve ser constituído por uma parte introdutória, na qual devem ser expostos o tema do projeto,
+o problema a ser abordado, a(s) hipótese(s), quando couber(em), bem como o(s) objetivo(s) a ser(em)
+atingido(s) e a(s) justiﬁcativa(s). É necessário que sejam indicados o referencial teórico que o embasa,
+a metodologia a ser utilizada, assim como os recursos e o cronograma necessários à sua consecução.
+4.2.3 Elementos pós-textuais
+Devem ser conforme 4.2.3.1 a 4.2.3.5.
+4.2.3.1 Referências
+Elemento obrigatório. Devem ser elaboradas conforme a ABNT NBR 6023.
+Documento impresso em 10/09/2026 20:41:23, de uso exclusivo de INST. FED. EDU, CIENCIA E TEC. GOIAS - REITORIA
+Documento impresso em 10/09/2026 20:41:23, de uso exclusivo de INST. FED. EDU, CIENCIA E TEC. GOIAS - REITORIA

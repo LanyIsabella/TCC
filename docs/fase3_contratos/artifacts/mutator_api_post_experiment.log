@@ -1,0 +1,39 @@
+KILLED    src/api/schemas/agent.py:12 delete not
+KILLED    src/api/services/agent_service.py:73 delete not
+KILLED    src/api/services/agent_service.py:79 delete not
+KILLED    src/api/services/agent_service.py:79 or -> and
+KILLED    src/api/services/agent_service.py:79 delete not
+Function                Namespace                                    Killed  Survived  Uncovered  Sites   Score
+---------------------------------------------------------------------------------------------------------------
+__init__                api.services.agent_service.AgentService           0         0          0      0    n/a
+accept_existing_message api.schemas.agent.PublicConversationMessage       0         0          0      0    n/a
+chat                    api.services.agent_service.AgentService           0         0          0      0    n/a
+invoke                  api.services.agent_service.AgentExecutor          0         0          0      0    n/a
+validate_content        api.schemas.agent.ConversationMessage             0         0          0      0    n/a
+validate_message        api.schemas.agent.AgentChatRequest                0         0          0      0    n/a
+_extract_messages       api.services.agent_service.AgentService           4         0          0      4 100.0%
+_nonempty_text          api.schemas.agent                                 1         0          0      1 100.0%
+---------------------------------------------------------------------------------------------------------------
+Total                                                                     5         0          0      5  100.0%
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentExecutor.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentService.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.ScopedAgent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.evidence.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.ChatSession.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentExecutor.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentService.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.ScopedAgent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.evidence.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.ChatSession.edn

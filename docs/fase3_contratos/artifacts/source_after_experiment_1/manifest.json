@@ -1,0 +1,7 @@
+{
+  "src/app/grounding.py": {
+    "path": "grounding.py.txt",
+    "sha256": "dc3de44fb613d2ea26871c72b64475febf51b51a7dd848a49c804b8423d182dd"
+  },
+  "unchanged_other_sources": "../source_before_experiment/manifest.json"
+}

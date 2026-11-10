@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="0.410" timestamp="2026-11-10T10:13:13.413497-03:00" hostname="Lany"><testcase classname="tests.test_agent_contract_channels" name="test_terminal_consumes_the_validated_answer" time="0.113" /><testcase classname="tests.test_agent_contract_channels" name="test_terminal_retains_error_history_when_validation_fails[invoke]" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_terminal_retains_error_history_when_validation_fails[empty_messages]" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_terminal_retains_error_history_when_validation_fails[empty_answer]" time="0.001"><failure message="AssertionError: assert 'message' == 'error'&#10;  &#10;  - error&#10;  + message">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000217B734C490&gt;
+stage = 'empty_answer'
+
+    @pytest.mark.parametrize("stage", ["invoke", "empty_messages", "empty_answer"])
+    def test_terminal_retains_error_history_when_validation_fails(monkeypatch, stage):
+        monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "src" / "terminal"))
+        from src.terminal.main import ChatSession
+    
+        class Executor:
+            def invoke(self, payload):
+                if stage == "invoke":
+                    raise RuntimeError("fixture: invoke")
+                if stage == "empty_messages":
+                    return {"messages": []}
+                return {"messages": [{"role": "assistant", "content": ""}]}
+    
+        session = ChatSession(Executor())
+        with pytest.raises(RuntimeError):
+            session.ask(QUESTION)
+&gt;       assert session.history[-1]["entry_type"] == "error"
+E       AssertionError: assert 'message' == 'error'
+E         
+E         - error
+E         + message
+
+tests\test_agent_contract_channels.py:274: AssertionError</failure></testcase></testsuite></testsuites>

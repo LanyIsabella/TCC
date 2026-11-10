@@ -1,0 +1,54 @@
+CRAP Report
+===========
+Languages: python
+
+Function                       Namespace                             CC    Cov%     CRAP
+----------------------------------------------------------------------------------------
+_page_flags                    rag_eval.baseline.audit                9  85.7%      9.2
+checked_reviews                rag_eval.baseline.review               8  86.7%      8.2
+_assemble_pages                rag_eval.baseline.snapshot             8  92.9%      8.0
+select_human_reference         rag_eval.baseline.snapshot             8  94.1%      8.0
+_risk_reasons                  rag_eval.baseline.snapshot             8 100.0%      8.0
+preflight                      rag_eval.baseline.runtime              7  88.2%      7.1
+_literal_constants             rag_eval.baseline.snapshot             7 100.0%      7.0
+source_hashes                  rag_eval.baseline.snapshot             7 100.0%      7.0
+Wrote C:\Users\lany_\OneDrive\Desktop\TCC\.metrics\crap.edn
+capture                        rag_eval.baseline.snapshot             6  90.9%      6.0
+_retention                     rag_eval.baseline.metrics              6 100.0%      6.0
+evaluate_pages                 rag_eval.baseline.review               6 100.0%      6.0
+sanitize                       rag_eval.baseline.snapshot             6 100.0%      6.0
+evaluate_cases                 rag_eval.baseline.run                  5  85.7%      5.1
+_metadata_discrepancies        rag_eval.baseline.audit                5 100.0%      5.0
+_search_configuration          rag_eval.baseline.snapshot             5 100.0%      5.0
+source_configuration           rag_eval.baseline.snapshot             5 100.0%      5.0
+summarize                      rag_eval.baseline.snapshot             5 100.0%      5.0
+main                           rag_eval.baseline.audit                2  11.1%      4.8
+_json_default                  rag_eval.baseline.snapshot             3  50.0%      4.1
+main                           rag_eval.baseline.run                  4  81.5%      4.1
+_edition_discrepancies         rag_eval.baseline.audit                4 100.0%      4.0
+_page_contexts                 rag_eval.baseline.metrics              4 100.0%      4.0
+load_cases                     rag_eval.baseline.run                  4 100.0%      4.0
+printed_page_candidate         rag_eval.baseline.snapshot             4 100.0%      4.0
+locator_metrics                rag_eval.baseline.metrics              3 100.0%      3.0
+main                           rag_eval.baseline.review               3 100.0%      3.0
+execute_stage                  rag_eval.baseline.runtime              3 100.0%      3.0
+observed_document              rag_eval.baseline.runtime              3 100.0%      3.0
+_coverage_pages                rag_eval.baseline.snapshot             3 100.0%      3.0
+_retrieval_limit               rag_eval.baseline.snapshot             3 100.0%      3.0
+connect_readonly               rag_eval.baseline.snapshot             3 100.0%      3.0
+standard_key                   rag_eval.baseline.metrics              2 100.0%      2.0
+execute_production             rag_eval.baseline.runtime              2 100.0%      2.0
+text_sha256                    rag_eval.baseline.snapshot             2 100.0%      2.0
+_page_record                   rag_eval.baseline.snapshot             1  12.5%      1.7
+main                           rag_eval.baseline.snapshot             1  14.3%      1.6
+_read_rows                     rag_eval.baseline.snapshot             1  20.0%      1.5
+current_configuration          rag_eval.baseline.snapshot             1  20.0%      1.5
+worker                         rag_eval.baseline.run                  1  33.3%      1.3
+environment                    rag_eval.baseline.runtime              1  50.0%      1.1
+_git                           rag_eval.baseline.snapshot             1  50.0%      1.1
+audit_snapshot                 rag_eval.baseline.audit                1 100.0%      1.0
+normalized                     rag_eval.baseline.metrics              1 100.0%      1.0
+_attested                      rag_eval.baseline.review               1 100.0%      1.0
+review_template                rag_eval.baseline.review               1 100.0%      1.0
+file_sha256                    rag_eval.baseline.snapshot             1 100.0%      1.0
+write_json                     rag_eval.baseline.snapshot             1 100.0%      1.0

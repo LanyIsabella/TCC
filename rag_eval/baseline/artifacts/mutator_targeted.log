@@ -1,0 +1,25 @@
+KILLED    rag_eval/baseline/audit.py:25 != -> ==
+KILLED    rag_eval/baseline/audit.py:28 != -> ==
+KILLED    rag_eval/baseline/audit.py:30 or -> and
+KILLED    rag_eval/baseline/audit.py:32 or -> and
+KILLED    rag_eval/baseline/audit.py:44 != -> ==
+UNCOVERED rag_eval/baseline/audit.py:59 1 -> 0
+UNCOVERED rag_eval/baseline/audit.py:59 delete -
+UNCOVERED rag_eval/baseline/audit.py:59 1 -> 0
+KILLED    rag_eval/baseline/audit.py:65 and -> or
+KILLED    rag_eval/baseline/audit.py:65 != -> ==
+KILLED    rag_eval/baseline/audit.py:79 False -> True
+UNCOVERED rag_eval/baseline/audit.py:89 True -> False
+UNCOVERED rag_eval/baseline/audit.py:90 True -> False
+UNCOVERED rag_eval/baseline/audit.py:91 True -> False
+UNCOVERED rag_eval/baseline/audit.py:105 False -> True
+Function                Namespace                Killed  Survived  Uncovered  Sites   Score
+-------------------------------------------------------------------------------------------
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/rag_eval.baseline.audit.edn
+main                    rag_eval.baseline.audit       0         0          4      4    n/a
+_edition_discrepancies  rag_eval.baseline.audit       2         0          3      5 100.0%
+_metadata_discrepancies rag_eval.baseline.audit       1         0          0      1 100.0%
+_page_flags             rag_eval.baseline.audit       4         0          0      4 100.0%
+audit_snapshot          rag_eval.baseline.audit       1         0          0      1 100.0%
+-------------------------------------------------------------------------------------------
+Total                                                 8         0          7     15  100.0%

@@ -1,0 +1,80 @@
+src/app/agente.py:105 False -> True
+src/app/agente.py:278 False -> True
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.edn
+KILLED    src/app/agente.py:53 delete not
+SURVIVED  src/app/agente.py:105 False -> True
+KILLED    src/app/agente.py:122 - -> +
+KILLED    src/app/agente.py:122 1 -> 0
+KILLED    src/app/agente.py:122 delete -
+KILLED    src/app/agente.py:122 1 -> 0
+KILLED    src/app/agente.py:122 delete -
+KILLED    src/app/agente.py:122 1 -> 0
+KILLED    src/app/agente.py:140 delete not
+KILLED    src/app/agente.py:140 or -> and
+KILLED    src/app/agente.py:140 == -> !=
+KILLED    src/app/agente.py:160 delete not
+KILLED    src/app/agente.py:165 == -> !=
+KILLED    src/app/agente.py:166 and -> or
+KILLED    src/app/agente.py:167 and -> or
+KILLED    src/app/agente.py:171 delete not
+KILLED    src/app/agente.py:181 delete not
+KILLED    src/app/agente.py:185 or -> and
+KILLED    src/app/agente.py:189 or -> and
+KILLED    src/app/agente.py:189 delete not
+KILLED    src/app/agente.py:190 False -> True
+KILLED    src/app/agente.py:191 and -> or
+KILLED    src/app/agente.py:192 True -> False
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentExecutor.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentService.edn
+KILLED    src/app/agente.py:194 delete not
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.edn
+KILLED    src/app/agente.py:194 or -> and
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.ScopedAgent.edn
+KILLED    src/app/agente.py:201 or -> and
+KILLED    src/app/agente.py:202 False -> True
+KILLED    src/app/agente.py:205 == -> !=
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.evidence.edn
+KILLED    src/app/agente.py:206 or -> and
+KILLED    src/app/agente.py:206 delete not
+KILLED    src/app/agente.py:207 or -> and
+KILLED    src/app/agente.py:210 or -> and
+KILLED    src/app/agente.py:221 delete not
+KILLED    src/app/agente.py:223 + -> -
+KILLED    src/app/agente.py:227 delete not
+KILLED    src/app/agente.py:231 False -> True
+KILLED    src/app/agente.py:257 == -> !=
+SURVIVED  src/app/agente.py:278 False -> True
+KILLED    src/app/agente.py:293 == -> !=
+KILLED    src/app/agente.py:313 delete not
+KILLED    src/app/agente.py:332 == -> !=
+KILLED    src/app/agente.py:337 delete -
+KILLED    src/app/agente.py:338 and -> or
+KILLED    src/app/agente.py:338 delete -
+KILLED    src/app/agente.py:338 1 -> 0
+Function                   Namespace               Killed  Survived  Uncovered  Sites   Score
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.grounding.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/terminal.main.ChatSession.edn
+---------------------------------------------------------------------------------------------
+__init__                   app.agente.ScopedAgent       0         0          0      0    n/a
+_content_text              app.agente.ScopedAgent       0         0          0      0    n/a
+_last_user_question        app.agente.ScopedAgent       0         0          0      0    n/a
+_retrieval_query           app.agente.ScopedAgent       0         0          0      0    n/a
+build_agent                app.agente                   0         0          0      0    n/a
+_verify_claims             app.agente.ScopedAgent       0         1          0      1   0.0%
+_synthesize_from_retrieval app.agente.ScopedAgent       2         1          0      3  66.7%
+_candidate_answer          app.agente.ScopedAgent       2         0          0      2 100.0%
+_current_user_index        app.agente.ScopedAgent       6         0          0      6 100.0%
+_last_assistant_text       app.agente.ScopedAgent       1         0          0      1 100.0%
+_needs_retrieval_recovery  app.agente.ScopedAgent       7         0          0      7 100.0%
+_needs_synthesis           app.agente.ScopedAgent       7         0          0      7 100.0%
+_recover_retrieval         app.agente.ScopedAgent       5         0          0      5 100.0%
+_synthesis_history         app.agente.ScopedAgent       5         0          0      5 100.0%
+_tool_payloads             app.agente.ScopedAgent       4         0          0      4 100.0%
+_with_retrieval_hint       app.agente.ScopedAgent       3         0          0      3 100.0%
+invoke                     app.agente.ScopedAgent       1         0          0      1 100.0%
+---------------------------------------------------------------------------------------------
+Total                                                  43         2          0     45   95.6%

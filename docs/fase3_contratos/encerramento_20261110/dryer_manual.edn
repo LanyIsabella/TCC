@@ -1,0 +1,8 @@
+{:candidates [
+ {:score 1.0
+  :language "python"
+  :left {:file "src/api/schemas/agent.py", :start-line 27, :end-line 30}
+  :right {:file "src/api/schemas/agent.py", :start-line 57, :end-line 60}
+  :left-nodes 29
+  :right-nodes 29}
+]}

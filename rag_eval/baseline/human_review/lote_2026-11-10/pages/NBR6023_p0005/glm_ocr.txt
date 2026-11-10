@@ -1,0 +1,23 @@
+Prefácio
+
+A Associação Brasileira de Normas Técnicas (ABNT) é o Foro Nacional de Normalização. As Normas Brasileiras, cujo conteúdo é de responsabilidade dos Comitês Brasileiros (ABNT/CB), dos Organismos de Normalização Setorial (ABNT/ONS) e das Comissões de Estudo Especialis (ABNT/CEE), são elaboradas por Comissões de Estudo (CE), formadas pelas partes interessadas no tema objeto da normalização.
+
+Os Documentos Técnicos ABNT são elaborados conforme as regras da ABNT Diretiva 2.
+
+AABNT chama a atenção para que, apesar de ter sido solicitada manifestação sobre eventuais direitos de patentes durante a Consulta Nacional, estes podem ocorrer e devem ser comunicados à ABNT a qualquer momento (Lei nº 9.279, de 14 de maio de 1996).
+
+Os Documentos Técnicos ABNT, assim como as Normas Internacionais (ISO e IEC), são voluntários e não incluem requisitos contratuais, legais ou estatutários. Os Documentos Técnicos ABNT não substituem Leis, Decretos ou Regulamentos, aos quais os usuários devem atender, tendo precedência sobre qualquer Documento Técnico ABNT.
+
+Ressalta-se que os Documentos Técnicos ABNT podem ser objeto de citação em Regulamentos Técnicos. Nestes casos, os órgãos responsáveis pelos Regulamentos Técnicos podem determinar as datas para exigência dos requisitos de quaisquer Documentos Técnicos ABNT.
+
+A ABNT NBR 6023 foi elaborada no Comitê Brasileiro de Informação e Documentação (ABNT/CB-014), pela Comissão de Estudo de Identificação e Descrição (CE-014:000.003). O seu 1º Projeto de Revisão circulou em Consulta Nacional conforme Edital nº 08, de 03.08.2015 a 30.10.2015. O seu 2º Projeto de Revisão circulou em Consulta Nacional conforme Edital nº 06, de 15.06.2018 a 16.07.2018. O Projeto de Emenda 1 foi submetido à Consulta Nacional no período de 06.02.2025 a 10.03.2025.
+
+AABNT NBR 6023:2025 equivale ao conjunto ABNT NBR 6023:2018 e Emenda 1, de 21.05.2025, que cancela e substitui a ABNT NBR 6023:2018.
+
+O Escopo em inglês da ABNT NBR 6023 é o seguinte:
+
+Scope
+
+This Standard sets out the elements to be included in search results.
+
+This Standard sets out the order of the elements of the references and establishes conventions for transcription and presentation of information originated the document and/or other sources of information.

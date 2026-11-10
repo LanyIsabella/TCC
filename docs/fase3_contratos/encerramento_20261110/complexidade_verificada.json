@@ -1,0 +1,436 @@
+{
+  "fresh_single_lcov": true,
+  "changed_functions": [
+    {
+      "function": "app.grounding._canonical",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.grounding._conversational",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.grounding.needs_support",
+      "cc": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "function": "app.grounding._plain_text_rewrite",
+      "cc": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.grounding._claims",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.grounding._quantities",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._quantity_value",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.grounding._literal_form",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._literal_quantity",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._numeric_conflict",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.grounding._polarity",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._qualifiers",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._qualifier_conflict",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.grounding._modality_conflict",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.grounding._compatible",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._quote_context",
+      "cc": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.grounding._scoped_quote",
+      "cc": 4.0,
+      "coverage": 85.7143,
+      "crap": 4.0466
+    },
+    {
+      "function": "app.grounding._literal_support",
+      "cc": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.grounding._literal_in_source",
+      "cc": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.grounding._optional_permission",
+      "cc": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.grounding._assess",
+      "cc": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.grounding._assessment_data",
+      "cc": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.grounding._verified_support",
+      "cc": 9.0,
+      "coverage": 100.0,
+      "crap": 9.0
+    },
+    {
+      "function": "app.grounding._claim_support",
+      "cc": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "function": "app.grounding._compose",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.grounding.ground_answer",
+      "cc": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "function": "app.evidence.message_role",
+      "cc": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.evidence.begin_turn",
+      "cc": 4.0,
+      "coverage": 91.6667,
+      "crap": 4.0093
+    },
+    {
+      "function": "app.evidence.bind_turn",
+      "cc": 3.0,
+      "coverage": 85.7143,
+      "crap": 3.0262
+    },
+    {
+      "function": "app.evidence.current_turn_messages",
+      "cc": 7.0,
+      "coverage": 84.6154,
+      "crap": 7.1784
+    },
+    {
+      "function": "app.evidence._parse_tool_content",
+      "cc": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.evidence._rag_event",
+      "cc": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "function": "app.evidence._execution",
+      "cc": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.evidence._tool_payloads",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.evidence._document_evidences",
+      "cc": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "function": "app.evidence._evidence_record",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.evidence._collect_evidences",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.evidence.looks_like_guarded_answer",
+      "cc": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "function": "app.evidence._extract_answer",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.evidence.last_user_question",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.evidence._fingerprint",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.evidence._normative_context",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.evidence._decision",
+      "cc": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "function": "app.evidence.finalize_grounding",
+      "cc": 6.0,
+      "coverage": 87.5,
+      "crap": 6.0703
+    },
+    {
+      "function": "app.evidence._without_content",
+      "cc": 2.0,
+      "coverage": 75.0,
+      "crap": 2.0625
+    },
+    {
+      "function": "app.evidence.extract_agent_result",
+      "cc": 2.0,
+      "coverage": 83.3333,
+      "crap": 2.0185
+    },
+    {
+      "function": "app.agente.ScopedAgent.invoke",
+      "cc": 6.0,
+      "coverage": 93.75,
+      "crap": 6.0088
+    },
+    {
+      "function": "app.agente.ScopedAgent._verify_claims",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._last_user_question",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._content_text",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._current_user_index",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._retrieval_query",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._with_retrieval_hint",
+      "cc": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._tool_payloads",
+      "cc": 5.0,
+      "coverage": 75.0,
+      "crap": 5.3906
+    },
+    {
+      "function": "app.agente.ScopedAgent._last_assistant_text",
+      "cc": 5.0,
+      "coverage": 88.8889,
+      "crap": 5.0343
+    },
+    {
+      "function": "app.agente.ScopedAgent._candidate_answer",
+      "cc": 3.0,
+      "coverage": 83.3333,
+      "crap": 3.0417
+    },
+    {
+      "function": "app.agente.ScopedAgent._needs_synthesis",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._needs_retrieval_recovery",
+      "cc": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._recover_retrieval",
+      "cc": 4.0,
+      "coverage": 93.75,
+      "crap": 4.0039
+    },
+    {
+      "function": "app.agente.ScopedAgent._synthesize_from_retrieval",
+      "cc": 6.0,
+      "coverage": 75.0,
+      "crap": 6.5625
+    },
+    {
+      "function": "app.agente.ScopedAgent._synthesis_history",
+      "cc": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "function": "api.schemas.agent._nonempty_text",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "api.schemas.agent.ConversationMessage.validate_content",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "api.schemas.agent.PublicConversationMessage.accept_existing_message",
+      "cc": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "api.schemas.agent.AgentChatRequest.validate_message",
+      "cc": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "api.services.agent_service.AgentService.chat",
+      "cc": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "terminal.main.ChatSession.ask",
+      "cc": 6.0,
+      "coverage": 95.4545,
+      "crap": 6.0034
+    }
+  ],
+  "changed_count": 67,
+  "changed_max_crap": 9.0,
+  "whole_file_violations": [
+    {
+      "function": "terminal.main.normalize_content",
+      "cc": 11.0,
+      "coverage": 5.5556,
+      "crap": 112.9328
+    },
+    {
+      "function": "terminal.main.run_interactive",
+      "cc": 11.0,
+      "coverage": 47.3684,
+      "crap": 28.6411
+    },
+    {
+      "function": "terminal.main.main",
+      "cc": 9.0,
+      "coverage": 65.625,
+      "crap": 12.2901
+    },
+    {
+      "function": "app.evidence._normalize_content",
+      "cc": 11.0,
+      "coverage": 100.0,
+      "crap": 11.0
+    }
+  ],
+  "whole_file_gate_passed": false
+}

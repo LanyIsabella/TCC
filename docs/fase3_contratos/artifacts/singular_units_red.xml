@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="7" time="0.267" timestamp="2026-11-10T10:59:35.637648-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_singular_units_and_one_in_words_have_literal_proof[cm-cent\xedmetro]" time="0.071"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida dev...m centímetro.'&#10;  &#10;  - A medida deve ser um centímetro.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source_unit = 'cm', answer_unit = 'centímetro'
+
+    @pytest.mark.parametrize("source_unit,answer_unit", [("cm", "centímetro"), ("pt", "ponto"),
+                                                         ("mm", "milímetro"), ("m", "metro"),
+                                                         ("palavras", "palavra"), ("linhas", "linha")])
+    def test_singular_units_and_one_in_words_have_literal_proof(source_unit, answer_unit):
+        source = f"A medida deve ser 1 {source_unit}."
+        answer = f"A medida deve ser um {answer_unit}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida dev...m centímetro.'
+E         
+E         - A medida deve ser um centímetro.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:530: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_singular_units_and_one_in_words_have_literal_proof[pt-ponto]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida deve ser um ponto.'&#10;  &#10;  - A medida deve ser um ponto.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source_unit = 'pt', answer_unit = 'ponto'
+
+    @pytest.mark.parametrize("source_unit,answer_unit", [("cm", "centímetro"), ("pt", "ponto"),
+                                                         ("mm", "milímetro"), ("m", "metro"),
+                                                         ("palavras", "palavra"), ("linhas", "linha")])
+    def test_singular_units_and_one_in_words_have_literal_proof(source_unit, answer_unit):
+        source = f"A medida deve ser 1 {source_unit}."
+        answer = f"A medida deve ser um {answer_unit}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida deve ser um ponto.'
+E         
+E         - A medida deve ser um ponto.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:530: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_singular_units_and_one_in_words_have_literal_proof[mm-mil\xedmetro]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida dev...um milímetro.'&#10;  &#10;  - A medida deve ser um milímetro.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source_unit = 'mm', answer_unit = 'milímetro'
+
+    @pytest.mark.parametrize("source_unit,answer_unit", [("cm", "centímetro"), ("pt", "ponto"),
+                                                         ("mm", "milímetro"), ("m", "metro"),
+                                                         ("palavras", "palavra"), ("linhas", "linha")])
+    def test_singular_units_and_one_in_words_have_literal_proof(source_unit, answer_unit):
+        source = f"A medida deve ser 1 {source_unit}."
+        answer = f"A medida deve ser um {answer_unit}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida dev...um milímetro.'
+E         
+E         - A medida deve ser um milímetro.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:530: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_singular_units_and_one_in_words_have_literal_proof[m-metro]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida deve ser um metro.'&#10;  &#10;  - A medida deve ser um metro.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source_unit = 'm', answer_unit = 'metro'
+
+    @pytest.mark.parametrize("source_unit,answer_unit", [("cm", "centímetro"), ("pt", "ponto"),
+                                                         ("mm", "milímetro"), ("m", "metro"),
+                                                         ("palavras", "palavra"), ("linhas", "linha")])
+    def test_singular_units_and_one_in_words_have_literal_proof(source_unit, answer_unit):
+        source = f"A medida deve ser 1 {source_unit}."
+        answer = f"A medida deve ser um {answer_unit}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida deve ser um metro.'
+E         
+E         - A medida deve ser um metro.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:530: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_singular_units_and_one_in_words_have_literal_proof[palavras-palavra]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida dev...r um palavra.'&#10;  &#10;  - A medida deve ser um palavra.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source_unit = 'palavras', answer_unit = 'palavra'
+
+    @pytest.mark.parametrize("source_unit,answer_unit", [("cm", "centímetro"), ("pt", "ponto"),
+                                                         ("mm", "milímetro"), ("m", "metro"),
+                                                         ("palavras", "palavra"), ("linhas", "linha")])
+    def test_singular_units_and_one_in_words_have_literal_proof(source_unit, answer_unit):
+        source = f"A medida deve ser 1 {source_unit}."
+        answer = f"A medida deve ser um {answer_unit}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida dev...r um palavra.'
+E         
+E         - A medida deve ser um palavra.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:530: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_singular_units_and_one_in_words_have_literal_proof[linhas-linha]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida deve ser um linha.'&#10;  &#10;  - A medida deve ser um linha.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source_unit = 'linhas', answer_unit = 'linha'
+
+    @pytest.mark.parametrize("source_unit,answer_unit", [("cm", "centímetro"), ("pt", "ponto"),
+                                                         ("mm", "milímetro"), ("m", "metro"),
+                                                         ("palavras", "palavra"), ("linhas", "linha")])
+    def test_singular_units_and_one_in_words_have_literal_proof(source_unit, answer_unit):
+        source = f"A medida deve ser 1 {source_unit}."
+        answer = f"A medida deve ser um {answer_unit}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A medida deve ser um linha.'
+E         
+E         - A medida deve ser um linha.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:530: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_singular_unit_does_not_hide_a_numeric_contradiction" time="0.001"><failure message="AssertionError: assert 'supported' == 'insufficient'&#10;  &#10;  - insufficient&#10;  + supported">def test_singular_unit_does_not_hide_a_numeric_contradiction():
+        source = "A fonte deve ter sete pontos."
+        answer = "A fonte deve ter um ponto."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source)).status == "insufficient"
+E       AssertionError: assert 'supported' == 'insufficient'
+E         
+E         - insufficient
+E         + supported
+
+tests\test_grounding_policy.py:536: AssertionError</failure></testcase></testsuite></testsuites>

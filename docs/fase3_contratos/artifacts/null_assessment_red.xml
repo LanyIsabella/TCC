@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="0.220" timestamp="2026-11-10T10:54:45.038939-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_negative_null_metadata_does_not_discard_a_supported_paraphrase_in_batch" time="0.067"><failure message="AssertionError: assert 'insufficient' == 'partial'&#10;  &#10;  - partial&#10;  + insufficient">def test_negative_null_metadata_does_not_discard_a_supported_paraphrase_in_batch():
+        source = "A margem direita deve medir 2 cm."
+        good = "A margem direita mede dois centímetros."
+        raw = {"claims": [
+            {"index": 0, "supported": True, "evidence_id": "e1", "quote": source},
+            {"index": 1, "supported": False, "evidence_id": None, "quote": None},
+        ]}
+        value = ground_answer(good + " A fonte deve ter 99 pontos.", evidence(source), QUESTION,
+                              lambda *_: raw)
+&gt;       assert value.status == "partial"
+E       AssertionError: assert 'insufficient' == 'partial'
+E         
+E         - partial
+E         + insufficient
+
+tests\test_grounding_policy.py:472: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_positive_assessment_cannot_use_null_proof[None-None]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_positive_assessment_cannot_use_null_proof[e1-None]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_positive_assessment_cannot_use_null_proof[None-A margem deve medir 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_opposite_negated_bounds_are_still_conflicting[O resumo deve conter no m\xednimo 150 palavras.-O resumo n\xe3o deve conter mais de 150 palavras.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_opposite_negated_bounds_are_still_conflicting[O resumo deve conter no m\xe1ximo 500 palavras.-O resumo n\xe3o deve conter menos de 500 palavras.]" time="0.000" /></testsuite></testsuites>

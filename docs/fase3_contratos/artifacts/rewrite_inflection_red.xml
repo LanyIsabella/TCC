@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="6" time="0.225" timestamp="2026-11-10T12:18:51.786855-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva segundo a ABNT: A margem mede 7 cm.-A margem direita deve medir 7 cm.]" time="0.064" /><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: Esta pesquisa analisa entrevistas.-A fonte deve ter 99 pontos.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: A fonte \xe9 Arial.-Arial.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva isso.-Arial.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: A margem direita mede sete.-A margem direita mede sete.]" time="0.001"><failure message="AssertionError: assert 'conversational' == 'insufficient'&#10;  &#10;  - insufficient&#10;  + conversational">question = 'Reescreva para o TCC: A margem direita mede sete.'
+answer = 'A margem direita mede sete.'
+
+    @pytest.mark.parametrize(
+        "question,answer",
+        [
+            (
+                "Reescreva segundo a ABNT: A margem mede 7 cm.",
+                "A margem direita deve medir 7 cm.",
+            ),
+            (
+                "Reescreva para o TCC: Esta pesquisa analisa entrevistas.",
+                "A fonte deve ter 99 pontos.",
+            ),
+            ("Reescreva para o TCC: A fonte é Arial.", "Arial."),
+            ("Reescreva isso.", "Arial."),
+            (
+                "Reescreva para o TCC: A margem direita mede sete.",
+                "A margem direita mede sete.",
+            ),
+            (
+                "Reescreva para o TCC: A citação direta é livre.",
+                "A citação direta é livre.",
+            ),
+        ],
+    )
+    def test_text_rewriting_cannot_bypass_normative_grounding(question, answer):
+&gt;       assert (
+            ground_answer(answer, {}, question, normative_context=True).status
+            == "insufficient"
+        )
+E       AssertionError: assert 'conversational' == 'insufficient'
+E         
+E         - insufficient
+E         + conversational
+
+tests\test_grounding_policy.py:651: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: A cita\xe7\xe3o direta \xe9 livre.-A cita\xe7\xe3o direta \xe9 livre.]" time="0.001"><failure message="AssertionError: assert 'conversational' == 'insufficient'&#10;  &#10;  - insufficient&#10;  + conversational">question = 'Reescreva para o TCC: A citação direta é livre.'
+answer = 'A citação direta é livre.'
+
+    @pytest.mark.parametrize(
+        "question,answer",
+        [
+            (
+                "Reescreva segundo a ABNT: A margem mede 7 cm.",
+                "A margem direita deve medir 7 cm.",
+            ),
+            (
+                "Reescreva para o TCC: Esta pesquisa analisa entrevistas.",
+                "A fonte deve ter 99 pontos.",
+            ),
+            ("Reescreva para o TCC: A fonte é Arial.", "Arial."),
+            ("Reescreva isso.", "Arial."),
+            (
+                "Reescreva para o TCC: A margem direita mede sete.",
+                "A margem direita mede sete.",
+            ),
+            (
+                "Reescreva para o TCC: A citação direta é livre.",
+                "A citação direta é livre.",
+            ),
+        ],
+    )
+    def test_text_rewriting_cannot_bypass_normative_grounding(question, answer):
+&gt;       assert (
+            ground_answer(answer, {}, question, normative_context=True).status
+            == "insufficient"
+        )
+E       AssertionError: assert 'conversational' == 'insufficient'
+E         
+E         - insufficient
+E         + conversational
+
+tests\test_grounding_policy.py:651: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,170 @@
+{
+  "schema_version": "tcc-phase3-grounding-smoke-v3",
+  "created_at": "2026-11-10T14:01:02.568746+00:00",
+  "scope": "existing real-model semantic verifier plus central grounding policy; no retrieval or database",
+  "source_provenance": "explicit synthetic engineering fixtures, not ABNT source validation",
+  "independent_holdout": false,
+  "not_a_population_fidelity_estimate": true,
+  "model": "gemma4:e2b",
+  "model_digest": "7fbdbf8f5e45a75bb122155ed546e765b4d9c53a1285f62fd9f506baa1c5a47e",
+  "temperature": 0.7,
+  "source_sha256": {
+    "src/app/grounding.py": "fc5cacc9aa63508b2d6161e785de9ddab5c52acaf88c062724f3a39e8611ee8d",
+    "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+    "src/app/agente.py": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d",
+    "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+    "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+    "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+  },
+  "cases": [
+    {
+      "id": "literal_control",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem direita deve medir 2 cm.",
+      "answer": "A margem direita deve medir 2 cm.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "faithful_paraphrase",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem direita deve medir 2 cm.",
+      "answer": "É obrigatório reservar dois centímetros para a margem direita.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "equivalent_units",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem direita deve medir 2 cm.",
+      "answer": "A margem direita deve medir 20 mm.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "condition_in_question",
+      "question": "Quando impresso, qual deve ser a margem?",
+      "source": "Quando impresso, o texto deve ter margem de 2 cm.",
+      "answer": "O texto deve ter margem de 2 cm.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "optional_not_mandatory",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "O uso de negrito é opcional.",
+      "answer": "Não é obrigatório usar negrito.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "numeric_contradiction",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem direita deve medir 2 cm.",
+      "answer": "A margem direita deve medir 7 cm.",
+      "expected_status": "insufficient"
+    },
+    {
+      "id": "negation_contradiction",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "Não se deve usar aspas.",
+      "answer": "Deve-se usar aspas.",
+      "expected_status": "insufficient"
+    },
+    {
+      "id": "omitted_condition",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "Quando impresso, o texto deve ter margem de 2 cm.",
+      "answer": "O texto deve ter margem de 2 cm.",
+      "expected_status": "insufficient"
+    },
+    {
+      "id": "omitted_exception",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem deve medir 2 cm, exceto em folhas especiais.",
+      "answer": "A margem deve medir 2 cm.",
+      "expected_status": "insufficient"
+    },
+    {
+      "id": "same_number_wrong_entity",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A lombada deve medir 7 cm.",
+      "answer": "A margem direita deve medir 7 cm.",
+      "expected_status": "insufficient"
+    },
+    {
+      "id": "swapped_entity_values",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem direita deve medir 2 cm e a margem esquerda deve medir 3 cm.",
+      "answer": "A margem direita deve medir 3 cm.",
+      "expected_status": "insufficient"
+    },
+    {
+      "id": "supported_partial",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem direita deve medir 2 cm.",
+      "answer": "A margem direita deve medir 2 cm. A fonte deve ter 99 pontos.",
+      "expected_status": "partial"
+    },
+    {
+      "id": "equivalent_negated_minimum",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "O resumo deve conter no mínimo 150 palavras.",
+      "answer": "O resumo não deve conter menos de 150 palavras.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "optional_paraphrase",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "O uso de negrito é opcional.",
+      "answer": "Você pode usar negrito.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "markdown_short_answer",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem direita deve medir 2 cm.",
+      "answer": "Margem direita: **2 cm**.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "faithful_negative_paraphrase",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "As citações longas devem ser destacadas sem aspas.",
+      "answer": "Não use aspas nas citações longas destacadas.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "faithful_prohibition",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "Não se deve usar aspas.",
+      "answer": "O uso de aspas é vedado.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "no_current_evidence",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": null,
+      "answer": "A margem direita deve medir 7 cm.",
+      "expected_status": "insufficient"
+    },
+    {
+      "id": "partial_paraphrase_with_unsupported_addition",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem direita deve medir 2 cm.",
+      "answer": "A margem direita mede dois centímetros. A fonte deve ter 99 pontos.",
+      "expected_status": "partial"
+    },
+    {
+      "id": "singular_unit_literal",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A margem deve medir 1 cm.",
+      "answer": "A margem deve medir um centímetro.",
+      "expected_status": "supported"
+    },
+    {
+      "id": "singular_unit_contradiction",
+      "question": "Qual a regra de formatação segundo a ABNT?",
+      "source": "A fonte deve ter sete pontos.",
+      "answer": "A fonte deve ter um ponto.",
+      "expected_status": "insufficient"
+    }
+  ],
+  "original_protocol_created_at": "2026-11-10T13:48:24.104167+00:00",
+  "derived_from_protocol_sha256": "07ca91c71220b260aa531b12390a527dd01a6d9c1c8f82d27e65cd51ab07234b"
+}

@@ -1,0 +1,44 @@
+10
+ABNT NBR 14724:2024
+© ABNT 2024 - T odos os direitos reservados
+Os elementos pré-textuais devem iniciar no anverso da folha, com exceção dos dados internacionais
+de catalogação na publicação, que devem constar no verso da folha de rosto. Recomenda-se que
+os elementos textuais e pós-textuais sejam apresentados no anverso e verso das folhas.
+As margens devem ser:
+a) para o anverso: esquerda e superior de 3 cm e direita e inferior de 2 cm;
+b) para o verso: direita e superior de 3 cm e esquerda e inferior de 2 cm.
+Recomenda-se, quando o trabalho for digitado, a fonte tamanho 12 para todo o texto, inclusive a
+capa, excetuando-se citações diretas com mais de três linhas, notas de rodapé, paginação, dados
+internacionais de catalogação na publicação, fontes e legendas das ilustrações e das tabelas, que
+devem ser em tamanho menor e uniforme.
+5.2 Espaçamento
+T odo o texto deve ser digitado ou datilografado com espaçamento 1,5 entre as linhas, excetuando-se
+as citações diretas com mais de três linhas, notas de rodapé, referências, títulos das ilustrações e das
+tabelas, fontes e legendas das ilustrações e das tabelas, natureza (tipo do trabalho, objetivo, nome
+da instituição a que é submetido e área de concentração), que devem ser digitados ou datilografados
+em espaço simples. As referências, aoﬁnal do trabalho, devem ser separadas entre si por um espaço
+simples em branco.
+Na folha de rosto e na folha de aprovação, a natureza do trabalho deve ser alinhada do meio da
+mancha gráﬁca até a margem direita.
+5.2.1 Notas de rodapé
+As notas de rodapé devem ser digitadas ou datilografadas dentro das margens,ﬁcando separadas
+do texto por um espaço simples entre as linhas e porﬁlete de 5 cm, a partir da margem esquerda.
+As notas devem ser alinhadas, a partir da segunda linha da mesma nota, abaixo da primeira letra da
+primeira palavra, de forma a destacar o expoente, sem espaço entre elas e com fonte menor.
+5.2.2 Indicativos de seção
+O indicativo numérico, em algarismo arábico, de uma seção precede seu título, alinhado à esquerda,
+separado por um espaço de caractere.
+Para trabalhos apresentados em anverso e verso, os títulos das seções primárias devem começar
+em página ímpar (anverso). Para trabalhos apresentados apenas no anverso, os títulos das seções
+primárias devem começar em nova página.
+Os títulos das seções primárias devemﬁgurar na parte superior da mancha gráﬁca e ser separados do
+texto que os sucede por um espaço de 1,5 entre as linhas. Da mesma forma, os títulos das subseções
+devem ser separados do texto que os precede e que os sucede por um espaço de 1,5 entre as linhas.
+Títulos que ocupem mais de uma linha devem ser, a partir da segunda linha, alinhados abaixo da
+primeira letra da primeira palavra do título.
+5.2.3 Títulos sem indicativo numérico
+Os títulos sem indicativo numérico – errata, agradecimentos, lista de ilustrações, lista de tabelas, lista
+de abreviaturas e siglas, lista de símbolos, resumos, sumário, referências, glossário, apêndice(s),
+anexo(s) e índice(s) – devem ser centralizados.
+Documento impresso em 28/08/2026 20:00:40, de uso exclusivo de INST. FED. EDU, CIENCIA E TEC. GOIAS - REITORIA
+Documento impresso em 28/08/2026 20:00:40, de uso exclusivo de INST. FED. EDU, CIENCIA E TEC. GOIAS - REITORIA

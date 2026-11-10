@@ -11,7 +11,19 @@ class FailingAgent:
             "messages": [
                 *payload["messages"],
                 {
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": [
+                        {
+                            "id": "rag-call",
+                            "name": "rag_document_search",
+                            "args": {"question": "Referências de livros"},
+                        }
+                    ],
+                },
+                {
                     "role": "tool",
+                    "tool_call_id": "rag-call",
                     "name": "rag_document_search",
                     "content": json.dumps(
                         {
@@ -24,7 +36,8 @@ class FailingAgent:
                                             "evidence_id": "document:1:page:7",
                                             "page_number": 7,
                                             "text": (
-                                                "Elementos de referências de livros."
+                                                "Use a ABNT NBR 6023 "
+                                                "para organizar as referências."
                                             ),
                                         }
                                     ],
@@ -61,7 +74,10 @@ class RecordingAgent:
         return {
             "messages": [
                 *payload["messages"],
-                {"role": "assistant", "content": "Resposta contextual."},
+                {
+                    "role": "assistant",
+                    "content": "Você se refere ao recuo de parágrafo ou de citação?",
+                },
             ]
         }
 
@@ -83,8 +99,7 @@ def test_scoped_agent_recovers_from_generic_answer_after_successful_rag() -> Non
     assert result["messages"][-1]["content"].startswith("Use a ABNT NBR 6023")
 
 
-def test_scoped_agent_adds_contextual_retrieval_hint_without_rewriting_user_message(
-) -> None:
+def test_contextual_hint_preserves_user_question() -> None:
     inner = RecordingAgent()
     agent = ScopedAgent(inner)
     messages = [
@@ -95,7 +110,10 @@ def test_scoped_agent_adds_contextual_retrieval_hint_without_rewriting_user_mess
 
     result = agent.invoke({"messages": messages})
 
-    assert result["messages"][-1]["content"] == "Resposta contextual."
+    assert (
+        result["messages"][-1]["content"]
+        == "Você se refere ao recuo de parágrafo ou de citação?"
+    )
     assert inner.payload is not None
     payload_messages = inner.payload["messages"]
     assert any(
@@ -129,7 +147,10 @@ def test_scoped_agent_recovers_rag_even_when_model_answer_is_not_generic(
                             "evidence": [
                                 {
                                     "evidence_id": "document:1:page:14",
-                                    "text": "O recuo deve ser verificado na norma.",
+                                    "text": (
+                                        "A orientação deve ser confirmada "
+                                        "na ABNT NBR 14724."
+                                    ),
                                 }
                             ],
                         }

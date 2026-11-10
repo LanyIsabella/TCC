@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="4" time="0.204" timestamp="2026-11-10T10:11:14.988771-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_adjacent_unrelated_negative_rule_does_not_invalidate_supported_sentence" time="0.064"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir... centímetros.'&#10;  &#10;  - A margem direita mede dois centímetros.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">def test_adjacent_unrelated_negative_rule_does_not_invalidate_supported_sentence():
+        source = "A margem direita deve medir 2 cm. Não se deve usar aspas."
+        answer = "A margem direita mede dois centímetros."
+        value = ground_answer(answer, evidence(source), QUESTION,
+                              judge("A margem direita deve medir 2 cm."))
+&gt;       assert value.answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir... centímetros.'
+E         
+E         - A margem direita mede dois centímetros.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:245: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_complete_literal_sentence_can_be_supported_inside_larger_paragraph" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...e medir 2 cm.'&#10;  &#10;  - A margem direita deve medir 2 cm.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">def test_complete_literal_sentence_can_be_supported_inside_larger_paragraph():
+        answer = "A margem direita deve medir 2 cm."
+        source = answer + " A fonte deve ter 12 pontos."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...e medir 2 cm.'
+E         
+E         - A margem direita deve medir 2 cm.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:251: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_adjacent_scope_or_exception_is_not_removed_from_quote_context[Quando impresso, aplica-se esta regra. A margem deve medir 2 cm.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_adjacent_scope_or_exception_is_not_removed_from_quote_context[A margem deve medir 2 cm. Exceto em folhas especiais.]" time="0.000" /></testsuite></testsuites>

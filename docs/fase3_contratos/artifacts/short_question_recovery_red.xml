@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="4.223" timestamp="2026-11-10T11:57:05.875177-03:00" hostname="Lany"><testcase classname="tests.test_agent_orchestration" name="test_short_font_question_recovers_documents_before_accepting_bare_answer" time="0.086"><failure message="AssertionError: assert [] == [{'question':...al a fonte?'}]&#10;  &#10;  Right contains one more item: {'question': 'Qual a fonte?'}&#10;  Use -v to get more diff">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED157E3950&gt;
+
+    def test_short_font_question_recovers_documents_before_accepting_bare_answer(monkeypatch):
+        calls = []
+        source = "A fonte deve ser Arial."
+        def search(payload):
+            calls.append(payload)
+            return json.dumps(rag_payload(documents=[{"evidence": [{"evidence_id": "e1", "text": source}]}]))
+    
+        class FontModel(Model):
+            def invoke(self, messages):
+                self.calls.append(messages)
+                return SimpleNamespace(content=source)
+    
+        monkeypatch.setattr("src.app.agente.rag_document_search", SimpleNamespace(invoke=search))
+        model = FontModel()
+        value = ScopedAgent(Inner("Arial."), model).invoke({
+            "messages": [{"role": "user", "content": "Qual a fonte?"}],
+        })
+&gt;       assert calls == [{"question": "Qual a fonte?"}]
+E       AssertionError: assert [] == [{'question':...al a fonte?'}]
+E         
+E         Right contains one more item: {'question': 'Qual a fonte?'}
+E         Use -v to get more diff
+
+tests\test_agent_orchestration.py:234: AssertionError</failure></testcase></testsuite></testsuites>

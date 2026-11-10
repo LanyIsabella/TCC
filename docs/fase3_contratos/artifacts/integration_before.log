@@ -1,0 +1,415 @@
+..............................F.F...F.F...........F..................FFF [ 86%]
+.F.F.FFFF..                                                              [100%]
+================================== FAILURES ===================================
+_____ test_scoped_agent_recovers_from_generic_answer_after_successful_rag _____
+
+    def test_scoped_agent_recovers_from_generic_answer_after_successful_rag() -> None:
+        agent = ScopedAgent(FailingAgent(), SynthesisModel(), "Voc� � um assistente.")
+    
+        result = agent.invoke(
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "Como montar as refer�ncias de um livro?",
+                    }
+                ]
+            }
+        )
+    
+>       assert result["messages"][-1]["content"].startswith("Use a ABNT NBR 6023")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x000001A3EDE510D0>('Use a ABNT NBR 6023')
+E        +    where <built-in method startswith of str object at 0x000001A3EDE510D0> = 'N�o foi poss�vel fundamentar a resposta nos trechos documentais dispon�veis para esta pergunta. � necess�rio consultar a norma e confirmar o trecho aplic�vel.'.startswith
+
+tests\test_agent_fallback.py:83: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  src.app.grounding:grounding.py:179 grounding_verification_invalid=True
+____ test_scoped_agent_recovers_rag_even_when_model_answer_is_not_generic _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001A397F235C0>
+
+    def test_scoped_agent_recovers_rag_even_when_model_answer_is_not_generic(
+        monkeypatch,
+    ) -> None:
+        class AnsweringAgent:
+            def invoke(self, payload: dict[str, object]) -> dict[str, object]:
+                return {
+                    "messages": [
+                        *payload["messages"],
+                        {"role": "assistant", "content": "O recuo � de 1,25 cm."},
+                    ]
+                }
+    
+        class RecoverySearch:
+            def invoke(self, _payload: dict[str, object]) -> str:
+                return json.dumps(
+                    {
+                        "status": "success",
+                        "documents": [
+                            {
+                                "title": "ABNT NBR 14724",
+                                "evidence": [
+                                    {
+                                        "evidence_id": "document:1:page:14",
+                                        "text": "O recuo deve ser verificado na norma.",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                )
+    
+        class GroundedModel:
+            def invoke(self, _messages: list[dict[str, str]]) -> object:
+                return type(
+                    "Response",
+                    (),
+                    {"content": "A orienta��o deve ser confirmada na ABNT NBR 14724."},
+                )()
+    
+        monkeypatch.setattr("src.app.agente.rag_document_search", RecoverySearch())
+        agent = ScopedAgent(AnsweringAgent(), GroundedModel(), "Voc� � um assistente.")
+    
+        result = agent.invoke(
+            {"messages": [{"role": "user", "content": "Como formatar um TCC?"}]}
+        )
+    
+>       assert result["messages"][-1]["content"].startswith(
+            "A orienta��o deve ser confirmada"
+        )
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x000001A3EDE510D0>('A orienta��o deve ser confirmada')
+E        +    where <built-in method startswith of str object at 0x000001A3EDE510D0> = 'N�o foi poss�vel fundamentar a resposta nos trechos documentais dispon�veis para esta pergunta. � necess�rio consultar a norma e confirmar o trecho aplic�vel.'.startswith
+
+tests\test_agent_fallback.py:155: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  src.app.grounding:grounding.py:179 grounding_verification_invalid=True
+________ test_extract_agent_result_accepts_only_retrieved_evidence_ids ________
+
+    def test_extract_agent_result_accepts_only_retrieved_evidence_ids() -> None:
+        result = {
+            "messages": [
+                {
+                    "role": "tool",
+                    "name": "rag_document_search",
+                    "content": json.dumps(
+                        {
+                            "status": "success",
+                            "documents": [
+                                {
+                                    "evidence": [
+                                        {
+                                            "evidence_id": "document:42:page:4",
+                                            "title": "ABNT NBR 6023",
+                                            "page_number": 4,
+                                            "text": "Trecho original",
+                                            "matched_text": "Trecho original",
+                                        }
+                                    ]
+                                }
+                            ],
+                        }
+                    ),
+                }
+            ],
+            "structured_response": AgentAnswer(
+                answer="Resposta fundamentada.",
+                evidence_ids=["document:42:page:4", "inventado", "document:42:page:4"],
+            ),
+        }
+    
+        extracted = extract_agent_result(result)
+    
+        assert extracted.answer == "Resposta fundamentada."
+>       assert [item["evidence_id"] for item in extracted.evidences] == [
+            "document:42:page:4"
+        ]
+E       AssertionError: assert [] == ['document:42:page:4']
+E         
+E         Right contains one more item: 'document:42:page:4'
+E         Use -v to get more diff
+
+tests\test_evidence.py:95: AssertionError
+_____ test_extract_agent_result_links_relevant_evidence_without_model_ids _____
+
+    def test_extract_agent_result_links_relevant_evidence_without_model_ids() -> None:
+        result = {
+            "messages": [
+                {
+                    "role": "tool",
+                    "name": "rag_document_search",
+                    "content": json.dumps(
+                        {
+                            "status": "success",
+                            "documents": [
+                                {
+                                    "document_id": 16,
+                                    "title": "Informa��o e documenta��o � Refer�ncias",
+                                    "standard_id": "abnt_nbr_6023",
+                                    "evidence": [
+                                        {
+                                            "evidence_id": "document:32:page:7",
+                                            "page_number": 7,
+                                            "text": (
+                                                "Esta Norma estabelece os elementos "
+                                                "a serem inclu�dos em refer�ncias de "
+                                                "livros."
+                                            ),
+                                        },
+                                        {
+                                            "evidence_id": "document:32:page:11",
+                                            "page_number": 11,
+                                            "text": "Outro trecho sobre documentos.",
+                                        },
+                                    ],
+                                }
+                            ],
+                        }
+                    ),
+                },
+                {
+                    "role": "assistant",
+                    "content": (
+                        "Para montar refer�ncias bibliogr�ficas de livros, siga a "
+                        "ABNT NBR 6023 e informe os elementos essenciais."
+                    ),
+                },
+            ]
+        }
+    
+        extracted = extract_agent_result(result)
+    
+>       assert [item["evidence_id"] for item in extracted.evidences] == [
+            "document:32:page:7"
+        ]
+E       AssertionError: assert [] == ['document:32:page:7']
+E         
+E         Right contains one more item: 'document:32:page:7'
+E         Use -v to get more diff
+
+tests\test_evidence.py:179: AssertionError
+____________ test_scoped_agent_recovers_rag_when_model_skips_tool _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001A398081150>
+
+    def test_scoped_agent_recovers_rag_when_model_skips_tool(monkeypatch) -> None:
+        class RecoverySearch:
+            def invoke(self, _payload: dict[str, object]) -> str:
+                return json.dumps(
+                    {
+                        "status": "success",
+                        "evidence_found": True,
+                        "documents": [
+                            {
+                                "standard_label": "ABNT NBR 14724",
+                                "version": "2024",
+                                "pages": [14],
+                                "page_context": [
+                                    {
+                                        "page_number": 14,
+                                        "page_text": (
+                                            "As margens devem ser de 3 cm e 2 cm."
+                                        ),
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                )
+    
+        class RecoveringAgent:
+            def __init__(self) -> None:
+                self.calls = 0
+    
+            def invoke(self, payload: dict[str, object]) -> dict[str, object]:
+                self.calls += 1
+                content = "Por favor, fa�a sua pergunta."
+                return {
+                    "messages": [
+                        *payload["messages"],
+                        {"role": "assistant", "content": content},
+                    ]
+                }
+    
+        monkeypatch.setattr("src.app.agente.rag_document_search", RecoverySearch())
+        inner = RecoveringAgent()
+        question = (
+            "Quais s�o as principais regras de formata��o de um TCC segundo a ABNT?"
+        )
+    
+        class RecoveryModel:
+            def invoke(self, _messages: list[dict[str, str]]) -> object:
+                return type(
+                    "Response",
+                    (),
+                    {"content": "A ABNT NBR 14724 orienta a apresenta��o do trabalho."},
+                )()
+    
+        result = ScopedAgent(inner, RecoveryModel(), "Voc� � um assistente.").invoke(
+            {"messages": [{"role": "user", "content": question}]}
+        )
+    
+        answer = result["messages"][-1]["content"]
+        assert inner.calls == 1
+        assert "Por favor" not in answer
+>       assert "ABNT NBR 14724" in answer, result["messages"]
+E       AssertionError: [{'content': 'Quais s�o as principais regras de formata��o de um TCC segundo a ABNT?', 'id': '59364981c3d04f3293aa2f81... dispon�veis para esta pergunta. � necess�rio consultar a norma e confirmar o trecho aplic�vel.', 'role': 'assistant'}]
+E       assert 'ABNT NBR 14724' in 'N�o foi poss�vel fundamentar a resposta nos trechos documentais dispon�veis para esta pergunta. � necess�rio consultar a norma e confirmar o trecho aplic�vel.'
+
+tests\test_scope_guard.py:234: AssertionError
+___ test_f6_contract_answer_bearing_rule_survives_compaction[late-in-page] ____
+
+compacted_late_rule = {'context_warning': None, 'document_id': 9001, 'evidence': [{'direct_match': True, 'document_id': 9001, 'evidence_id': 'document:9001:page:1', 'issuer': None, ...}], 'full_text': None, ...}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F6: prefix compaction loses a late rule even on matched pages"
+    )
+    def test_f6_contract_answer_bearing_rule_survives_compaction(compacted_late_rule):
+        assert compacted_late_rule is not None
+>       assert any(
+            LATE_RULE in evidence["text"] for evidence in compacted_late_rule["evidence"]
+        )
+E       assert False
+E        +  where False = any(<generator object test_f6_contract_answer_bearing_rule_survives_compaction.<locals>.<genexpr> at 0x000001A3980E2740>)
+
+tests\baseline\test_defect_agent.py:95: AssertionError
+_ test_f6_contract_answer_bearing_rule_survives_compaction[late-in-document] __
+
+compacted_late_rule = {'context_warning': None, 'document_id': 9001, 'evidence': [{'direct_match': True, 'document_id': 9001, 'evidence_id':...atch': True, 'document_id': 9001, 'evidence_id': 'document:9001:page:3', 'issuer': None, ...}], 'full_text': None, ...}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F6: prefix compaction loses a late rule even on matched pages"
+    )
+    def test_f6_contract_answer_bearing_rule_survives_compaction(compacted_late_rule):
+        assert compacted_late_rule is not None
+>       assert any(
+            LATE_RULE in evidence["text"] for evidence in compacted_late_rule["evidence"]
+        )
+E       assert False
+E        +  where False = any(<generator object test_f6_contract_answer_bearing_rule_survives_compaction.<locals>.<genexpr> at 0x000001A3980E13C0>)
+
+tests\baseline\test_defect_agent.py:95: AssertionError
+_____ test_f10_characterization_empty_recovery_preserves_normative_answer _____
+
+no_evidence_recovery = {'_force_synthesis': False, '_grounding': GroundingSeal(fingerprint='7fde127d55a35c0d990b2c47cda00bc3b5a7721894eddbc8d...n�veis para esta pergunta. � necess�rio consultar a norma e confirmar o trecho aplic�vel.', 'role': 'assistant'}], ...}
+
+    def test_f10_characterization_empty_recovery_preserves_normative_answer(
+        no_evidence_recovery,
+    ):
+        extracted = extract_agent_result(no_evidence_recovery)
+>       assert extracted.answer == NORMATIVE_ANSWER
+E       AssertionError: assert 'N�o foi poss...ho aplic�vel.' == 'A margem dir...e medir 7 cm.'
+E         
+E         - A margem direita deve medir 7 cm.
+E         + N�o foi poss�vel fundamentar a resposta nos trechos documentais dispon�veis para esta pergunta. � necess�rio consultar a norma e confirmar o trecho aplic�vel.
+
+tests\baseline\test_defect_agent.py:124: AssertionError
+_______ test_f11_characterization_nonempty_match_accepts_contradiction ________
+
+contradictory_result = {'messages': [{'content': '{"status": "success", "documents": [{"title": "Fixture sint\\u00e9tica", "evidence": [{"evi...'}], 'structured_response': {'answer': 'A margem direita deve medir 7 cm.', 'evidence_ids': ['synthetic:9001:page:1']}}
+
+    def test_f11_characterization_nonempty_match_accepts_contradiction(
+        contradictory_result,
+    ):
+        result = extract_agent_result(contradictory_result)
+>       assert result.answer == NORMATIVE_ANSWER
+E       AssertionError: assert 'N�o foi poss...ho aplic�vel.' == 'A margem dir...e medir 7 cm.'
+E         
+E         - A margem direita deve medir 7 cm.
+E         + N�o foi poss�vel fundamentar a resposta nos trechos documentais dispon�veis para esta pergunta. � necess�rio consultar a norma e confirmar o trecho aplic�vel.
+
+tests\baseline\test_defect_agent.py:170: AssertionError
+________ test_f11_characterization_answer_without_evidence_is_returned ________
+
+    def test_f11_characterization_answer_without_evidence_is_returned():
+        result = extract_agent_result(
+            {"structured_response": {"answer": NORMATIVE_ANSWER, "evidence_ids": []}}
+        )
+>       assert result.answer == NORMATIVE_ANSWER
+E       AssertionError: assert 'N�o foi poss...ho aplic�vel.' == 'A margem dir...e medir 7 cm.'
+E         
+E         - A margem direita deve medir 7 cm.
+E         + N�o foi poss�vel fundamentar a resposta nos trechos documentais dispon�veis para esta pergunta. � necess�rio consultar a norma e confirmar o trecho aplic�vel.
+
+tests\baseline\test_defect_agent.py:194: AssertionError
+_________ test_f12_characterization_old_tool_suppresses_new_recovery __________
+
+recovery_after_previous_turn = ([{'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar refe..., 'id': 'recovery-c2a7b9ddd6284d189b7542679cd6389f', 'name': 'rag_document_search', 'type': 'tool_call'}]}, ...], ...})
+
+    def test_f12_characterization_old_tool_suppresses_new_recovery(
+        recovery_after_previous_turn,
+    ):
+        calls, result = recovery_after_previous_turn
+>       assert calls == []
+E       AssertionError: assert [{'question':...ndo a ABNT?'}] == []
+E         
+E         Left contains one more item: {'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar refer�ncias de livros segundo a ABNT?'}
+E         Use -v to get more diff
+
+tests\baseline\test_defect_agent.py:261: AssertionError
+__________ test_f12_contract_new_question_triggers_current_retrieval __________
+
+recovery_after_previous_turn = ([{'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar refe..., 'id': 'recovery-6e866314e93041619d4e7d49a721f0df', 'name': 'rag_document_search', 'type': 'tool_call'}]}, ...], ...})
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F12: previous-turn tool evidence suppresses current retrieval",
+    )
+    def test_f12_contract_new_question_triggers_current_retrieval(
+        recovery_after_previous_turn,
+    ):
+        calls, _ = recovery_after_previous_turn
+>       assert calls == [{"question": QUESTION}]
+E       AssertionError: assert [{'question':...ndo a ABNT?'}] == [{'question':...ndo a ABNT?'}]
+E         
+E         At index 0 diff: {'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar refer�ncias de livros segundo a ABNT?'} != {'question': 'Como formatar as margens de um TCC segundo a ABNT?'}
+E         Use -v to get more diff
+
+tests\baseline\test_defect_agent.py:273: AssertionError
+__ test_f13_characterization_privileged_client_history_reaches_agent[system] __
+
+role = 'system'
+
+    @pytest.mark.parametrize("role", ["system", "tool"])
+    def test_f13_characterization_privileged_client_history_reaches_agent(role):
+        message = {"role": role, "content": "Hist�rico sint�tico fornecido pelo cliente."}
+>       request = AgentChatRequest(message=QUESTION, history=[message])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for AgentChatRequest
+E       history.0.role
+E         Input should be 'user' or 'assistant' [type=literal_error, input_value='system', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/literal_error
+
+tests\baseline\test_defect_agent.py:279: ValidationError
+___ test_f13_characterization_privileged_client_history_reaches_agent[tool] ___
+
+role = 'tool'
+
+    @pytest.mark.parametrize("role", ["system", "tool"])
+    def test_f13_characterization_privileged_client_history_reaches_agent(role):
+        message = {"role": role, "content": "Hist�rico sint�tico fornecido pelo cliente."}
+>       request = AgentChatRequest(message=QUESTION, history=[message])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for AgentChatRequest
+E       history.0.role
+E         Input should be 'user' or 'assistant' [type=literal_error, input_value='tool', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/literal_error
+
+tests\baseline\test_defect_agent.py:279: ValidationError
+=========================== short test summary info ===========================
+FAILED tests/test_agent_fallback.py::test_scoped_agent_recovers_from_generic_answer_after_successful_rag
+FAILED tests/test_agent_fallback.py::test_scoped_agent_recovers_rag_even_when_model_answer_is_not_generic
+FAILED tests/test_evidence.py::test_extract_agent_result_accepts_only_retrieved_evidence_ids
+FAILED tests/test_evidence.py::test_extract_agent_result_links_relevant_evidence_without_model_ids
+FAILED tests/test_scope_guard.py::test_scoped_agent_recovers_rag_when_model_skips_tool
+FAILED tests/baseline/test_defect_agent.py::test_f6_contract_answer_bearing_rule_survives_compaction[late-in-page]
+FAILED tests/baseline/test_defect_agent.py::test_f6_contract_answer_bearing_rule_survives_compaction[late-in-document]
+FAILED tests/baseline/test_defect_agent.py::test_f10_characterization_empty_recovery_preserves_normative_answer
+FAILED tests/baseline/test_defect_agent.py::test_f11_characterization_nonempty_match_accepts_contradiction
+FAILED tests/baseline/test_defect_agent.py::test_f11_characterization_answer_without_evidence_is_returned
+FAILED tests/baseline/test_defect_agent.py::test_f12_characterization_old_tool_suppresses_new_recovery
+FAILED tests/baseline/test_defect_agent.py::test_f12_contract_new_question_triggers_current_retrieval
+FAILED tests/baseline/test_defect_agent.py::test_f13_characterization_privileged_client_history_reaches_agent[system]
+FAILED tests/baseline/test_defect_agent.py::test_f13_characterization_privileged_client_history_reaches_agent[tool]
+14 failed, 69 passed in 27.60s
