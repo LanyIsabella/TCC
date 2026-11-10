@@ -1,0 +1,4784 @@
+{
+  "experimental_validation_complete": false,
+  "extractions": [
+    {
+      "document_id": 1,
+      "physical_page": 1,
+      "extraction_id": 24,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 1,
+      "extraction_id": 47,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 1,
+      "extraction_id": 1,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 2,
+      "extraction_id": 25,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 2,
+      "extraction_id": 48,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 2,
+      "extraction_id": 2,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 3,
+      "extraction_id": 26,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 3,
+      "extraction_id": 49,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 3,
+      "extraction_id": 3,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 4,
+      "extraction_id": 27,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 4,
+      "extraction_id": 50,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 4,
+      "extraction_id": 4,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 5,
+      "extraction_id": 28,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 5,
+      "extraction_id": 51,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 5,
+      "extraction_id": 5,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 6,
+      "extraction_id": 29,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 6,
+      "extraction_id": 52,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 6,
+      "extraction_id": 6,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 7,
+      "extraction_id": 30,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 7,
+      "extraction_id": 53,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 7,
+      "extraction_id": 7,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 8,
+      "extraction_id": 31,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 8,
+      "extraction_id": 54,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 8,
+      "extraction_id": 8,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 9,
+      "extraction_id": 32,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 9,
+      "extraction_id": 55,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 9,
+      "extraction_id": 9,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 10,
+      "extraction_id": 33,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 10,
+      "extraction_id": 56,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 10,
+      "extraction_id": 10,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 11,
+      "extraction_id": 34,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 11,
+      "extraction_id": 57,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 11,
+      "extraction_id": 11,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 12,
+      "extraction_id": 35,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 12,
+      "extraction_id": 58,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 12,
+      "extraction_id": 12,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 13,
+      "extraction_id": 36,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 13,
+      "extraction_id": 59,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 13,
+      "extraction_id": 13,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 14,
+      "extraction_id": 37,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 14,
+      "extraction_id": 60,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 14,
+      "extraction_id": 14,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 15,
+      "extraction_id": 38,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 15,
+      "extraction_id": 61,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 15,
+      "extraction_id": 15,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 16,
+      "extraction_id": 39,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 16,
+      "extraction_id": 62,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 16,
+      "extraction_id": 16,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 17,
+      "extraction_id": 40,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 17,
+      "extraction_id": 63,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 17,
+      "extraction_id": 17,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 18,
+      "extraction_id": 41,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 18,
+      "extraction_id": 64,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 18,
+      "extraction_id": 18,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 19,
+      "extraction_id": 42,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 19,
+      "extraction_id": 65,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 19,
+      "extraction_id": 19,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 20,
+      "extraction_id": 43,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 20,
+      "extraction_id": 66,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 20,
+      "extraction_id": 20,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 21,
+      "extraction_id": 44,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 21,
+      "extraction_id": 67,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 21,
+      "extraction_id": 21,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 22,
+      "extraction_id": 45,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 22,
+      "extraction_id": 68,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 22,
+      "extraction_id": 22,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 23,
+      "extraction_id": 46,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 23,
+      "extraction_id": 69,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 1,
+      "physical_page": 23,
+      "extraction_id": 23,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 1,
+      "extraction_id": 79,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 1,
+      "extraction_id": 88,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 1,
+      "extraction_id": 70,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 2,
+      "extraction_id": 80,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 2,
+      "extraction_id": 89,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 2,
+      "extraction_id": 71,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 3,
+      "extraction_id": 81,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 3,
+      "extraction_id": 90,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 3,
+      "extraction_id": 72,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 4,
+      "extraction_id": 82,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 4,
+      "extraction_id": 91,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 4,
+      "extraction_id": 73,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 5,
+      "extraction_id": 83,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 5,
+      "extraction_id": 92,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 5,
+      "extraction_id": 74,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 6,
+      "extraction_id": 84,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 6,
+      "extraction_id": 93,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 6,
+      "extraction_id": 75,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 7,
+      "extraction_id": 85,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 7,
+      "extraction_id": 94,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 7,
+      "extraction_id": 76,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 8,
+      "extraction_id": 86,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 8,
+      "extraction_id": 95,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 8,
+      "extraction_id": 77,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 9,
+      "extraction_id": 87,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 9,
+      "extraction_id": 96,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 2,
+      "physical_page": 9,
+      "extraction_id": 78,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 1,
+      "extraction_id": 113,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 1,
+      "extraction_id": 129,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 1,
+      "extraction_id": 97,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 2,
+      "extraction_id": 114,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 2,
+      "extraction_id": 130,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 2,
+      "extraction_id": 98,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 3,
+      "extraction_id": 115,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 3,
+      "extraction_id": 131,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 3,
+      "extraction_id": 99,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 4,
+      "extraction_id": 116,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 4,
+      "extraction_id": 132,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 4,
+      "extraction_id": 100,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 5,
+      "extraction_id": 117,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 5,
+      "extraction_id": 133,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 5,
+      "extraction_id": 101,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 6,
+      "extraction_id": 118,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 6,
+      "extraction_id": 134,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 6,
+      "extraction_id": 102,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 7,
+      "extraction_id": 119,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 7,
+      "extraction_id": 135,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 7,
+      "extraction_id": 103,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 8,
+      "extraction_id": 120,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 8,
+      "extraction_id": 136,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 8,
+      "extraction_id": 104,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 9,
+      "extraction_id": 121,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 9,
+      "extraction_id": 137,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 9,
+      "extraction_id": 105,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 10,
+      "extraction_id": 122,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 10,
+      "extraction_id": 138,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 10,
+      "extraction_id": 106,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 11,
+      "extraction_id": 123,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 11,
+      "extraction_id": 139,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 11,
+      "extraction_id": 107,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 12,
+      "extraction_id": 124,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 12,
+      "extraction_id": 140,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 12,
+      "extraction_id": 108,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 13,
+      "extraction_id": 125,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 13,
+      "extraction_id": 141,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 13,
+      "extraction_id": 109,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 14,
+      "extraction_id": 126,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 14,
+      "extraction_id": 142,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 14,
+      "extraction_id": 110,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 15,
+      "extraction_id": 127,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 15,
+      "extraction_id": 143,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 15,
+      "extraction_id": 111,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 16,
+      "extraction_id": 128,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 16,
+      "extraction_id": 144,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 3,
+      "physical_page": 16,
+      "extraction_id": 112,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 1,
+      "extraction_id": 158,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 1,
+      "extraction_id": 171,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 1,
+      "extraction_id": 145,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 2,
+      "extraction_id": 159,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 2,
+      "extraction_id": 172,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 2,
+      "extraction_id": 146,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 3,
+      "extraction_id": 160,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 3,
+      "extraction_id": 173,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 3,
+      "extraction_id": 147,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 4,
+      "extraction_id": 161,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 4,
+      "extraction_id": 174,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 4,
+      "extraction_id": 148,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 5,
+      "extraction_id": 162,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 5,
+      "extraction_id": 175,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 5,
+      "extraction_id": 149,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 6,
+      "extraction_id": 163,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 6,
+      "extraction_id": 176,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 6,
+      "extraction_id": 150,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 7,
+      "extraction_id": 164,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 7,
+      "extraction_id": 177,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 7,
+      "extraction_id": 151,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 8,
+      "extraction_id": 165,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 8,
+      "extraction_id": 178,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 8,
+      "extraction_id": 152,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 9,
+      "extraction_id": 166,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 9,
+      "extraction_id": 179,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 9,
+      "extraction_id": 153,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 10,
+      "extraction_id": 167,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 10,
+      "extraction_id": 180,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 10,
+      "extraction_id": 154,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 11,
+      "extraction_id": 168,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 11,
+      "extraction_id": 181,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 11,
+      "extraction_id": 155,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 12,
+      "extraction_id": 169,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 12,
+      "extraction_id": 182,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 12,
+      "extraction_id": 156,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 13,
+      "extraction_id": 170,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 13,
+      "extraction_id": 183,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 4,
+      "physical_page": 13,
+      "extraction_id": 157,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 1,
+      "extraction_id": 196,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 1,
+      "extraction_id": 208,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 1,
+      "extraction_id": 184,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 2,
+      "extraction_id": 197,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 2,
+      "extraction_id": 209,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 2,
+      "extraction_id": 185,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 3,
+      "extraction_id": 198,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 3,
+      "extraction_id": 210,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 3,
+      "extraction_id": 186,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 4,
+      "extraction_id": 199,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 4,
+      "extraction_id": 211,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 4,
+      "extraction_id": 187,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 5,
+      "extraction_id": 200,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 5,
+      "extraction_id": 212,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 5,
+      "extraction_id": 188,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 6,
+      "extraction_id": 201,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 6,
+      "extraction_id": 213,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 6,
+      "extraction_id": 189,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 7,
+      "extraction_id": 202,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 7,
+      "extraction_id": 214,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 7,
+      "extraction_id": 190,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 8,
+      "extraction_id": 203,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 8,
+      "extraction_id": 215,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 8,
+      "extraction_id": 191,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 9,
+      "extraction_id": 204,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 9,
+      "extraction_id": 216,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 9,
+      "extraction_id": 192,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 10,
+      "extraction_id": 205,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 10,
+      "extraction_id": 217,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 10,
+      "extraction_id": 193,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 11,
+      "extraction_id": 206,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 11,
+      "extraction_id": 218,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 11,
+      "extraction_id": 194,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 12,
+      "extraction_id": 207,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 12,
+      "extraction_id": 219,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 5,
+      "physical_page": 12,
+      "extraction_id": 195,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 1,
+      "extraction_id": 294,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 1,
+      "extraction_id": 781,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 1,
+      "extraction_id": 220,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 2,
+      "extraction_id": 295,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 2,
+      "extraction_id": 782,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 2,
+      "extraction_id": 221,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 3,
+      "extraction_id": 296,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 3,
+      "extraction_id": 783,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 3,
+      "extraction_id": 222,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 4,
+      "extraction_id": 297,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 4,
+      "extraction_id": 784,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 4,
+      "extraction_id": 223,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 5,
+      "extraction_id": 298,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 5,
+      "extraction_id": 785,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 5,
+      "extraction_id": 224,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 6,
+      "extraction_id": 299,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 6,
+      "extraction_id": 786,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 6,
+      "extraction_id": 225,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 7,
+      "extraction_id": 300,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 7,
+      "extraction_id": 787,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 7,
+      "extraction_id": 226,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 8,
+      "extraction_id": 301,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 8,
+      "extraction_id": 788,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 8,
+      "extraction_id": 227,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 9,
+      "extraction_id": 302,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 9,
+      "extraction_id": 789,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 9,
+      "extraction_id": 228,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 10,
+      "extraction_id": 303,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 10,
+      "extraction_id": 790,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 10,
+      "extraction_id": 229,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 11,
+      "extraction_id": 304,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 11,
+      "extraction_id": 791,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 11,
+      "extraction_id": 230,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 12,
+      "extraction_id": 305,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 12,
+      "extraction_id": 792,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 12,
+      "extraction_id": 231,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 13,
+      "extraction_id": 306,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 13,
+      "extraction_id": 793,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 13,
+      "extraction_id": 232,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 14,
+      "extraction_id": 307,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 14,
+      "extraction_id": 794,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 14,
+      "extraction_id": 233,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 15,
+      "extraction_id": 308,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 15,
+      "extraction_id": 795,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 15,
+      "extraction_id": 234,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 16,
+      "extraction_id": 309,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 16,
+      "extraction_id": 796,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 16,
+      "extraction_id": 235,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 17,
+      "extraction_id": 310,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 17,
+      "extraction_id": 797,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 17,
+      "extraction_id": 236,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 18,
+      "extraction_id": 311,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 18,
+      "extraction_id": 798,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 18,
+      "extraction_id": 237,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 19,
+      "extraction_id": 312,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 19,
+      "extraction_id": 799,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 19,
+      "extraction_id": 238,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 20,
+      "extraction_id": 313,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 20,
+      "extraction_id": 800,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 20,
+      "extraction_id": 239,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 21,
+      "extraction_id": 314,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 21,
+      "extraction_id": 801,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 21,
+      "extraction_id": 240,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 22,
+      "extraction_id": 315,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 22,
+      "extraction_id": 802,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 22,
+      "extraction_id": 241,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 23,
+      "extraction_id": 316,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 23,
+      "extraction_id": 803,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 23,
+      "extraction_id": 242,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 24,
+      "extraction_id": 317,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 24,
+      "extraction_id": 804,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 24,
+      "extraction_id": 243,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 25,
+      "extraction_id": 318,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 25,
+      "extraction_id": 805,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 25,
+      "extraction_id": 244,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 26,
+      "extraction_id": 319,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 26,
+      "extraction_id": 806,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 26,
+      "extraction_id": 245,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 27,
+      "extraction_id": 320,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 27,
+      "extraction_id": 807,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 27,
+      "extraction_id": 246,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 28,
+      "extraction_id": 321,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 28,
+      "extraction_id": 808,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 28,
+      "extraction_id": 247,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 29,
+      "extraction_id": 322,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 29,
+      "extraction_id": 809,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 29,
+      "extraction_id": 248,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 30,
+      "extraction_id": 323,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 30,
+      "extraction_id": 810,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 30,
+      "extraction_id": 249,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 31,
+      "extraction_id": 324,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 31,
+      "extraction_id": 811,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 31,
+      "extraction_id": 250,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 32,
+      "extraction_id": 325,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 32,
+      "extraction_id": 812,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 32,
+      "extraction_id": 251,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 33,
+      "extraction_id": 326,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 33,
+      "extraction_id": 813,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 33,
+      "extraction_id": 252,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 34,
+      "extraction_id": 327,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 34,
+      "extraction_id": 814,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 34,
+      "extraction_id": 253,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 35,
+      "extraction_id": 328,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 35,
+      "extraction_id": 815,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 35,
+      "extraction_id": 254,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 36,
+      "extraction_id": 329,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 36,
+      "extraction_id": 816,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 36,
+      "extraction_id": 255,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 37,
+      "extraction_id": 330,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 37,
+      "extraction_id": 817,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 37,
+      "extraction_id": 256,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 38,
+      "extraction_id": 331,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 38,
+      "extraction_id": 818,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 38,
+      "extraction_id": 257,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 39,
+      "extraction_id": 332,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 39,
+      "extraction_id": 819,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 39,
+      "extraction_id": 258,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 40,
+      "extraction_id": 333,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 40,
+      "extraction_id": 820,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 40,
+      "extraction_id": 259,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 41,
+      "extraction_id": 334,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 41,
+      "extraction_id": 821,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 41,
+      "extraction_id": 260,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 42,
+      "extraction_id": 335,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 42,
+      "extraction_id": 822,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 42,
+      "extraction_id": 261,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 43,
+      "extraction_id": 336,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 43,
+      "extraction_id": 823,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 43,
+      "extraction_id": 262,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 44,
+      "extraction_id": 337,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 44,
+      "extraction_id": 824,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 44,
+      "extraction_id": 263,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 45,
+      "extraction_id": 338,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 45,
+      "extraction_id": 825,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 45,
+      "extraction_id": 264,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 46,
+      "extraction_id": 339,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 46,
+      "extraction_id": 826,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 46,
+      "extraction_id": 265,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 47,
+      "extraction_id": 340,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 47,
+      "extraction_id": 827,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 47,
+      "extraction_id": 266,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 48,
+      "extraction_id": 341,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 48,
+      "extraction_id": 828,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 48,
+      "extraction_id": 267,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 49,
+      "extraction_id": 342,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 49,
+      "extraction_id": 829,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 49,
+      "extraction_id": 268,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 50,
+      "extraction_id": 343,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 50,
+      "extraction_id": 830,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 50,
+      "extraction_id": 269,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 51,
+      "extraction_id": 344,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 51,
+      "extraction_id": 831,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 51,
+      "extraction_id": 270,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 52,
+      "extraction_id": 345,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 52,
+      "extraction_id": 832,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 52,
+      "extraction_id": 271,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 53,
+      "extraction_id": 346,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 53,
+      "extraction_id": 833,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 53,
+      "extraction_id": 272,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 54,
+      "extraction_id": 347,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 54,
+      "extraction_id": 834,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 54,
+      "extraction_id": 273,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 55,
+      "extraction_id": 348,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 55,
+      "extraction_id": 835,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 55,
+      "extraction_id": 274,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 56,
+      "extraction_id": 349,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 56,
+      "extraction_id": 836,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 56,
+      "extraction_id": 275,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 57,
+      "extraction_id": 350,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 57,
+      "extraction_id": 837,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 57,
+      "extraction_id": 276,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 58,
+      "extraction_id": 351,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 58,
+      "extraction_id": 838,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 58,
+      "extraction_id": 277,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 59,
+      "extraction_id": 352,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 59,
+      "extraction_id": 839,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 59,
+      "extraction_id": 278,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 60,
+      "extraction_id": 353,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 60,
+      "extraction_id": 840,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 60,
+      "extraction_id": 279,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 61,
+      "extraction_id": 354,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 61,
+      "extraction_id": 841,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 61,
+      "extraction_id": 280,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 62,
+      "extraction_id": 355,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 62,
+      "extraction_id": 842,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 62,
+      "extraction_id": 281,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 63,
+      "extraction_id": 356,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 63,
+      "extraction_id": 843,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 63,
+      "extraction_id": 282,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 64,
+      "extraction_id": 357,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 64,
+      "extraction_id": 844,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 64,
+      "extraction_id": 283,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 65,
+      "extraction_id": 358,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 65,
+      "extraction_id": 845,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 65,
+      "extraction_id": 284,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 66,
+      "extraction_id": 359,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 66,
+      "extraction_id": 846,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 66,
+      "extraction_id": 285,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 67,
+      "extraction_id": 360,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 67,
+      "extraction_id": 847,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 67,
+      "extraction_id": 286,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 68,
+      "extraction_id": 361,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 68,
+      "extraction_id": 848,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 68,
+      "extraction_id": 287,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 69,
+      "extraction_id": 362,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 69,
+      "extraction_id": 849,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 69,
+      "extraction_id": 288,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 70,
+      "extraction_id": 363,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 70,
+      "extraction_id": 850,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 70,
+      "extraction_id": 289,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 71,
+      "extraction_id": 364,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 71,
+      "extraction_id": 851,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 71,
+      "extraction_id": 290,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 72,
+      "extraction_id": 365,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 72,
+      "extraction_id": 852,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 72,
+      "extraction_id": 291,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 73,
+      "extraction_id": 366,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 73,
+      "extraction_id": 853,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 73,
+      "extraction_id": 292,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 74,
+      "extraction_id": 367,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 74,
+      "extraction_id": 854,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 16,
+      "physical_page": 74,
+      "extraction_id": 293,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 1,
+      "extraction_id": 863,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 1,
+      "extraction_id": 871,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 1,
+      "extraction_id": 855,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 2,
+      "extraction_id": 864,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 2,
+      "extraction_id": 872,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 2,
+      "extraction_id": 856,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 3,
+      "extraction_id": 865,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 3,
+      "extraction_id": 873,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 3,
+      "extraction_id": 857,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 4,
+      "extraction_id": 866,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 4,
+      "extraction_id": 874,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 4,
+      "extraction_id": 858,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 5,
+      "extraction_id": 867,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 5,
+      "extraction_id": 875,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 5,
+      "extraction_id": 859,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 6,
+      "extraction_id": 868,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 6,
+      "extraction_id": 876,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 6,
+      "extraction_id": 860,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 7,
+      "extraction_id": 869,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 7,
+      "extraction_id": 877,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 7,
+      "extraction_id": 861,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 8,
+      "extraction_id": 870,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 8,
+      "extraction_id": 878,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 17,
+      "physical_page": 8,
+      "extraction_id": 862,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 1,
+      "extraction_id": 886,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 1,
+      "extraction_id": 893,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 1,
+      "extraction_id": 879,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 2,
+      "extraction_id": 887,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 2,
+      "extraction_id": 894,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 2,
+      "extraction_id": 880,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 3,
+      "extraction_id": 888,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 3,
+      "extraction_id": 895,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 3,
+      "extraction_id": 881,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 4,
+      "extraction_id": 889,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 4,
+      "extraction_id": 896,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 4,
+      "extraction_id": 882,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 5,
+      "extraction_id": 890,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 5,
+      "extraction_id": 897,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 5,
+      "extraction_id": 883,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 6,
+      "extraction_id": 891,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 6,
+      "extraction_id": 898,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 6,
+      "extraction_id": 884,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 7,
+      "extraction_id": 892,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 7,
+      "extraction_id": 899,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 18,
+      "physical_page": 7,
+      "extraction_id": 885,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 1,
+      "extraction_id": 907,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 1,
+      "extraction_id": 914,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 1,
+      "extraction_id": 900,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 2,
+      "extraction_id": 908,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 2,
+      "extraction_id": 915,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 2,
+      "extraction_id": 901,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 3,
+      "extraction_id": 909,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 3,
+      "extraction_id": 916,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 3,
+      "extraction_id": 902,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 4,
+      "extraction_id": 910,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 4,
+      "extraction_id": 917,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 4,
+      "extraction_id": 903,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 5,
+      "extraction_id": 911,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 5,
+      "extraction_id": 918,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 5,
+      "extraction_id": 904,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 6,
+      "extraction_id": 912,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 6,
+      "extraction_id": 919,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 6,
+      "extraction_id": 905,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 7,
+      "extraction_id": 913,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 7,
+      "extraction_id": 920,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 19,
+      "physical_page": 7,
+      "extraction_id": 906,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 1,
+      "extraction_id": 929,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 1,
+      "extraction_id": 937,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 1,
+      "extraction_id": 921,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 2,
+      "extraction_id": 930,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 2,
+      "extraction_id": 938,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 2,
+      "extraction_id": 922,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 3,
+      "extraction_id": 931,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 3,
+      "extraction_id": 939,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 3,
+      "extraction_id": 923,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 4,
+      "extraction_id": 932,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 4,
+      "extraction_id": 940,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 4,
+      "extraction_id": 924,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 5,
+      "extraction_id": 933,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 5,
+      "extraction_id": 941,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 5,
+      "extraction_id": 925,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 6,
+      "extraction_id": 934,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 6,
+      "extraction_id": 942,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 6,
+      "extraction_id": 926,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 7,
+      "extraction_id": 935,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 7,
+      "extraction_id": 943,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 7,
+      "extraction_id": 927,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 8,
+      "extraction_id": 936,
+      "extractor": "docling",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 8,
+      "extraction_id": 944,
+      "extractor": "glm_ocr",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    },
+    {
+      "document_id": 20,
+      "physical_page": 8,
+      "extraction_id": 928,
+      "extractor": "pdf_reader",
+      "status": "pending_human_review",
+      "cer": null,
+      "wer": null
+    }
+  ]
+}

@@ -11,3 +11,7 @@ wheels/
 .venv
 data/tmp/
 data/page_cache/
+
+# Generated engineering checks and isolated mutation workers
+.metrics/
+target/

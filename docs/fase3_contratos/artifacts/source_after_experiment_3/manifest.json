@@ -1,0 +1,26 @@
+{
+  "src/app/grounding.py": {
+    "path": "source_after_experiment_3\\src\\app\\grounding.py.txt",
+    "sha256": "fc5cacc9aa63508b2d6161e785de9ddab5c52acaf88c062724f3a39e8611ee8d"
+  },
+  "src/app/evidence.py": {
+    "path": "source_after_experiment_3\\src\\app\\evidence.py.txt",
+    "sha256": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd"
+  },
+  "src/app/agente.py": {
+    "path": "source_after_experiment_3\\src\\app\\agente.py.txt",
+    "sha256": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d"
+  },
+  "src/api/schemas/agent.py": {
+    "path": "source_after_experiment_3\\src\\api\\schemas\\agent.py.txt",
+    "sha256": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729"
+  },
+  "src/api/services/agent_service.py": {
+    "path": "source_after_experiment_3\\src\\api\\services\\agent_service.py.txt",
+    "sha256": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8"
+  },
+  "src/terminal/main.py": {
+    "path": "source_after_experiment_3\\src\\terminal\\main.py.txt",
+    "sha256": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+  }
+}

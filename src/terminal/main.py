@@ -35,7 +35,7 @@ console = Console(
             "warning": "bold bright_yellow",
         }
     )
-)   
+)
 
 
 def ensure_repo_path() -> None:
@@ -188,32 +188,26 @@ class ChatSession:
             )
             raise
 
-        messages = result.get("messages")
-        if not isinstance(messages, list) or not messages:
-            msg = "O agente retornou uma resposta sem mensagens."
-            self.history.append(
-                {
-                    "entry_type": "error",
-                    "timestamp": self._timestamp(),
-                    "stage": "validation",
-                    "message": msg,
-                }
-            )
-            raise RuntimeError(msg)
+        from src.app.evidence import extract_agent_result
 
-        self.messages = messages
-        reply = normalize_content(getattr(messages[-1], "content", messages[-1]))
-        if not reply:
-            msg = "O agente retornou uma resposta vazia."
+        try:
+            if not isinstance(result, dict):
+                raise RuntimeError("O agente retornou um formato de resposta invalido.")
+            messages = result.get("messages")
+            if not isinstance(messages, list) or not messages:
+                raise RuntimeError("O agente retornou uma resposta sem mensagens.")
+            reply = extract_agent_result(result, question=question).answer
+        except RuntimeError as exc:
             self.history.append(
                 {
                     "entry_type": "error",
                     "timestamp": self._timestamp(),
                     "stage": "validation",
-                    "message": msg,
+                    "message": str(exc),
                 }
             )
-            raise RuntimeError(msg)
+            raise
+        self.messages = messages
 
         self.history.append(
             {

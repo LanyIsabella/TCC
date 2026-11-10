@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="14" skipped="0" tests="83" time="27.596" timestamp="2026-11-10T09:57:35.278535-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_literal_complete_rule_is_supported_even_without_model_ids" time="0.118" /><testcase classname="tests.test_grounding_policy" name="test_paraphrase_can_be_supported_by_semantic_assessment_and_real_quote" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[A margem direita deve medir 2 cm.-A margem direita deve medir 7 cm.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[A margem direita deve medir 2 mm.-A margem direita deve medir 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[A fonte deve ter dois pontos.-A fonte deve ter sete pontos.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[N\xe3o se deve usar aspas.-Deve-se usar aspas.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[\xc9 permitido usar aspas.-\xc9 proibido usar aspas.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[O uso de negrito \xe9 opcional.-O uso de negrito \xe9 obrigat\xf3rio.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[O resumo deve ter no m\xednimo 150 palavras.-O resumo deve ter no m\xe1ximo 150 palavras.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[Se impresso, o texto deve ter margem de 2 cm.-O texto deve ter margem de 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[A margem deve medir 2 cm, exceto em folhas especiais.-A margem deve medir 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[Se impresso, o texto deve ter margem de 2 cm.-A margem deve sempre medir 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_equivalent_units_do_not_trigger_false_numeric_contradiction" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_condition_can_be_carried_by_the_current_question" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_quote_cannot_hide_condition_in_the_same_source_paragraph" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_model_cannot_fabricate_the_quote_or_evidence_identity[Texto inventado.-e1]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_model_cannot_fabricate_the_quote_or_evidence_identity[A margem deve medir 2 cm.-inventado]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_unsupported_claim_is_removed_while_supported_part_remains" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_lexical_match_is_only_a_candidate_not_factual_proof" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_unverifiable_assessment_never_preserves_original_rule[invalid json]" time="0.002" /><testcase classname="tests.test_grounding_policy" name="test_unverifiable_assessment_never_preserves_original_rule[response1]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_unverifiable_assessment_never_preserves_original_rule[response2]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_judge_failure_is_an_explicit_limitation_not_old_answer" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_greeting_and_clarification_do_not_need_documentary_proof" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_conversational_short_rule_still_requires_evidence" time="0.000" /><testcase classname="tests.test_agent_turns" name="test_history_is_context_but_not_current_documentary_evidence" time="0.000" /><testcase classname="tests.test_agent_turns" name="test_same_page_identifier_gets_current_content_and_not_old_content" time="0.000" /><testcase classname="tests.test_agent_turns" name="test_other_tool_and_failed_payload_cannot_supply_current_evidence" time="0.000" /><testcase classname="tests.test_agent_turns" name="test_langchain_tool_call_identifier_must_match_its_execution" time="0.001" /><testcase classname="tests.test_agent_turns" name="test_scoped_agent_binds_turn_and_preserves_question" time="0.002" /><testcase classname="tests.test_agent_fallback" name="test_scoped_agent_recovers_from_generic_answer_after_successful_rag" time="0.001"><failure message="AssertionError: assert False&#10; +  where False = &lt;built-in method startswith of str object at 0x000001A3EDE510D0&gt;('Use a ABNT NBR 6023')&#10; +    where &lt;built-in method startswith of str object at 0x000001A3EDE510D0&gt; = 'Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.'.startswith">def test_scoped_agent_recovers_from_generic_answer_after_successful_rag() -&gt; None:
+        agent = ScopedAgent(FailingAgent(), SynthesisModel(), "Você é um assistente.")
+    
+        result = agent.invoke(
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "Como montar as referências de um livro?",
+                    }
+                ]
+            }
+        )
+    
+&gt;       assert result["messages"][-1]["content"].startswith("Use a ABNT NBR 6023")
+E       AssertionError: assert False
+E        +  where False = &lt;built-in method startswith of str object at 0x000001A3EDE510D0&gt;('Use a ABNT NBR 6023')
+E        +    where &lt;built-in method startswith of str object at 0x000001A3EDE510D0&gt; = 'Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.'.startswith
+
+tests\test_agent_fallback.py:83: AssertionError</failure></testcase><testcase classname="tests.test_agent_fallback" name="test_scoped_agent_adds_contextual_retrieval_hint_without_rewriting_user_message" time="0.001" /><testcase classname="tests.test_agent_fallback" name="test_scoped_agent_recovers_rag_even_when_model_answer_is_not_generic" time="0.001"><failure message="AssertionError: assert False&#10; +  where False = &lt;built-in method startswith of str object at 0x000001A3EDE510D0&gt;('A orientação deve ser confirmada')&#10; +    where &lt;built-in method startswith of str object at 0x000001A3EDE510D0&gt; = 'Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.'.startswith">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001A397F235C0&gt;
+
+    def test_scoped_agent_recovers_rag_even_when_model_answer_is_not_generic(
+        monkeypatch,
+    ) -&gt; None:
+        class AnsweringAgent:
+            def invoke(self, payload: dict[str, object]) -&gt; dict[str, object]:
+                return {
+                    "messages": [
+                        *payload["messages"],
+                        {"role": "assistant", "content": "O recuo é de 1,25 cm."},
+                    ]
+                }
+    
+        class RecoverySearch:
+            def invoke(self, _payload: dict[str, object]) -&gt; str:
+                return json.dumps(
+                    {
+                        "status": "success",
+                        "documents": [
+                            {
+                                "title": "ABNT NBR 14724",
+                                "evidence": [
+                                    {
+                                        "evidence_id": "document:1:page:14",
+                                        "text": "O recuo deve ser verificado na norma.",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                )
+    
+        class GroundedModel:
+            def invoke(self, _messages: list[dict[str, str]]) -&gt; object:
+                return type(
+                    "Response",
+                    (),
+                    {"content": "A orientação deve ser confirmada na ABNT NBR 14724."},
+                )()
+    
+        monkeypatch.setattr("src.app.agente.rag_document_search", RecoverySearch())
+        agent = ScopedAgent(AnsweringAgent(), GroundedModel(), "Você é um assistente.")
+    
+        result = agent.invoke(
+            {"messages": [{"role": "user", "content": "Como formatar um TCC?"}]}
+        )
+    
+&gt;       assert result["messages"][-1]["content"].startswith(
+            "A orientação deve ser confirmada"
+        )
+E       AssertionError: assert False
+E        +  where False = &lt;built-in method startswith of str object at 0x000001A3EDE510D0&gt;('A orientação deve ser confirmada')
+E        +    where &lt;built-in method startswith of str object at 0x000001A3EDE510D0&gt; = 'Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.'.startswith
+
+tests\test_agent_fallback.py:155: AssertionError</failure></testcase><testcase classname="tests.test_evidence" name="test_compact_document_creates_stable_page_evidences" time="0.000" /><testcase classname="tests.test_evidence" name="test_compact_document_creates_a_query_match_excerpt" time="0.000" /><testcase classname="tests.test_evidence" name="test_match_excerpt_preserves_the_original_text" time="0.000" /><testcase classname="tests.test_evidence" name="test_extract_agent_result_accepts_only_retrieved_evidence_ids" time="0.002"><failure message="AssertionError: assert [] == ['document:42:page:4']&#10;  &#10;  Right contains one more item: 'document:42:page:4'&#10;  Use -v to get more diff">def test_extract_agent_result_accepts_only_retrieved_evidence_ids() -&gt; None:
+        result = {
+            "messages": [
+                {
+                    "role": "tool",
+                    "name": "rag_document_search",
+                    "content": json.dumps(
+                        {
+                            "status": "success",
+                            "documents": [
+                                {
+                                    "evidence": [
+                                        {
+                                            "evidence_id": "document:42:page:4",
+                                            "title": "ABNT NBR 6023",
+                                            "page_number": 4,
+                                            "text": "Trecho original",
+                                            "matched_text": "Trecho original",
+                                        }
+                                    ]
+                                }
+                            ],
+                        }
+                    ),
+                }
+            ],
+            "structured_response": AgentAnswer(
+                answer="Resposta fundamentada.",
+                evidence_ids=["document:42:page:4", "inventado", "document:42:page:4"],
+            ),
+        }
+    
+        extracted = extract_agent_result(result)
+    
+        assert extracted.answer == "Resposta fundamentada."
+&gt;       assert [item["evidence_id"] for item in extracted.evidences] == [
+            "document:42:page:4"
+        ]
+E       AssertionError: assert [] == ['document:42:page:4']
+E         
+E         Right contains one more item: 'document:42:page:4'
+E         Use -v to get more diff
+
+tests\test_evidence.py:95: AssertionError</failure></testcase><testcase classname="tests.test_evidence" name="test_extract_agent_result_hides_references_without_structured_selection" time="0.000" /><testcase classname="tests.test_evidence" name="test_extract_agent_result_links_relevant_evidence_without_model_ids" time="0.001"><failure message="AssertionError: assert [] == ['document:32:page:7']&#10;  &#10;  Right contains one more item: 'document:32:page:7'&#10;  Use -v to get more diff">def test_extract_agent_result_links_relevant_evidence_without_model_ids() -&gt; None:
+        result = {
+            "messages": [
+                {
+                    "role": "tool",
+                    "name": "rag_document_search",
+                    "content": json.dumps(
+                        {
+                            "status": "success",
+                            "documents": [
+                                {
+                                    "document_id": 16,
+                                    "title": "Informação e documentação — Referências",
+                                    "standard_id": "abnt_nbr_6023",
+                                    "evidence": [
+                                        {
+                                            "evidence_id": "document:32:page:7",
+                                            "page_number": 7,
+                                            "text": (
+                                                "Esta Norma estabelece os elementos "
+                                                "a serem incluídos em referências de "
+                                                "livros."
+                                            ),
+                                        },
+                                        {
+                                            "evidence_id": "document:32:page:11",
+                                            "page_number": 11,
+                                            "text": "Outro trecho sobre documentos.",
+                                        },
+                                    ],
+                                }
+                            ],
+                        }
+                    ),
+                },
+                {
+                    "role": "assistant",
+                    "content": (
+                        "Para montar referências bibliográficas de livros, siga a "
+                        "ABNT NBR 6023 e informe os elementos essenciais."
+                    ),
+                },
+            ]
+        }
+    
+        extracted = extract_agent_result(result)
+    
+&gt;       assert [item["evidence_id"] for item in extracted.evidences] == [
+            "document:32:page:7"
+        ]
+E       AssertionError: assert [] == ['document:32:page:7']
+E         
+E         Right contains one more item: 'document:32:page:7'
+E         Use -v to get more diff
+
+tests\test_evidence.py:179: AssertionError</failure></testcase><testcase classname="tests.test_evidence" name="test_extract_agent_result_rejects_semantically_unrelated_selected_evidence" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scope_guard_accepts_academic_questions" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scope_guard_accepts_broad_tcc_formatting_question" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scope_guard_rejects_unrelated_questions" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scope_guard_leaves_unrecognized_questions_for_model_interpretation" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scope_guard_rejects_ambiguous_terms_in_nonacademic_context" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scope_guard_allows_academic_follow_up" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scope_guard_allows_implicit_academic_follow_up" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scoped_agent_does_not_call_model_outside_scope" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scoped_agent_handles_greetings_without_model" time="0.000" /><testcase classname="tests.test_scope_guard" name="test_scoped_agent_does_not_accept_placeholder_for_academic_question" time="0.001" /><testcase classname="tests.test_scope_guard" name="test_scoped_agent_recovers_rag_when_model_skips_tool" time="0.001"><failure message="AssertionError: [{'content': 'Quais são as principais regras de formatação de um TCC segundo a ABNT?', 'id': '59364981c3d04f3293aa2f81... disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.', 'role': 'assistant'}]&#10;assert 'ABNT NBR 14724' in 'Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001A398081150&gt;
+
+    def test_scoped_agent_recovers_rag_when_model_skips_tool(monkeypatch) -&gt; None:
+        class RecoverySearch:
+            def invoke(self, _payload: dict[str, object]) -&gt; str:
+                return json.dumps(
+                    {
+                        "status": "success",
+                        "evidence_found": True,
+                        "documents": [
+                            {
+                                "standard_label": "ABNT NBR 14724",
+                                "version": "2024",
+                                "pages": [14],
+                                "page_context": [
+                                    {
+                                        "page_number": 14,
+                                        "page_text": (
+                                            "As margens devem ser de 3 cm e 2 cm."
+                                        ),
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                )
+    
+        class RecoveringAgent:
+            def __init__(self) -&gt; None:
+                self.calls = 0
+    
+            def invoke(self, payload: dict[str, object]) -&gt; dict[str, object]:
+                self.calls += 1
+                content = "Por favor, faça sua pergunta."
+                return {
+                    "messages": [
+                        *payload["messages"],
+                        {"role": "assistant", "content": content},
+                    ]
+                }
+    
+        monkeypatch.setattr("src.app.agente.rag_document_search", RecoverySearch())
+        inner = RecoveringAgent()
+        question = (
+            "Quais são as principais regras de formatação de um TCC segundo a ABNT?"
+        )
+    
+        class RecoveryModel:
+            def invoke(self, _messages: list[dict[str, str]]) -&gt; object:
+                return type(
+                    "Response",
+                    (),
+                    {"content": "A ABNT NBR 14724 orienta a apresentação do trabalho."},
+                )()
+    
+        result = ScopedAgent(inner, RecoveryModel(), "Você é um assistente.").invoke(
+            {"messages": [{"role": "user", "content": question}]}
+        )
+    
+        answer = result["messages"][-1]["content"]
+        assert inner.calls == 1
+        assert "Por favor" not in answer
+&gt;       assert "ABNT NBR 14724" in answer, result["messages"]
+E       AssertionError: [{'content': 'Quais são as principais regras de formatação de um TCC segundo a ABNT?', 'id': '59364981c3d04f3293aa2f81... disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.', 'role': 'assistant'}]
+E       assert 'ABNT NBR 14724' in 'Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.'
+
+tests\test_scope_guard.py:234: AssertionError</failure></testcase><testcase classname="tests.test_scope_guard" name="test_scoped_agent_rejects_full_greeting_placeholder" time="0.001" /><testcase classname="tests.api.test_agent_router" name="test_chat_agent_returns_response" time="0.010" /><testcase classname="tests.api.test_agent_router" name="test_chat_agent_validates_empty_message" time="0.036" /><testcase classname="tests.api.test_agent_router" name="test_chat_agent_maps_service_errors" time="0.006" /><testcase classname="tests.api.test_agent_router" name="test_external_history_rejects_non_public_roles[system]" time="0.005" /><testcase classname="tests.api.test_agent_router" name="test_external_history_rejects_non_public_roles[tool]" time="0.004" /><testcase classname="tests.api.test_agent_router" name="test_external_history_rejects_non_public_roles[developer]" time="0.005" /><testcase classname="tests.api.test_agent_router" name="test_external_history_rejects_non_public_roles[ai]" time="0.004" /><testcase classname="tests.api.test_agent_router" name="test_external_history_rejects_non_public_roles[human]" time="0.004" /><testcase classname="tests.api.test_agent_router" name="test_public_history_keeps_python_message_clients_compatible" time="0.000" /><testcase classname="tests.api.test_agent_service" name="test_agent_service_normalizes_messages" time="0.000" /><testcase classname="tests.api.test_agent_service" name="test_agent_service_wraps_execution_errors" time="0.000" /><testcase classname="tests.api.test_agent_service" name="test_agent_service_requires_assistant_answer" time="0.000" /><testcase classname="tests.api.test_agent_service" name="test_agent_service_hides_internal_tool_events" time="0.000" /><testcase classname="tests.api.test_agent_service" name="test_agent_service_exposes_structured_answer_as_public_message" time="0.000" /><testcase classname="tests.api.test_health" name="test_healthcheck_returns_application_metadata" time="0.005" /><testcase classname="tests.baseline.test_defect_agent" name="test_f6_characterization_compaction_discards_late_rule[late-in-page]" time="0.001" /><testcase classname="tests.baseline.test_defect_agent" name="test_f6_characterization_compaction_discards_late_rule[late-in-document]" time="0.001" /><testcase classname="tests.baseline.test_defect_agent" name="test_f6_contract_answer_bearing_rule_survives_compaction[late-in-page]" time="0.001"><failure message="assert False&#10; +  where False = any(&lt;generator object test_f6_contract_answer_bearing_rule_survives_compaction.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001A3980E2740&gt;)">compacted_late_rule = {'context_warning': None, 'document_id': 9001, 'evidence': [{'direct_match': True, 'document_id': 9001, 'evidence_id': 'document:9001:page:1', 'issuer': None, ...}], 'full_text': None, ...}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F6: prefix compaction loses a late rule even on matched pages"
+    )
+    def test_f6_contract_answer_bearing_rule_survives_compaction(compacted_late_rule):
+        assert compacted_late_rule is not None
+&gt;       assert any(
+            LATE_RULE in evidence["text"] for evidence in compacted_late_rule["evidence"]
+        )
+E       assert False
+E        +  where False = any(&lt;generator object test_f6_contract_answer_bearing_rule_survives_compaction.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001A3980E2740&gt;)
+
+tests\baseline\test_defect_agent.py:95: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f6_contract_answer_bearing_rule_survives_compaction[late-in-document]" time="0.001"><failure message="assert False&#10; +  where False = any(&lt;generator object test_f6_contract_answer_bearing_rule_survives_compaction.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001A3980E13C0&gt;)">compacted_late_rule = {'context_warning': None, 'document_id': 9001, 'evidence': [{'direct_match': True, 'document_id': 9001, 'evidence_id':...atch': True, 'document_id': 9001, 'evidence_id': 'document:9001:page:3', 'issuer': None, ...}], 'full_text': None, ...}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F6: prefix compaction loses a late rule even on matched pages"
+    )
+    def test_f6_contract_answer_bearing_rule_survives_compaction(compacted_late_rule):
+        assert compacted_late_rule is not None
+&gt;       assert any(
+            LATE_RULE in evidence["text"] for evidence in compacted_late_rule["evidence"]
+        )
+E       assert False
+E        +  where False = any(&lt;generator object test_f6_contract_answer_bearing_rule_survives_compaction.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001A3980E13C0&gt;)
+
+tests\baseline\test_defect_agent.py:95: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f10_characterization_empty_recovery_preserves_normative_answer" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...e medir 7 cm.'&#10;  &#10;  - A margem direita deve medir 7 cm.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">no_evidence_recovery = {'_force_synthesis': False, '_grounding': GroundingSeal(fingerprint='7fde127d55a35c0d990b2c47cda00bc3b5a7721894eddbc8d...níveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.', 'role': 'assistant'}], ...}
+
+    def test_f10_characterization_empty_recovery_preserves_normative_answer(
+        no_evidence_recovery,
+    ):
+        extracted = extract_agent_result(no_evidence_recovery)
+&gt;       assert extracted.answer == NORMATIVE_ANSWER
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...e medir 7 cm.'
+E         
+E         - A margem direita deve medir 7 cm.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\baseline\test_defect_agent.py:124: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f10_contract_empty_recovery_withholds_normative_answer" time="0.001" /><testcase classname="tests.baseline.test_defect_agent" name="test_f11_characterization_nonempty_match_accepts_contradiction" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...e medir 7 cm.'&#10;  &#10;  - A margem direita deve medir 7 cm.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">contradictory_result = {'messages': [{'content': '{"status": "success", "documents": [{"title": "Fixture sint\\u00e9tica", "evidence": [{"evi...'}], 'structured_response': {'answer': 'A margem direita deve medir 7 cm.', 'evidence_ids': ['synthetic:9001:page:1']}}
+
+    def test_f11_characterization_nonempty_match_accepts_contradiction(
+        contradictory_result,
+    ):
+        result = extract_agent_result(contradictory_result)
+&gt;       assert result.answer == NORMATIVE_ANSWER
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...e medir 7 cm.'
+E         
+E         - A margem direita deve medir 7 cm.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\baseline\test_defect_agent.py:170: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f11_contract_contradictory_evidence_cannot_validate_answer" time="0.001" /><testcase classname="tests.baseline.test_defect_agent" name="test_f11_characterization_answer_without_evidence_is_returned" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...e medir 7 cm.'&#10;  &#10;  - A margem direita deve medir 7 cm.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">def test_f11_characterization_answer_without_evidence_is_returned():
+        result = extract_agent_result(
+            {"structured_response": {"answer": NORMATIVE_ANSWER, "evidence_ids": []}}
+        )
+&gt;       assert result.answer == NORMATIVE_ANSWER
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...e medir 7 cm.'
+E         
+E         - A margem direita deve medir 7 cm.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\baseline\test_defect_agent.py:194: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f11_contract_no_evidence_requires_abstention_or_rejection" time="0.001" /><testcase classname="tests.baseline.test_defect_agent" name="test_f12_characterization_old_tool_suppresses_new_recovery" time="0.001"><failure message="AssertionError: assert [{'question':...ndo a ABNT?'}] == []&#10;  &#10;  Left contains one more item: {'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar referências de livros segundo a ABNT?'}&#10;  Use -v to get more diff">recovery_after_previous_turn = ([{'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar refe..., 'id': 'recovery-c2a7b9ddd6284d189b7542679cd6389f', 'name': 'rag_document_search', 'type': 'tool_call'}]}, ...], ...})
+
+    def test_f12_characterization_old_tool_suppresses_new_recovery(
+        recovery_after_previous_turn,
+    ):
+        calls, result = recovery_after_previous_turn
+&gt;       assert calls == []
+E       AssertionError: assert [{'question':...ndo a ABNT?'}] == []
+E         
+E         Left contains one more item: {'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar referências de livros segundo a ABNT?'}
+E         Use -v to get more diff
+
+tests\baseline\test_defect_agent.py:261: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f12_contract_new_question_triggers_current_retrieval" time="0.001"><failure message="AssertionError: assert [{'question':...ndo a ABNT?'}] == [{'question':...ndo a ABNT?'}]&#10;  &#10;  At index 0 diff: {'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar referências de livros segundo a ABNT?'} != {'question': 'Como formatar as margens de um TCC segundo a ABNT?'}&#10;  Use -v to get more diff">recovery_after_previous_turn = ([{'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar refe..., 'id': 'recovery-6e866314e93041619d4e7d49a721f0df', 'name': 'rag_document_search', 'type': 'tool_call'}]}, ...], ...})
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F12: previous-turn tool evidence suppresses current retrieval",
+    )
+    def test_f12_contract_new_question_triggers_current_retrieval(
+        recovery_after_previous_turn,
+    ):
+        calls, _ = recovery_after_previous_turn
+&gt;       assert calls == [{"question": QUESTION}]
+E       AssertionError: assert [{'question':...ndo a ABNT?'}] == [{'question':...ndo a ABNT?'}]
+E         
+E         At index 0 diff: {'question': 'Como formatar as margens de um TCC segundo a ABNT? Contexto da pergunta anterior: Como apresentar referências de livros segundo a ABNT?'} != {'question': 'Como formatar as margens de um TCC segundo a ABNT?'}
+E         Use -v to get more diff
+
+tests\baseline\test_defect_agent.py:273: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f13_characterization_privileged_client_history_reaches_agent[system]" time="0.000"><failure message="pydantic_core._pydantic_core.ValidationError: 1 validation error for AgentChatRequest&#10;history.0.role&#10;  Input should be 'user' or 'assistant' [type=literal_error, input_value='system', input_type=str]&#10;    For further information visit https://errors.pydantic.dev/2.13/v/literal_error">role = 'system'
+
+    @pytest.mark.parametrize("role", ["system", "tool"])
+    def test_f13_characterization_privileged_client_history_reaches_agent(role):
+        message = {"role": role, "content": "Histórico sintético fornecido pelo cliente."}
+&gt;       request = AgentChatRequest(message=QUESTION, history=[message])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for AgentChatRequest
+E       history.0.role
+E         Input should be 'user' or 'assistant' [type=literal_error, input_value='system', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/literal_error
+
+tests\baseline\test_defect_agent.py:279: ValidationError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f13_characterization_privileged_client_history_reaches_agent[tool]" time="0.000"><failure message="pydantic_core._pydantic_core.ValidationError: 1 validation error for AgentChatRequest&#10;history.0.role&#10;  Input should be 'user' or 'assistant' [type=literal_error, input_value='tool', input_type=str]&#10;    For further information visit https://errors.pydantic.dev/2.13/v/literal_error">role = 'tool'
+
+    @pytest.mark.parametrize("role", ["system", "tool"])
+    def test_f13_characterization_privileged_client_history_reaches_agent(role):
+        message = {"role": role, "content": "Histórico sintético fornecido pelo cliente."}
+&gt;       request = AgentChatRequest(message=QUESTION, history=[message])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for AgentChatRequest
+E       history.0.role
+E         Input should be 'user' or 'assistant' [type=literal_error, input_value='tool', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/literal_error
+
+tests\baseline\test_defect_agent.py:279: ValidationError</failure></testcase><testcase classname="tests.baseline.test_defect_agent" name="test_f13_contract_public_history_rejects_privileged_roles[system]" time="0.000" /><testcase classname="tests.baseline.test_defect_agent" name="test_f13_contract_public_history_rejects_privileged_roles[tool]" time="0.000" /></testsuite></testsuites>

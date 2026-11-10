@@ -1,0 +1,440 @@
+{
+  "method": "AST comparison against preserved HEAD; metrics from executed Crapper with measured LCOV",
+  "source_sha256": {
+    "src/app/grounding.py": "d81ae776c81cb233ac2c32828e58888ed5b57671dbec2d79db101a3d97649359",
+    "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+    "src/app/agente.py": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d",
+    "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+    "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+    "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+  },
+  "changed_functions": [
+    {
+      "function": "app.grounding._canonical",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._conversational",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.grounding.needs_support",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.grounding._claims",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.grounding._quantities",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.grounding._numeric_conflict",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.grounding._polarity",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._qualifiers",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._qualifier_conflict",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.grounding._modality_conflict",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.grounding._compatible",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.grounding._quote_context",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.grounding._scoped_quote",
+      "complexity": 4.0,
+      "coverage": 85.7143,
+      "crap": 4.0466
+    },
+    {
+      "function": "app.grounding._literal_support",
+      "complexity": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.grounding._literal_in_source",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.grounding._assess",
+      "complexity": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "function": "app.grounding._verified_support",
+      "complexity": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "function": "app.grounding._claim_support",
+      "complexity": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "function": "app.grounding._compose",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.grounding.ground_answer",
+      "complexity": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.evidence.message_role",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.evidence.begin_turn",
+      "complexity": 4.0,
+      "coverage": 91.6667,
+      "crap": 4.0093
+    },
+    {
+      "function": "app.evidence.bind_turn",
+      "complexity": 3.0,
+      "coverage": 85.7143,
+      "crap": 3.0262
+    },
+    {
+      "function": "app.evidence.current_turn_messages",
+      "complexity": 7.0,
+      "coverage": 84.6154,
+      "crap": 7.1784
+    },
+    {
+      "function": "app.evidence._parse_tool_content",
+      "complexity": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.evidence._rag_event",
+      "complexity": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "function": "app.evidence._execution",
+      "complexity": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "app.evidence._tool_payloads",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.evidence._document_evidences",
+      "complexity": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "function": "app.evidence._evidence_record",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.evidence._collect_evidences",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.evidence.looks_like_guarded_answer",
+      "complexity": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "function": "app.evidence._extract_answer",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.evidence.last_user_question",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.evidence._fingerprint",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.evidence._normative_context",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.evidence._decision",
+      "complexity": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "function": "app.evidence.finalize_grounding",
+      "complexity": 6.0,
+      "coverage": 87.5,
+      "crap": 6.0703
+    },
+    {
+      "function": "app.evidence._without_content",
+      "complexity": 2.0,
+      "coverage": 75.0,
+      "crap": 2.0625
+    },
+    {
+      "function": "app.evidence.extract_agent_result",
+      "complexity": 2.0,
+      "coverage": 83.3333,
+      "crap": 2.0185
+    },
+    {
+      "function": "app.agente.ScopedAgent.invoke",
+      "complexity": 6.0,
+      "coverage": 93.75,
+      "crap": 6.0088
+    },
+    {
+      "function": "app.agente.ScopedAgent._verify_claims",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._last_user_question",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._content_text",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._current_user_index",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._retrieval_query",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._with_retrieval_hint",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._tool_payloads",
+      "complexity": 5.0,
+      "coverage": 75.0,
+      "crap": 5.3906
+    },
+    {
+      "function": "app.agente.ScopedAgent._last_assistant_text",
+      "complexity": 5.0,
+      "coverage": 88.8889,
+      "crap": 5.0343
+    },
+    {
+      "function": "app.agente.ScopedAgent._candidate_answer",
+      "complexity": 3.0,
+      "coverage": 83.3333,
+      "crap": 3.0417
+    },
+    {
+      "function": "app.agente.ScopedAgent._needs_synthesis",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._needs_retrieval_recovery",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "app.agente.ScopedAgent._recover_retrieval",
+      "complexity": 4.0,
+      "coverage": 93.75,
+      "crap": 4.0039
+    },
+    {
+      "function": "app.agente.ScopedAgent._synthesize_from_retrieval",
+      "complexity": 6.0,
+      "coverage": 75.0,
+      "crap": 6.5625
+    },
+    {
+      "function": "app.agente.ScopedAgent._synthesis_history",
+      "complexity": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "function": "api.schemas.agent._nonempty_text",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "api.schemas.agent.ConversationMessage.validate_content",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "api.schemas.agent.PublicConversationMessage.accept_existing_message",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "api.schemas.agent.AgentChatRequest.validate_message",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "api.services.agent_service.AgentService.chat",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "terminal.main.ChatSession.ask",
+      "complexity": 6.0,
+      "coverage": 95.4545,
+      "crap": 6.0034
+    }
+  ],
+  "changed_functions_below_10": true,
+  "whole_file_gate_passed": false,
+  "unchanged_function_violations": [
+    {
+      "function": "terminal.main.run_interactive",
+      "complexity": 11.0,
+      "coverage": 2.6316,
+      "crap": 122.6965
+    },
+    {
+      "function": "terminal.main.normalize_content",
+      "complexity": 11.0,
+      "coverage": 5.5556,
+      "crap": 112.9328
+    },
+    {
+      "function": "terminal.main.main",
+      "complexity": 9.0,
+      "coverage": 3.125,
+      "crap": 82.6411
+    },
+    {
+      "function": "terminal.main.load_agente_module",
+      "complexity": 4.0,
+      "coverage": 7.1429,
+      "crap": 16.8105
+    },
+    {
+      "function": "app.evidence._normalize_content",
+      "complexity": 11.0,
+      "coverage": 86.6667,
+      "crap": 11.2868
+    }
+  ],
+  "dryer_review": "Remaining match is two field-validator wrappers; nonblank rule is centralized in _nonempty_text. Distinct API field contracts intentionally retained.",
+  "max_changed_function_crap": 8.0,
+  "mutation": {
+    "policy": {
+      "killed": 47,
+      "survived": 0
+    },
+    "api": {
+      "killed": 5,
+      "survived": 0
+    },
+    "agent_and_evidence": {
+      "killed": 110,
+      "survived": 2
+    },
+    "terminal_ask": {
+      "killed": 4,
+      "survived": 0,
+      "lines": "168-220"
+    },
+    "agent_gate_passed": false,
+    "terminal_whole_module_evaluated": false,
+    "survivors": [
+      "src/app/agente.py:105 False -> True",
+      "src/app/agente.py:276 False -> True"
+    ]
+  }
+}

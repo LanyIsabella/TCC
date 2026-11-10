@@ -73,8 +73,10 @@ def test_extract_agent_result_accepts_only_retrieved_evidence_ids() -> None:
                                         "evidence_id": "document:42:page:4",
                                         "title": "ABNT NBR 6023",
                                         "page_number": 4,
-                                        "text": "Trecho original",
-                                        "matched_text": "Trecho original",
+                                        "text": "Referências devem ser organizadas.",
+                                        "matched_text": (
+                                            "Referências devem ser organizadas."
+                                        ),
                                     }
                                 ]
                             }
@@ -84,14 +86,14 @@ def test_extract_agent_result_accepts_only_retrieved_evidence_ids() -> None:
             }
         ],
         "structured_response": AgentAnswer(
-            answer="Resposta fundamentada.",
+            answer="Referências devem ser organizadas.",
             evidence_ids=["document:42:page:4", "inventado", "document:42:page:4"],
         ),
     }
 
     extracted = extract_agent_result(result)
 
-    assert extracted.answer == "Resposta fundamentada."
+    assert extracted.answer == "Referências devem ser organizadas."
     assert [item["evidence_id"] for item in extracted.evidences] == [
         "document:42:page:4"
     ]
@@ -167,8 +169,8 @@ def test_extract_agent_result_links_relevant_evidence_without_model_ids() -> Non
             {
                 "role": "assistant",
                 "content": (
-                    "Para montar referências bibliográficas de livros, siga a "
-                    "ABNT NBR 6023 e informe os elementos essenciais."
+                    "Esta Norma estabelece os elementos a serem incluídos "
+                    "em referências de livros."
                 ),
             },
         ]
@@ -181,8 +183,9 @@ def test_extract_agent_result_links_relevant_evidence_without_model_ids() -> Non
     ]
 
 
-def test_extract_agent_result_rejects_semantically_unrelated_selected_evidence(
-) -> None:
+def test_extract_agent_result_rejects_semantically_unrelated_selected_evidence() -> (
+    None
+):
     result = {
         "messages": [
             {

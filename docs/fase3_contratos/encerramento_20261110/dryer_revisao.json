@@ -1,0 +1,33 @@
+{
+  "threshold": 0.8,
+  "modified_schema_pair": {
+    "lines": [
+      [
+        27,
+        30
+      ],
+      [
+        57,
+        60
+      ]
+    ],
+    "score": 1.0,
+    "assessment": "Small field-specific wrappers now delegate to one validation rule. Validation logic was already duplicated before phase 3; behavior is now centralized. No new business-rule duplication."
+  },
+  "legacy_getters": [
+    {
+      "file": "src/app/evidence.py",
+      "getter_ast_unchanged": true
+    },
+    {
+      "file": "src/app/query_planner.py",
+      "getter_ast_unchanged": true
+    },
+    {
+      "file": "src/app/scope_guard.py",
+      "getter_ast_unchanged": true
+    }
+  ],
+  "pipeline_pair": "data/rag_pipeline.py unchanged, out of scope; automatic scan includes whole repository",
+  "global_pass_claimed": false
+}

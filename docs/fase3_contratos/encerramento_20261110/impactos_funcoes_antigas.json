@@ -1,0 +1,201 @@
+[
+  {
+    "file": "src/terminal/main.py",
+    "name": "run_interactive",
+    "ast_unchanged_from_head": true,
+    "line": 257,
+    "calls": [
+      "print_banner",
+      "user_input.lower",
+      "user_input.partition",
+      "print_answer",
+      "console.input('[user]Voce[/user] [muted]> [/muted]').strip",
+      "print_info",
+      "command.lower",
+      "print_success",
+      "session.clear",
+      "print_success",
+      "print_help",
+      "console.print",
+      "print_info",
+      "session.export_history",
+      "console.status",
+      "session.ask",
+      "print_error",
+      "console.input",
+      "print_error",
+      "remainder.strip"
+    ],
+    "fresh_coverage": {
+      "covered_lines": 17,
+      "num_statements": 37,
+      "percent_covered": 45.945945945945944,
+      "percent_covered_display": "46",
+      "missing_lines": 20,
+      "excluded_lines": 0,
+      "percent_statements_covered": 45.945945945945944,
+      "percent_statements_covered_display": "46"
+    },
+    "fresh_crapper": {
+      "cc": 11.0,
+      "coverage": 47.3684,
+      "crap": 28.6411
+    },
+    "indirect_impact": "Calls changed ChatSession.ask; interactive path tested with actual ScopedAgent and simulated inner agent."
+  },
+  {
+    "file": "src/terminal/main.py",
+    "name": "normalize_content",
+    "ast_unchanged_from_head": true,
+    "line": 77,
+    "calls": [
+      "isinstance",
+      "isinstance",
+      "str(content).strip",
+      "content.strip",
+      "isinstance",
+      "'\\n'.join",
+      "str",
+      "isinstance",
+      "item.strip",
+      "parts.append",
+      "item.strip",
+      "item.get",
+      "isinstance",
+      "value.strip",
+      "parts.append",
+      "value.strip"
+    ],
+    "fresh_coverage": {
+      "covered_lines": 0,
+      "num_statements": 17,
+      "percent_covered": 0.0,
+      "percent_covered_display": "0",
+      "missing_lines": 17,
+      "excluded_lines": 0,
+      "percent_statements_covered": 0.0,
+      "percent_statements_covered_display": "0"
+    },
+    "fresh_crapper": {
+      "cc": 11.0,
+      "coverage": 5.5556,
+      "crap": 112.9328
+    },
+    "indirect_impact": "No remaining caller found in src; ChatSession now uses central evidence consumer."
+  },
+  {
+    "file": "src/terminal/main.py",
+    "name": "main",
+    "ast_unchanged_from_head": true,
+    "line": 303,
+    "calls": [
+      "argparse.ArgumentParser",
+      "parser.add_argument",
+      "parser.add_argument",
+      "parser.parse_args",
+      "run_interactive",
+      "console.status",
+      "ChatSession",
+      "print_error",
+      "print_answer",
+      "session.export_history",
+      "print_success",
+      "load_agent",
+      "console.status",
+      "session.ask",
+      "session.export_history",
+      "print_success",
+      "print_error",
+      "print_error"
+    ],
+    "fresh_coverage": {
+      "covered_lines": 20,
+      "num_statements": 31,
+      "percent_covered": 64.51612903225806,
+      "percent_covered_display": "65",
+      "missing_lines": 11,
+      "excluded_lines": 0,
+      "percent_statements_covered": 64.51612903225806,
+      "percent_statements_covered_display": "65"
+    },
+    "fresh_crapper": {
+      "cc": 9.0,
+      "coverage": 65.625,
+      "crap": 12.2901
+    },
+    "indirect_impact": "Loads changed agent and calls changed ChatSession.ask; prompt, interactive and loading failure tested."
+  },
+  {
+    "file": "src/terminal/main.py",
+    "name": "load_agente_module",
+    "ast_unchanged_from_head": true,
+    "line": 47,
+    "calls": [
+      "sys.modules.get",
+      "load_dotenv",
+      "ensure_repo_path",
+      "AGENTE_PATH.exists",
+      "RuntimeError",
+      "importlib.import_module",
+      "RuntimeError"
+    ],
+    "fresh_coverage": {
+      "covered_lines": 13,
+      "num_statements": 13,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    },
+    "fresh_crapper": {
+      "cc": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    "indirect_impact": "Imports modified module; actual cached module and wrapped failures tested."
+  },
+  {
+    "file": "src/app/evidence.py",
+    "name": "_normalize_content",
+    "ast_unchanged_from_head": true,
+    "line": 64,
+    "calls": [
+      "isinstance",
+      "isinstance",
+      "content.strip",
+      "'\\n'.join(parts).strip",
+      "str(content).strip",
+      "isinstance",
+      "isinstance",
+      "item.strip",
+      "parts.append",
+      "'\\n'.join",
+      "str",
+      "item.strip",
+      "item.get",
+      "item.get",
+      "isinstance",
+      "value.strip",
+      "parts.append",
+      "value.strip"
+    ],
+    "fresh_coverage": {
+      "covered_lines": 14,
+      "num_statements": 14,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    },
+    "fresh_crapper": {
+      "cc": 11.0,
+      "coverage": 100.0,
+      "crap": 11.0
+    },
+    "indirect_impact": "Reused by new turn/question handling and ScopedAgent content processing; nine input forms tested."
+  }
+]

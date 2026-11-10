@@ -1,0 +1,108 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import coverage
+ModuleNotFoundError: No module named 'coverage'
+Installing coverage for Python coverage. The project requirements are left unchanged.
+Automatic dependency installation skipped; install the project test prerequisite explicitly.coverage is missing in C:\Users\lany_\OneDrive\Desktop\TCC. Python coverage will score 0%.
+CRAP Report
+===========
+Languages: python
+
+Function                       Namespace                                     CC    Cov%     CRAP
+------------------------------------------------------------------------------------------------
+run_interactive                terminal.main                                 11   2.6%    122.7
+normalize_content              terminal.main                                 11   5.6%    112.9
+main                           terminal.main                                  9   3.1%     82.6
+load_agente_module             terminal.main                                  4   7.1%     16.8
+_normalize_content             app.evidence                                  11  86.7%     11.3
+_verified_support              app.grounding                                  9 100.0%      9.0
+load_agent                     terminal.main                                  3  14.3%      8.7
+looks_like_guarded_answer      app.evidence                                   8 100.0%      8.0
+current_turn_messages          app.evidence                                   7  84.6%      7.2
+_document_evidences            app.evidence                                   7 100.0%      7.0
+_rag_event                     app.evidence                                   7 100.0%      7.0
+_claim_support                 app.grounding                                  7 100.0%      7.0
+_synthesize_from_retrieval     app.agente.ScopedAgent                         6  75.0%      6.6
+finalize_grounding             app.evidence                                   6  87.5%      6.1
+invoke                         app.agente.ScopedAgent                         6  93.8%      6.0
+ask                            terminal.main.ChatSession                      6  95.5%      6.0
+_needs_retrieval_recovery      app.agente.ScopedAgent                         6 100.0%      6.0
+_needs_synthesis               app.agente.ScopedAgent                         6 100.0%      6.0
+_collect_evidences             app.evidence                                   6 100.0%      6.0
+_evidence_record               app.evidence                                   6 100.0%      6.0
+_extract_answer                app.evidence                                   6 100.0%      6.0
+_tool_payloads                 app.evidence                                   6 100.0%      6.0
+_compose                       app.grounding                                  6 100.0%      6.0
+_modality_conflict             app.grounding                                  6 100.0%      6.0
+_qualifier_conflict            app.grounding                                  6 100.0%      6.0
+_tool_payloads                 app.agente.ScopedAgent                         5  75.0%      5.4
+_last_assistant_text           app.agente.ScopedAgent                         5  88.9%      5.0
+_structured_data               app.evidence                                   5  90.0%      5.0
+_synthesis_history             app.agente.ScopedAgent                         5 100.0%      5.0
+_decision                      app.evidence                                   5 100.0%      5.0
+ground_answer                  app.grounding                                  5 100.0%      5.0
+needs_support                  app.grounding                                  5 100.0%      5.0
+print_banner                   terminal.main                                  2  20.0%      4.0
+_extract_messages              api.services.agent_service.AgentService        4  85.7%      4.0
+_scoped_quote                  app.grounding                                  4  85.7%      4.0
+begin_turn                     app.evidence                                   4  91.7%      4.0
+_recover_retrieval             app.agente.ScopedAgent                         4  93.8%      4.0
+_execution                     app.evidence                                   4 100.0%      4.0
+_parse_tool_content            app.evidence                                   4 100.0%      4.0
+_assess                        app.grounding                                  4 100.0%      4.0
+_literal_in_source             app.grounding                                  4 100.0%      4.0
+_literal_support               app.grounding                                  4 100.0%      4.0
+_plain_text_rewrite            app.grounding                                  4 100.0%      4.0
+ensure_repo_path               terminal.main                                  2  25.0%      3.7
+print_error                    terminal.main                                  2  33.3%      3.2
+_candidate_answer              app.agente.ScopedAgent                         3  83.3%      3.0
+bind_turn                      app.evidence                                   3  85.7%      3.0
+chat                           api.services.agent_service.AgentService        3 100.0%      3.0
+_with_retrieval_hint           app.agente.ScopedAgent                         3 100.0%      3.0
+message_role                   app.evidence                                   3 100.0%      3.0
+_assessment_data               app.grounding                                  3 100.0%      3.0
+_optional_permission           app.grounding                                  3 100.0%      3.0
+_quote_context                 app.grounding                                  3 100.0%      3.0
+_without_content               app.evidence                                   2  75.0%      2.1
+extract_agent_result           app.evidence                                   2  83.3%      2.0
+_nonempty_text                 api.schemas.agent                              2 100.0%      2.0
+accept_existing_message        api.schemas.agent.PublicConversationMessage    2 100.0%      2.0
+invoke                         api.services.agent_service.AgentExecutor       1   0.0%      2.0
+_current_user_index            app.agente.ScopedAgent                         2 100.0%      2.0
+_fingerprint                   app.evidence                                   2 100.0%      2.0
+_message_value                 app.evidence                                   2 100.0%      2.0
+last_user_question             app.evidence                                   2 100.0%      2.0
+_canonical                     app.grounding                                  2 100.0%      2.0
+_claims                        app.grounding                                  2 100.0%      2.0
+_conversational                app.grounding                                  2 100.0%      2.0
+_numeric_conflict              app.grounding                                  2 100.0%      2.0
+_quantity_value                app.grounding                                  2 100.0%      2.0
+render_commands_table          terminal.main                                  1  11.1%      1.7
+print_help                     terminal.main                                  1  33.3%      1.3
+clear                          terminal.main.ChatSession                      1  33.3%      1.3
+print_answer                   terminal.main                                  1  50.0%      1.1
+print_info                     terminal.main                                  1  50.0%      1.1
+print_success                  terminal.main                                  1  50.0%      1.1
+render_message_panel           terminal.main                                  1  50.0%      1.1
+export_history                 terminal.main.ChatSession                      1  50.0%      1.1
+validate_message               api.schemas.agent.AgentChatRequest             1 100.0%      1.0
+validate_content               api.schemas.agent.ConversationMessage          1 100.0%      1.0
+__init__                       api.services.agent_service.AgentService        1 100.0%      1.0
+build_agent                    app.agente                                     1 100.0%      1.0
+__init__                       app.agente.ScopedAgent                         1 100.0%      1.0
+_content_text                  app.agente.ScopedAgent                         1 100.0%      1.0
+_last_user_question            app.agente.ScopedAgent                         1 100.0%      1.0
+_retrieval_query               app.agente.ScopedAgent                         1 100.0%      1.0
+_verify_claims                 app.agente.ScopedAgent                         1 100.0%      1.0
+_normative_context             app.evidence                                   1 100.0%      1.0
+_compatible                    app.grounding                                  1 100.0%      1.0
+_literal_form                  app.grounding                                  1 100.0%      1.0
+_literal_quantity              app.grounding                                  1 100.0%      1.0
+_polarity                      app.grounding                                  1 100.0%      1.0
+_qualifiers                    app.grounding                                  1 100.0%      1.0
+_quantities                    app.grounding                                  1 100.0%      1.0
+__init__                       terminal.main.ChatSession                      1 100.0%      1.0
+_timestamp                     terminal.main.ChatSession                      1 100.0%      1.0
+Wrote C:\Users\lany_\OneDrive\Desktop\TCC\.metrics\crap.edn
+CRAP threshold exceeded: 122.7 > 10.0
+Coverage/test command failed; quality validation is incomplete.

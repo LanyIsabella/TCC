@@ -1,0 +1,91 @@
+WARNING: 51 covered mutations selected in src/app/grounding.py.
+KILLED    src/app/grounding.py:73 True -> False
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.edn
+KILLED    src/app/grounding.py:87 False -> True
+KILLED    src/app/grounding.py:91 + -> -
+KILLED    src/app/grounding.py:91 + -> -
+KILLED    src/app/grounding.py:91 or -> and
+KILLED    src/app/grounding.py:165 * -> /
+KILLED    src/app/grounding.py:180 delete not
+KILLED    src/app/grounding.py:180 or -> and
+KILLED    src/app/grounding.py:180 delete not
+KILLED    src/app/grounding.py:205 and -> or
+KILLED    src/app/grounding.py:206 True -> False
+KILLED    src/app/grounding.py:209 and -> or
+KILLED    src/app/grounding.py:212 True -> False
+KILLED    src/app/grounding.py:214 + -> -
+KILLED    src/app/grounding.py:214 + -> -
+KILLED    src/app/grounding.py:225 and -> or
+KILLED    src/app/grounding.py:226 True -> False
+KILLED    src/app/grounding.py:228 and -> or
+KILLED    src/app/grounding.py:229 True -> False
+KILLED    src/app/grounding.py:230 False -> True
+KILLED    src/app/grounding.py:235 delete not
+KILLED    src/app/grounding.py:238 != -> ==
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.services.agent_service.AgentExecutor.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.services.agent_service.AgentService.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.agente.ScopedAgent.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.evidence.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.grounding.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/rag_eval.baseline.audit.edn
+KILLED    src/app/grounding.py:257 delete not
+KILLED    src/app/grounding.py:267 or -> and
+KILLED    src/app/grounding.py:276 == -> !=
+KILLED    src/app/grounding.py:278 False -> True
+KILLED    src/app/grounding.py:301 delete not
+KILLED    src/app/grounding.py:306 1 -> 0
+KILLED    src/app/grounding.py:312 or -> and
+KILLED    src/app/grounding.py:313 or -> and
+KILLED    src/app/grounding.py:314 delete not
+KILLED    src/app/grounding.py:314 or -> and
+KILLED    src/app/grounding.py:314 delete not
+KILLED    src/app/grounding.py:319 or -> and
+KILLED    src/app/grounding.py:320 and -> or
+KILLED    src/app/grounding.py:335 delete not
+KILLED    src/app/grounding.py:335 or -> and
+KILLED    src/app/grounding.py:340 0 -> 1
+KILLED    src/app/grounding.py:340 <= -> <
+KILLED    src/app/grounding.py:340 < -> <=
+KILLED    src/app/grounding.py:340 and -> or
+KILLED    src/app/grounding.py:340 == -> !=
+KILLED    src/app/grounding.py:340 1 -> 0
+KILLED    src/app/grounding.py:341 or -> and
+KILLED    src/app/grounding.py:353 or -> and
+KILLED    src/app/grounding.py:358 delete not
+KILLED    src/app/grounding.py:360 == -> !=
+KILLED    src/app/grounding.py:373 False -> True
+KILLED    src/app/grounding.py:376 or -> and
+KILLED    src/app/grounding.py:376 delete not
+KILLED    src/app/grounding.py:377 or -> and
+Function            Namespace      Killed  Survived  Uncovered  Sites   Score
+-----------------------------------------------------------------------------
+_assess             app.grounding       0         0          0      0    n/a
+_canonical          app.grounding       0         0          0      0    n/a
+_claims             app.grounding       0         0          0      0    n/a
+_literal_form       app.grounding       0         0          0      0    n/a
+_literal_quantity   app.grounding       0         0          0      0    n/a
+_polarity           app.grounding       0         0          0      0    n/a
+_qualifiers         app.grounding       0         0          0      0    n/a
+_quantities         app.grounding       0         0          0      0    n/a
+_quote_context      app.grounding       0         0          0      0    n/a
+_assessment_data    app.grounding       2         0          0      2 100.0%
+_claim_support      app.grounding       9         0          0      9 100.0%
+_compatible         app.grounding       2         0          0      2 100.0%
+_compose            app.grounding       3         0          0      3 100.0%
+_conversational     app.grounding       1         0          0      1 100.0%
+_literal_in_source  app.grounding       2         0          0      2 100.0%
+_literal_support    app.grounding       1         0          0      1 100.0%
+_modality_conflict  app.grounding       5         0          0      5 100.0%
+_numeric_conflict   app.grounding       3         0          0      3 100.0%
+_qualifier_conflict app.grounding       6         0          0      6 100.0%
+_quantity_value     app.grounding       1         0          0      1 100.0%
+_scoped_quote       app.grounding       1         0          0      1 100.0%
+_verified_support   app.grounding       7         0          0      7 100.0%
+ground_answer       app.grounding       4         0          0      4 100.0%
+needs_support       app.grounding       4         0          0      4 100.0%
+-----------------------------------------------------------------------------
+Total                                  51         0          0     51  100.0%

@@ -1,0 +1,35 @@
+{
+  "files": [
+    {
+      "path": "C:\\Users\\lany_\\.codex\\tooling\\ub_mode.py",
+      "sha256": "b2d4524895c2522f2d08e6e7bd7a59f537129b4641a1c4748fae9427a5b403ea"
+    },
+    {
+      "path": "C:\\Users\\lany_\\.codex\\tooling\\ub_cli.py",
+      "sha256": "19bfeb935745928f0c1611d40f32010a8521f214f37565b9de9537cc9afe7200"
+    },
+    {
+      "path": "C:\\Users\\lany_\\.codex\\tooling\\ub-tools\\Lib\\site-packages\\crapper\\runners.py",
+      "sha256": "7748267942fad8bed6e1128b1807d35eb6679e4ba664370bc976995b05e13db2"
+    },
+    {
+      "path": "C:\\Users\\lany_\\.codex\\tooling\\ub-tools\\Lib\\site-packages\\crapper\\coverage.py",
+      "sha256": "b47ea8cab30df522027f01e6e47966082bd9ea9dbe851bfba2666372927d4dc3"
+    },
+    {
+      "path": "C:\\Users\\lany_\\.codex\\tooling\\ub-tools\\Lib\\site-packages\\mutator\\engine.py",
+      "sha256": "79d83a6705b1ce72b3275e29da6fec521a3261df101bd0e910faebcaae47b080"
+    }
+  ],
+  "coverage_missing_root_venv": true,
+  "coverage_existing_isolated_tools_version": "7.17.2",
+  "automatic_install_blocked": "ub_cli.py:25-28",
+  "coverage_selection": "ub_cli.py:12-17, windows_support replaces crapper interpreter; root .venv selected",
+  "python_roots": "crapper/runners.py:309-325: nearest pyproject is repository root",
+  "lcov_collision": "crapper/coverage.py:513-517 merges dicts by update, per file last value wins",
+  "shared_automatic_budget_seconds": 50,
+  "outer_budget_grace_seconds": 6,
+  "worker_limit": 2,
+  "automatic_mutator_reexecutes_all": true,
+  "snapshot_persistence_warning": "ub_mode.py:89-103 reads persistent .metrics/mutate/*.edn after timeout without a per-run completion token; count is not proof of execution in current Stop run."
+}

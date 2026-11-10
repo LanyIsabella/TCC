@@ -1,0 +1,43 @@
+EXEMPLO 5
+
+— Elementos essenciais
+
+ALEXANDRESCU, D. T. Melanoma costs: a dynamic model comparing estimated overall costs of various clinical stages. *Dermatology Online Journal*, v. 15, n. 11, p. 1, Nov. 2009. Disponível em: http://dermatology.cdlib.org/1511/originals/melanoma_costs/alexandrescu.html. Acesso em: 3 nov. 2009.
+
+EXEMPLO 6
+
+— Elementos essenciais
+
+PAIM, Zaken Sidinei. No princípio. *Boletim Ouve Israel*, Curitiba, 26 Tishrei 5766 = 29 out. 2005. Disponível em: http://www.israelitas.com.br/boletim/boletimVer.php?%20id=48&nomerosh=. Acesso em: 21 jun. 2012.
+
+EXEMPLO 7
+
+— Elementos essenciais
+
+DANTAS, José Alves et al. Regulação da auditoria em sistemas bancários: análise do cenário internacional e fatores determinantes. *Revista Contabilidade & Finanças*, São Paulo, v. 25, n. 64, p. 7-18, jan./abr. 2014. DOI: http://dx.doi.org/10.1590/S1519-70772014000100002. Disponível em: http://www.scielo.br/scielo.php?script=sci_arttext&pid=S1519-70772014000100002&lng=en&nrm=iso. Acesso em: 20 maio 2014.
+
+EXEMPLO 8
+
+— Elementos essenciais
+
+MOURA, L. R.; TORRES, L. M.; CADETE, M. M. M.; CUNHA, C. F. Fatores associados aos comportamentos de risco à saúde entre adolescentes brasileiros: uma revisão integrativa. *Revista da Escola de Enfermagem da USP*, São Paulo, v. 52, e03304, 2018. DOI: https://doi.org/10.1590/S1980-220X2017020403304. Disponível em: https://www.scielo.br/j/reeusp/a/JvyjzY4B4b7f9P5 TLyLpPFK/abstract/?lang=pt. Acesso em: 7 abr. 2023.
+
+7.7.7 Artigo e/ou matéria de jornal
+
+Inclui comunicação, editorial, entrevista, recensão, reportagem, resenha e outros.
+
+Os elementos essenciais são: autor, título, subtítulo (se houver), título do jornal, subtítulo do jornal (se houver), local de publicação, numeração do ano e/ou volume, número (se houver), data de publicação, seção, caderno ou parte do jornal e a paginação correspondente. Quando não houver seção, caderno ou parte, a paginação do artigo ou matéria precede a data. Quando necessário, acrescentam-se elementos complementares à referência para melhor identificar o documento.
+
+EXEMPLO 1
+
+— Elementos essenciais
+
+OTTA, Lu Aiko. Parcela do tesouro nos empréstimos do BNDES cresce 566 % em oito anos. *O Estado de S. Paulo*, São Paulo, ano 131, n. 42656, 1 ago. 2010. Economia & Negócios, p. B1.
+
+EXEMPLO 2
+
+— Elementos essenciais
+
+CRÉDITO à agropecuária será de R$ 156 bilhões até 2015. *Jornal do Commercio*, Rio de Janeiro, ano 97, n. 156, p. A3, 20 maio 2014.
+
+© ABNT 2025 - Todos os direitos reservados

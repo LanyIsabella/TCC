@@ -1,0 +1,40 @@
+## Informação e documentação - Lombada - Apresentação
+
+## 1 Escopo
+
+Esta Norma estabelece os requisitos para a apresentação de lombadas e aplica-se exclusivamente a documentos em caracteres latinos, gregos ou cirílicos.
+
+Esta Norma tem por finalidade oferecer regras para a apresentação de lombadas para editores, encadernadores, livreiros, bibliotecas e seus clientes.
+
+Esta Norma aplica-se, no que couber, a lombadas de outros suportes (gravação de vídeo, gravação de som etc.).
+
+## 2 Termos e definições
+
+Para os efeitos deste documento, aplicam-se os seguintes termos e definições.
+
+## 2.1 lombada dorso
+
+parte da capa que reúne as margens internas ou dobras das folhas, sejam elas costuradas, grampeadas, coladas ou mantidas juntas de outra maneira
+
+## 2.2
+
+## título de lombada
+
+título do documento, abreviado ou não
+
+## 3 Estrutura
+
+A lombada deve conter os seguintes elementos:
+
+- a) nome do autor, se houver;
+- b) título;
+- c) elementos alfanuméricos de identificação do volume, fascículo, número, entre outros, se houver;
+- d) logomarca da editora e/ou instituição, se houver.
+
+## 4 Regras gerais
+
+O projeto gráfico da lombada fica sob a responsabilidade da editora ou instituição.
+
+Recomenda-se a reserva de um espaço de 3 cm, na borda inferior da lombada, sem comprometer as informações ali contidas, para a colocação de elementos de identificação que possibilitem a localização do documento organizado em acervos. Recomenda-se a reserva de 2 cm na borda superior, para evitar perda de informação por refilação ou inserção de etiqueta de sinalização superior.
+
+A lombada deve ser apresentada conforme 4.1 a 4.5.

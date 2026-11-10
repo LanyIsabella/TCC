@@ -1,0 +1,34 @@
+{
+  "selected_lines": [
+    105,
+    278
+  ],
+  "site": {
+    "105": "new _verify_claims JSON user-message serialization",
+    "278": "existing _synthesize_from_retrieval RAG context serialization"
+  },
+  "selected_count": 2,
+  "selected_execution_completed": true,
+  "selected_survived": 2,
+  "selected_timed_out": 0,
+  "whole_file_snapshot_counts_in_log_include_carried_results": {
+    "killed": 43,
+    "survived": 2,
+    "sites": 45
+  },
+  "carried_43_kills_not_new_executions": "mutator/engine.py:87-98 and 296-297 carry unchanged outcomes even with --lines; selected sites are 105 and 278",
+  "synthesis_ensure_ascii_false_preexisted": true,
+  "data_roundtrip_tests": "test_impactos.py::test_ascii_mutants_preserve_json_data_but_change_model_input",
+  "json_semantic_data_preserved": true,
+  "raw_model_input_identical": false,
+  "real_llm_equivalence_proven": false,
+  "assessment": "No demonstrated application defect or data loss; probabilistic sensitivity remains an experimental gap, not a mutant kill or formal equivalence. No implementation-mirroring assertion added to force kills.",
+  "private_workspace_source_sha256": {
+    "src/app/grounding.py": "fe39e907b1f64fa57998a9789872633f5184c5e09d50ce6edf8ce8c5c7c25ef6",
+    "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+    "src/app/agente.py": "6c7c78d0f2abe2aea6c04f96cf75e8b1762e2a37bcec7947ff554b47ae07bf5d",
+    "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+    "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+    "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+  }
+}

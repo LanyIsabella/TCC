@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.166" timestamp="2026-11-10T00:41:46.096922-03:00" hostname="Lany"><testcase classname="" name="tests.test_grounding_policy" time="0.000"><error message="collection failure">ImportError while importing test module 'C:\Users\lany_\OneDrive\Desktop\TCC\tests\test_grounding_policy.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_grounding_policy.py:5: in &lt;module&gt;
+    from src.app.grounding import INSUFFICIENT_EVIDENCE, ground_answer
+E   ModuleNotFoundError: No module named 'src.app.grounding'</error></testcase></testsuite></testsuites>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="8" time="0.254" timestamp="2026-11-10T11:40:23.684890-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_explicit_optional_use_entails_permission_without_a_model_vote[it\xe1lico]" time="0.070"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'Você pode usar itálico.'&#10;  &#10;  - Você pode usar itálico.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">item = 'itálico'
+
+    @pytest.mark.parametrize("item", ["itálico", "caixa alta", "negrito"])
+    def test_explicit_optional_use_entails_permission_without_a_model_vote(item):
+        source = f"O uso de {item} é opcional."
+        answer = f"Você pode usar {item}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source, supported=False)).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'Você pode usar itálico.'
+E         
+E         - Você pode usar itálico.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:577: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_explicit_optional_use_entails_permission_without_a_model_vote[caixa alta]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'Você pode usar caixa alta.'&#10;  &#10;  - Você pode usar caixa alta.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">item = 'caixa alta'
+
+    @pytest.mark.parametrize("item", ["itálico", "caixa alta", "negrito"])
+    def test_explicit_optional_use_entails_permission_without_a_model_vote(item):
+        source = f"O uso de {item} é opcional."
+        answer = f"Você pode usar {item}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source, supported=False)).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'Você pode usar caixa alta.'
+E         
+E         - Você pode usar caixa alta.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:577: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_explicit_optional_use_entails_permission_without_a_model_vote[negrito]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'Você pode usar negrito.'&#10;  &#10;  - Você pode usar negrito.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">item = 'negrito'
+
+    @pytest.mark.parametrize("item", ["itálico", "caixa alta", "negrito"])
+    def test_explicit_optional_use_entails_permission_without_a_model_vote(item):
+        source = f"O uso de {item} é opcional."
+        answer = f"Você pode usar {item}."
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source, supported=False)).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'Você pode usar negrito.'
+E         
+E         - Você pode usar negrito.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:577: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_permission_does_not_automatically_prove_optionality" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_optional_permission_proof_preserves_object_polarity_and_scope[O uso de it\xe1lico \xe9 opcional.-Voc\xea pode usar negrito.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_optional_permission_proof_preserves_object_polarity_and_scope[O uso de negrito n\xe3o \xe9 opcional.-Voc\xea pode usar negrito.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_optional_permission_proof_preserves_object_polarity_and_scope[O uso de negrito \xe9 opcional, exceto em t\xedtulos.-Voc\xea pode usar negrito.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_optional_permission_proof_preserves_object_polarity_and_scope[Quando impresso, aplica-se esta regra. O uso de negrito \xe9 opcional.-Voc\xea pode usar negrito.]" time="0.000" /></testsuite></testsuites>

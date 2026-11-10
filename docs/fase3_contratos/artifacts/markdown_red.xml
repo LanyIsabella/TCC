@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="4" time="0.206" timestamp="2026-11-10T10:30:50.125782-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_inline_markdown_does_not_create_false_refusals[A margem direita deve medir 2 cm.-A margem direita deve medir **2** cm.]" time="0.062"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...dir **2** cm.'&#10;  &#10;  - A margem direita deve medir **2** cm.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source = 'A margem direita deve medir 2 cm.'
+answer = 'A margem direita deve medir **2** cm.'
+
+    @pytest.mark.parametrize("source,answer", [
+        ("A margem direita deve medir 2 cm.", "A margem direita deve medir **2** cm."),
+        ("Quando impresso, a margem deve medir 2 cm.", "**Quando impresso**, a margem deve medir 2 cm."),
+        ("A margem deve medir 2 cm, exceto em folhas especiais.",
+         "A margem deve medir 2 cm, **exceto em folhas especiais**."),
+    ])
+    def test_inline_markdown_does_not_create_false_refusals(source, answer):
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source)).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dir...dir **2** cm.'
+E         
+E         - A margem direita deve medir **2** cm.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:374: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_inline_markdown_does_not_create_false_refusals[Quando impresso, a margem deve medir 2 cm.-**Quando impresso**, a margem deve medir 2 cm.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_inline_markdown_does_not_create_false_refusals[A margem deve medir 2 cm, exceto em folhas especiais.-A margem deve medir 2 cm, **exceto em folhas especiais**.]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dev... especiais**.'&#10;  &#10;  - A margem deve medir 2 cm, **exceto em folhas especiais**.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source = 'A margem deve medir 2 cm, exceto em folhas especiais.'
+answer = 'A margem deve medir 2 cm, **exceto em folhas especiais**.'
+
+    @pytest.mark.parametrize("source,answer", [
+        ("A margem direita deve medir 2 cm.", "A margem direita deve medir **2** cm."),
+        ("Quando impresso, a margem deve medir 2 cm.", "**Quando impresso**, a margem deve medir 2 cm."),
+        ("A margem deve medir 2 cm, exceto em folhas especiais.",
+         "A margem deve medir 2 cm, **exceto em folhas especiais**."),
+    ])
+    def test_inline_markdown_does_not_create_false_refusals(source, answer):
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source)).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'A margem dev... especiais**.'
+E         
+E         - A margem deve medir 2 cm, **exceto em folhas especiais**.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:374: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_markdown_does_not_hide_numeric_contradiction" time="0.000" /></testsuite></testsuites>

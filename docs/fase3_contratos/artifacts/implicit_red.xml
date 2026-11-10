@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="17.387" timestamp="2026-11-10T10:07:25.281846-03:00" hostname="Lany"><testcase classname="tests.test_agent_contract_channels" name="test_implicit_followup_still_needs_evidence_from_current_turn" time="17.128"><failure message="AssertionError: assert 'Arial.' == 'Não foi poss...ho aplicável.'&#10;  &#10;  - Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.&#10;  + Arial.">def test_implicit_followup_still_needs_evidence_from_current_turn():
+        from src.app.agente import ScopedAgent
+    
+        class Inner:
+            def invoke(self, payload):
+                return {"messages": [*payload["messages"], {"role": "assistant", "content": "Arial."}]}
+    
+        value = ScopedAgent(Inner()).invoke({"messages": [
+            {"role": "user", "content": "Como formatar um TCC segundo a ABNT?"},
+            {"role": "assistant", "content": "Podemos consultar a norma."},
+            {"role": "user", "content": "E nesse caso?"},
+        ]})
+&gt;       assert extract_agent_result(value).answer == INSUFFICIENT_EVIDENCE
+E       AssertionError: assert 'Arial.' == 'Não foi poss...ho aplicável.'
+E         
+E         - Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+E         + Arial.
+
+tests\test_agent_contract_channels.py:246: AssertionError</failure></testcase></testsuite></testsuites>

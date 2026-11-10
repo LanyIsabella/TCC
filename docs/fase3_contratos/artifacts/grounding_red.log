@@ -1,0 +1,16 @@
+
+=================================== ERRORS ====================================
+_______________ ERROR collecting tests/test_grounding_policy.py _______________
+ImportError while importing test module 'C:\Users\lany_\OneDrive\Desktop\TCC\tests\test_grounding_policy.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_grounding_policy.py:5: in <module>
+    from src.app.grounding import INSUFFICIENT_EVIDENCE, ground_answer
+E   ModuleNotFoundError: No module named 'src.app.grounding'
+=========================== short test summary info ===========================
+ERROR tests/test_grounding_policy.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.17s

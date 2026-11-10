@@ -1,0 +1,49 @@
+ABNT NBR 10520:2023
+
+EXEMPLO 2
+
+No texto:
+
+Jadir dos Santos descreveu os principais aspectos da cultura organizacional¹.
+
+Na nota:
+
+¹Discurso proferido no auditório da ABNT, em 21 de março de 2019.
+
+EXEMPLO 3
+
+No texto:
+
+O Entrevistado 5 considera as bibliotecas comunitárias como iniciativas populares de mediação de informação¹.
+
+Na nota:
+
+¹Entrevista de pesquisa concedida em 10 de março de 2020, na cidade do Rio de Janeiro.
+
+5.4 Na citação de documentos em fase de elaboração, deve ser mencionado o fato, indicando-se os dados disponíveis em notas.
+
+EXEMPLO
+
+No texto:
+
+Segundo a norma de livro, que está em processo de revisão, o resumo do conteúdo pode constar na quarta capa¹.
+
+Na nota:
+
+¹Projeto da ABNT NBR 6029, a ser publicada pela ABNT.
+
+6 Sistema de chamada
+
+As citações devem ser indicadas no texto por um sistema de chamada: autor-data ou numérico. Qualquer que seja o sistema adotado, este deve ser seguido consistenteemente ao longo de todo o trabalho, permitindo sua correlação com a referência.
+
+6.1 Sistema autor-data
+
+Deve ser conforme 6.1.1 a 6.1.8.
+
+6.1.1 A indicação de responsabilidade deve ser feita conforme 6.1.1.1 a 6.1.1.4.
+
+6.1.1.1 Quando for pessoa física, a indicação deve ser feita pelo sobrenome do autor, em letras maiúsculas e minúsculas.
+
+EXEMPLO 1
+
+A ironia seria assim uma forma implícita de heterogeneidade mostrada, conforme a classificação proposta por Authier-Revuz (1982).

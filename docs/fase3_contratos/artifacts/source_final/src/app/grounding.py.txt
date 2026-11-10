@@ -1,0 +1,425 @@
+"""Política de suporte por afirmação, independente da recuperação e dos canais."""
+
+from __future__ import annotations
+
+import json
+import logging
+import re
+from collections import Counter
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
+from decimal import Decimal
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, StrictBool, StrictInt, ValidationError
+
+from .scope_guard import (
+    GREETING_MESSAGE,
+    OUT_OF_SCOPE_MESSAGE,
+    has_academic_term,
+    normalize_text,
+)
+
+logger = logging.getLogger(__name__)
+INSUFFICIENT_EVIDENCE = (
+    "Não foi possível fundamentar a resposta nos trechos documentais disponíveis "
+    "para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável."
+)
+PARTIAL_LIMITATION = (
+    "Não foi possível fundamentar as demais afirmações nos trechos disponíveis."
+)
+_RULE_MARKERS = (
+    r"\b(deve\w*|obrigatori\w*|permitid\w*|proibid\w*|vedad\w*|cm|mm|pt|pontos)\b"
+)
+_DOCUMENTARY_FIELDS = r"\b(fontes?|recuos?|(?:tipo|tamanho|estilo) de letras?)\b"
+Verifier = Callable[[str, list[str], Mapping[str, Any]], Any]
+
+
+@dataclass(frozen=True)
+class GroundingDecision:
+    answer: str
+    evidence_ids: tuple[str, ...]
+    status: Literal["supported", "partial", "insufficient", "conversational"]
+
+
+class ClaimAssessment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    index: StrictInt
+    supported: StrictBool
+    evidence_id: str | None = None
+    quote: str | None = None
+
+
+class Assessment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    claims: list[ClaimAssessment]
+
+
+def _canonical(text: str) -> str:
+    # shortcut: inline Markdown only, extend for reviewed cases needing richer markup.
+    normalized = " ".join(re.sub(r"[`*_]", "", normalize_text(text)).split())
+    for direction, bound in (("menos", "minimo"), ("mais", "maximo")):
+        normalized = re.sub(
+            rf"\bnao (?:deve|pode) (?:conter|ter) {direction} de (?=\d)",
+            f"no {bound} ",
+            normalized,
+        )
+    return normalized
+
+
+def _conversational(claim: str) -> bool:
+    if claim in {
+        GREETING_MESSAGE,
+        OUT_OF_SCOPE_MESSAGE,
+        INSUFFICIENT_EVIDENCE,
+        PARTIAL_LIMITATION,
+    }:
+        return True
+    text = _canonical(claim)
+    return bool(
+        re.fullmatch(
+            r"(?:ola|oi|obrigad[oa]|bom dia|boa tarde|boa noite)[!.]*|"
+            r"(?:voce esta perguntando|voce se refere|qual norma voce|pode esclarecer)"
+            r"[^.!]*\?",
+            text,
+        )
+    )
+
+
+def needs_support(answer: str, question: str = "") -> bool:
+    if _conversational(answer):
+        return False
+    return has_academic_term(question + " " + answer) or bool(
+        re.search(_RULE_MARKERS, _canonical(answer))
+        or re.search(_DOCUMENTARY_FIELDS, _canonical(question))
+        or _QUANTITY.search(_canonical(answer))
+    )
+
+
+def _plain_text_rewrite(answer: str, question: str) -> bool:
+    request = re.match(
+        r"^(?:reescreva|reformule|revise|melhore a clareza)\b[^:]*:\s*\S",
+        _canonical(question),
+    )
+    cues = (
+        _RULE_MARKERS
+        + "|"
+        + _DOCUMENTARY_FIELDS
+        + r"|\b(abnt|nbr|normas?|regras?|marge(?:m|ns)|cita(?:cao|coes)|"
+        r"referencias?|espacamento)\b"
+    )
+    return bool(
+        request
+        and answer.strip()
+        and not re.search(cues, _canonical(question + " " + answer))
+        and not _QUANTITY.search(_canonical(answer))
+    )
+
+
+def _claims(answer: str) -> list[str]:
+    # Decimal points stay inside a claim; line breaks preserve lists and tables.
+    return [
+        part.strip()
+        for part in re.split(r"(?<=[.!?])\s+(?=[A-ZÀ-Ý])|\n+", answer)
+        if part.strip()
+    ]
+
+
+_NUMBERS = {
+    "um": 1,
+    "uma": 1,
+    "dois": 2,
+    "duas": 2,
+    "tres": 3,
+    "quatro": 4,
+    "cinco": 5,
+    "seis": 6,
+    "sete": 7,
+    "oito": 8,
+    "nove": 9,
+    "dez": 10,
+    "onze": 11,
+    "doze": 12,
+    "vinte": 20,
+}
+_UNITS = {
+    "mm": ("length", Decimal("0.1")),
+    "milimetros": ("length", Decimal("0.1")),
+    "cm": ("length", Decimal(1)),
+    "centimetros": ("length", Decimal(1)),
+    "m": ("length", Decimal(100)),
+    "metros": ("length", Decimal(100)),
+    "pt": ("point", Decimal(1)),
+    "pontos": ("point", Decimal(1)),
+    "palavras": ("word", Decimal(1)),
+    "linhas": ("line", Decimal(1)),
+}
+_UNITS.update(
+    {
+        unit.removesuffix("s"): value
+        for unit, value in _UNITS.items()
+        if unit.endswith("s")
+    }
+)
+_QUANTITY = re.compile(
+    r"\b(\d+(?:[.,]\d+)?|"
+    + "|".join(_NUMBERS)
+    + r")\s*("
+    + "|".join(sorted(_UNITS, key=len, reverse=True))
+    + r")\b"
+)
+
+
+def _quantities(text: str) -> tuple[set[tuple[str, Decimal]], set[str]]:
+    quantities = {
+        _quantity_value(*match.groups()) for match in _QUANTITY.finditer(text)
+    }
+    remaining = _QUANTITY.sub("", text)
+    return quantities, set(re.findall(r"\b\d+(?:[.,]\d+)?\b", remaining))
+
+
+def _quantity_value(number: str, unit: str) -> tuple[str, Decimal]:
+    value = (
+        Decimal(_NUMBERS[number])
+        if number in _NUMBERS
+        else Decimal(number.replace(",", "."))
+    )
+    dimension, factor = _UNITS[unit]
+    return dimension, value * factor
+
+
+def _literal_form(text: str) -> str:
+    return _QUANTITY.sub(_literal_quantity, _canonical(text))
+
+
+def _literal_quantity(match: re.Match[str]) -> str:
+    dimension, value = _quantity_value(*match.groups())
+    return f"<{dimension}:{value.normalize()}>"
+
+
+def _numeric_conflict(claim: str, context: str) -> bool:
+    quantities, numbers = _quantities(claim)
+    source_quantities, source_numbers = _quantities(context)
+    return not quantities.issubset(source_quantities) or not numbers.issubset(
+        source_numbers
+    )
+
+
+def _polarity(text: str) -> bool:
+    # "Não é obrigatório" expresses permission, rather than prohibition.
+    text = re.sub(r"nao (?:e |sao )?obrigatori\w*", "opcional", text)
+    return bool(re.search(r"\b(nao|nunca|sem|proibid\w*|vedad\w*)\b", text))
+
+
+def _qualifiers(text: str) -> list[str]:
+    patterns = (
+        r"(?<!-)\b(?:se(?!\s+(?:deve|pode|recomenda|permite)\b)|quando|caso|desde que)"
+        r"\s+[^,.;:]+",
+        r"\b(?:exceto|salvo|a menos que|com excecao)\s+[^.;]+",
+        r"\b(?:apenas|somente)\s+[^,.;]+",
+    )
+    return [
+        match.group() for pattern in patterns for match in re.finditer(pattern, text)
+    ]
+
+
+def _qualifier_conflict(claim: str, context: str, question: str) -> bool:
+    qualifiers = _qualifiers(context)
+    if qualifiers and re.search(r"\b(sempre|sem excecao|em todos os casos)\b", claim):
+        return True
+    exceptions = ("exceto", "salvo", "a menos que", "com excecao")
+    added = [
+        q for q in _qualifiers(claim) if q.startswith(exceptions) and q not in context
+    ]
+    if added:
+        return True
+    # Equivalent "se/quando" and a condition already explicit in the question are valid.
+    targets = claim + " " + question
+    return any(
+        re.sub(r"^(?:se|quando|caso)\s+", "", q) not in targets for q in qualifiers
+    )
+
+
+def _modality_conflict(claim: str, context: str) -> bool:
+    claim = re.sub(r"nao (?:e |sao )?obrigatori\w*", "opcional", claim)
+    context = re.sub(r"nao (?:e |sao )?obrigatori\w*", "opcional", context)
+    optional = r"\b(pode\w*|opcional|facultativ\w*|recomenda\w*)\b"
+    mandatory = r"\b(deve\w*|obrigatori\w*)\b"
+    if re.search(optional, context) and re.search(mandatory, claim):
+        return True
+    for first, opposite in (("minimo", "maximo"), ("maximo", "minimo")):
+        if first in context and opposite in claim:
+            return True
+    return False
+
+
+def _compatible(claim: str, context: str, question: str) -> bool:
+    claim, context, question = map(_canonical, (claim, context, question))
+    return not any(
+        (
+            _numeric_conflict(claim, context),
+            _polarity(claim) != _polarity(context),
+            _modality_conflict(claim, context),
+            _qualifier_conflict(claim, context, question),
+        )
+    )
+
+
+def _quote_context(quote: str, source: str) -> str:
+    # Keep scope and exceptions without borrowing an unrelated rule's polarity.
+    for paragraph in re.split(r"\n\s*\n", source):
+        text = " ".join(paragraph.split())
+        if " ".join(quote.split()) in text:
+            return _scoped_quote(quote, text)
+    return ""
+
+
+def _scoped_quote(quote: str, paragraph: str) -> str:
+    sentences = _claims(paragraph)
+    quoted = [part for part in sentences if " ".join(quote.split()) in part]
+    if not quoted:
+        return paragraph
+    scope = [part for part in sentences if _qualifiers(_canonical(part))]
+    return " ".join(dict.fromkeys([*quoted, *scope]))
+
+
+def _literal_support(
+    claim: str, available: Mapping[str, Any], question: str
+) -> str | None:
+    for identifier, record in available.items():
+        source = str(record.get("text") or "")
+        if _literal_in_source(claim, source, question):
+            return identifier
+    return None
+
+
+def _literal_in_source(claim: str, source: str, question: str) -> bool:
+    sentences = _claims(" ".join(source.split()))
+    for part in sentences:
+        if _literal_form(claim) == _literal_form(part) or _optional_permission(
+            claim, part
+        ):
+            return _compatible(claim, _quote_context(part, source), question)
+    return False
+
+
+def _optional_permission(claim: str, source: str) -> bool:
+    # Optional use entails permission for the same object; the converse is not proof.
+    optional = re.fullmatch(
+        r"o uso de (.+) e opcional", _canonical(source).removesuffix(".")
+    )
+    permitted = re.fullmatch(
+        r"(?:voce pode usar|pode-se usar) (.+)", _canonical(claim).removesuffix(".")
+    )
+    return bool(
+        optional
+        and permitted
+        and _literal_form(optional.group(1)) == _literal_form(permitted.group(1))
+    )
+
+
+def _assess(
+    verifier: Verifier | None,
+    question: str,
+    claims: list[str],
+    available: Mapping[str, Any],
+) -> list[ClaimAssessment]:
+    if verifier is None:
+        return []
+    try:
+        raw = verifier(question, claims, available)
+        data = _assessment_data(raw)
+        return Assessment.model_validate(data).claims
+    except (ValueError, TypeError, ValidationError):
+        logger.warning("grounding_verification_invalid=True")
+    except Exception:
+        logger.exception("grounding_verification_failed=True")
+    return []
+
+
+def _assessment_data(raw: Any) -> Any:
+    if not isinstance(raw, str):
+        return raw
+    envelope = re.fullmatch(
+        r"\s*```(?:json)?\s*\n(.*?)\n```\s*", raw, re.DOTALL | re.IGNORECASE
+    )
+    return json.loads(envelope.group(1) if envelope else raw)
+
+
+def _verified_support(
+    assessment: ClaimAssessment, claim: str, available: Mapping[str, Any], question: str
+) -> str | None:
+    quote = assessment.quote or ""
+    identifier = assessment.evidence_id or ""
+    if not assessment.supported or not quote.strip():
+        return None
+    record = available.get(identifier)
+    if record is None:
+        return None
+    context = _quote_context(quote, str(record.get("text") or ""))
+    if context and _compatible(claim, context, question):
+        return identifier
+    return None
+
+
+def _claim_support(
+    claims: list[str],
+    available: Mapping[str, Any],
+    question: str,
+    verifier: Verifier | None,
+) -> dict[int, str | None]:
+    support = {
+        index: _literal_support(claim, available, question)
+        for index, claim in enumerate(claims)
+    }
+    if not available or all(support.values()):
+        return support
+    assessments = _assess(verifier, question, claims, available)
+    counts = Counter(item.index for item in assessments)
+    for item in assessments:
+        if 0 <= item.index < len(claims) and counts[item.index] == 1:
+            support[item.index] = support[item.index] or _verified_support(
+                item, claims[item.index], available, question
+            )
+    return support
+
+
+def _compose(
+    answer: str, claims: list[str], support: Mapping[int, str | None]
+) -> GroundingDecision:
+    kept = [
+        claim
+        for index, claim in enumerate(claims)
+        if support[index] or _conversational(claim)
+    ]
+    identifiers = tuple(
+        dict.fromkeys(identifier for identifier in support.values() if identifier)
+    )
+    if not identifiers:
+        return GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
+    if len(kept) == len(claims):
+        return GroundingDecision(answer, identifiers, "supported")
+    return GroundingDecision(
+        "\n".join([*kept, PARTIAL_LIMITATION]), identifiers, "partial"
+    )
+
+
+def ground_answer(
+    answer: str,
+    available: Mapping[str, Any],
+    question: str = "",
+    verifier: Verifier | None = None,
+    *,
+    normative_context: bool = False,
+) -> GroundingDecision:
+    """IDs e similaridade não provam suporte; paráfrases exigem avaliação semântica."""
+    if (
+        _conversational(answer)
+        or _plain_text_rewrite(answer, question)
+        or not (normative_context or needs_support(answer, question))
+    ):
+        return GroundingDecision(answer, (), "conversational")
+    claims = _claims(answer)
+    return _compose(
+        answer, claims, _claim_support(claims, available, question, verifier)
+    )

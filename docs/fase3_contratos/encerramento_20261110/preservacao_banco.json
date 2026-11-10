@@ -1,0 +1,11 @@
+{
+  "read_only_confirmed": true,
+  "gold_variants_equal_baseline": true,
+  "gold_page_index_equal_baseline_excluding_vectors": true,
+  "bronze_document_hashes_equal_baseline": true,
+  "gold_variants": 13,
+  "active_gold": 10,
+  "gold_index_rows": 266,
+  "non_null_embeddings": 266,
+  "embedding_values_not_compared": "Initial snapshot does not contain vector values; no baseline digest available."
+}

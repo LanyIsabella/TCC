@@ -1,0 +1,24 @@
+{
+  "change": "Wrap one regex literal to comply with lint; AST identical",
+  "before_sha256": {
+    "src/app/grounding.py": "34f9678571b21fc7aaaae267f8a59d7bad1807d49f22d3f45435f620eec1a97f",
+    "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+    "src/app/agente.py": "6c7c78d0f2abe2aea6c04f96cf75e8b1762e2a37bcec7947ff554b47ae07bf5d",
+    "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+    "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+    "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+  },
+  "final_sha256": {
+    "src/app/grounding.py": "fe39e907b1f64fa57998a9789872633f5184c5e09d50ce6edf8ce8c5c7c25ef6",
+    "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+    "src/app/agente.py": "6c7c78d0f2abe2aea6c04f96cf75e8b1762e2a37bcec7947ff554b47ae07bf5d",
+    "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+    "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+    "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+  },
+  "grounding_before_path": "grounding_before_line_wrap.py.txt",
+  "ast_identical": true,
+  "mutation_evidence": "mutator_policy_delivery_all_sites.log",
+  "mutation_run_on_before_hash": true,
+  "behavioral_changes": false
+}

@@ -1,0 +1,7 @@
+{
+  "reachable": false,
+  "error_type": "URLError",
+  "detail": "<urlopen error [WinError 10061] Nenhuma conexão pôde ser feita porque a máquina de destino as recusou ativamente>",
+  "checked_at": "2026-11-10T13:45:58.968113+00:00",
+  "tested_source_hashes_unchanged": true
+}

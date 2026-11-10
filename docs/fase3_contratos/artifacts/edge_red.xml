@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="34" time="0.233" timestamp="2026-11-10T09:59:52.869440-03:00" hostname="Lany"><testcase classname="tests.test_grounding_policy" name="test_literal_complete_rule_is_supported_even_without_model_ids" time="0.065" /><testcase classname="tests.test_grounding_policy" name="test_paraphrase_can_be_supported_by_semantic_assessment_and_real_quote" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[A margem direita deve medir 2 cm.-A margem direita deve medir 7 cm.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[A margem direita deve medir 2 mm.-A margem direita deve medir 2 cm.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[A fonte deve ter dois pontos.-A fonte deve ter sete pontos.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[N\xe3o se deve usar aspas.-Deve-se usar aspas.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[\xc9 permitido usar aspas.-\xc9 proibido usar aspas.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[O uso de negrito \xe9 opcional.-O uso de negrito \xe9 obrigat\xf3rio.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[O resumo deve ter no m\xednimo 150 palavras.-O resumo deve ter no m\xe1ximo 150 palavras.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[Se impresso, o texto deve ter margem de 2 cm.-O texto deve ter margem de 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[A margem deve medir 2 cm, exceto em folhas especiais.-A margem deve medir 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_explicit_conflict_rejects_even_a_positive_semantic_judge[Se impresso, o texto deve ter margem de 2 cm.-A margem deve sempre medir 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_equivalent_units_do_not_trigger_false_numeric_contradiction" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_condition_can_be_carried_by_the_current_question" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_quote_cannot_hide_condition_in_the_same_source_paragraph" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_model_cannot_fabricate_the_quote_or_evidence_identity[Texto inventado.-e1]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_model_cannot_fabricate_the_quote_or_evidence_identity[A margem deve medir 2 cm.-inventado]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_unsupported_claim_is_removed_while_supported_part_remains" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_lexical_match_is_only_a_candidate_not_factual_proof" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_unverifiable_assessment_never_preserves_original_rule[invalid json]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_unverifiable_assessment_never_preserves_original_rule[response1]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_unverifiable_assessment_never_preserves_original_rule[response2]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_judge_failure_is_an_explicit_limitation_not_old_answer" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_greeting_and_clarification_do_not_need_documentary_proof" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_conversational_short_rule_still_requires_evidence" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_missing_or_added_critical_qualification_cannot_be_approved[A cita\xe7\xe3o deve aparecer sem aspas.-A cita\xe7\xe3o deve aparecer com aspas.]" time="0.001"><failure message="AssertionError: assert 'supported' == 'insufficient'&#10;  &#10;  - insufficient&#10;  + supported">source = 'A citação deve aparecer sem aspas.'
+answer = 'A citação deve aparecer com aspas.'
+
+    @pytest.mark.parametrize("source,answer", [
+        ("A citação deve aparecer sem aspas.", "A citação deve aparecer com aspas."),
+        ("A fonte deve ter 12 pt.", "A fonte deve ter 12 pontos e a margem deve medir 7 cm."),
+        ("A margem deve medir 2 cm.", "A margem deve medir 2 cm, salvo nas folhas especiais."),
+    ])
+    def test_missing_or_added_critical_qualification_cannot_be_approved(source, answer):
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source)).status == "insufficient"
+E       AssertionError: assert 'supported' == 'insufficient'
+E         
+E         - insufficient
+E         + supported
+
+tests\test_grounding_policy.py:132: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_missing_or_added_critical_qualification_cannot_be_approved[A fonte deve ter 12 pt.-A fonte deve ter 12 pontos e a margem deve medir 7 cm.]" time="0.001" /><testcase classname="tests.test_grounding_policy" name="test_missing_or_added_critical_qualification_cannot_be_approved[A margem deve medir 2 cm.-A margem deve medir 2 cm, salvo nas folhas especiais.]" time="0.001"><failure message="AssertionError: assert 'supported' == 'insufficient'&#10;  &#10;  - insufficient&#10;  + supported">source = 'A margem deve medir 2 cm.'
+answer = 'A margem deve medir 2 cm, salvo nas folhas especiais.'
+
+    @pytest.mark.parametrize("source,answer", [
+        ("A citação deve aparecer sem aspas.", "A citação deve aparecer com aspas."),
+        ("A fonte deve ter 12 pt.", "A fonte deve ter 12 pontos e a margem deve medir 7 cm."),
+        ("A margem deve medir 2 cm.", "A margem deve medir 2 cm, salvo nas folhas especiais."),
+    ])
+    def test_missing_or_added_critical_qualification_cannot_be_approved(source, answer):
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source)).status == "insufficient"
+E       AssertionError: assert 'supported' == 'insufficient'
+E         
+E         - insufficient
+E         + supported
+
+tests\test_grounding_policy.py:132: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_faithful_qualified_paraphrases_are_not_false_refusals[\xc9 proibido usar aspas.-N\xe3o se deve usar aspas.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_faithful_qualified_paraphrases_are_not_false_refusals[O uso de negrito \xe9 opcional.-N\xe3o \xe9 obrigat\xf3rio usar negrito.]" time="0.001"><failure message="AssertionError: assert 'Não foi poss...ho aplicável.' == 'Não é obriga...usar negrito.'&#10;  &#10;  - Não é obrigatório usar negrito.&#10;  + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.">source = 'O uso de negrito é opcional.'
+answer = 'Não é obrigatório usar negrito.'
+
+    @pytest.mark.parametrize("source,answer", [
+        ("É proibido usar aspas.", "Não se deve usar aspas."),
+        ("O uso de negrito é opcional.", "Não é obrigatório usar negrito."),
+        ("O uso de negrito não é obrigatório.", "É opcional usar negrito."),
+        ("A fonte deve ter 12 pt.", "A fonte deve ter 12 pontos."),
+        ("Quando impresso, a margem deve medir 2 cm.", "Quando impresso, a margem mede 2 cm."),
+    ])
+    def test_faithful_qualified_paraphrases_are_not_false_refusals(source, answer):
+&gt;       assert ground_answer(answer, evidence(source), QUESTION, judge(source)).answer == answer
+E       AssertionError: assert 'Não foi poss...ho aplicável.' == 'Não é obriga...usar negrito.'
+E         
+E         - Não é obrigatório usar negrito.
+E         + Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+
+tests\test_grounding_policy.py:143: AssertionError</failure></testcase><testcase classname="tests.test_grounding_policy" name="test_faithful_qualified_paraphrases_are_not_false_refusals[O uso de negrito n\xe3o \xe9 obrigat\xf3rio.-\xc9 opcional usar negrito.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_faithful_qualified_paraphrases_are_not_false_refusals[A fonte deve ter 12 pt.-A fonte deve ter 12 pontos.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_faithful_qualified_paraphrases_are_not_false_refusals[Quando impresso, a margem deve medir 2 cm.-Quando impresso, a margem mede 2 cm.]" time="0.000" /><testcase classname="tests.test_grounding_policy" name="test_repeated_claim_indices_cannot_overwrite_disagreement" time="0.000" /></testsuite></testsuites>

@@ -1,0 +1,38 @@
+NORMA BRASILEIRA ABNT NBR 6024:2012
+
+Informação e documentação — Numeração progressiva das seções de um documento — Apresentação
+
+1 Escopo
+
+Esta Norma especifica os princípios gerais de um sistema de numeração progressiva das seções de um documento, de modo a expor em uma sequência lógica o inter-relacionamento da matéria e a permitir sua localização.
+
+Esta Norma se aplica à redação de todos os tipos de documentos, independentemente do seu suporte, com exceção daqueles que possuem sistematização própria (dicionários, vocabulários etc.) ou que não necessitam de sistematização (obras literárias em geral).
+
+2 Referência normativa
+
+O documento relacionado a seguir é indispensável à aplicação deste documento. Para referência datada, aplica-se somente a edição citada. Para referência não datada, aplica-se a edição mais recente do referido documento (incluindo emendas).
+
+ABNT NBR 6027, Informação e documentação – Sumário – Apresentação
+
+3 Termos e definições
+
+Para os efeitos deste documento, aplicam-se os seguintes termos e definições.
+
+3.1 alínea
+cada uma das subdivisões de uma seção de um documento
+
+3.2 indicativo de seção
+número ou grupo numérico que antecede cada seção do documento
+
+3.3 seção
+parte em que se divide o texto de um documento, que contém as matérias consideradas afins na exposição ordenada do assunto.
+
+3.4 seção primária
+principal divisão do texto de um documento
+
+3.5 seção secundária
+subdivisão do texto a partir de uma seção primária
+
+© ABNT 2012 - Todos os direitos reservados
+1
+Documento impresso em 10/09/2026 20:40:20, de uso exclusivo de INST. FED. EDU, CIENCIA E TEC. GOIAS - REITORIA

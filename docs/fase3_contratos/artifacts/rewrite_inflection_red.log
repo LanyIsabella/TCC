@@ -1,0 +1,84 @@
+....FF                                                                   [100%]
+================================== FAILURES ===================================
+_ test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: A margem direita mede sete.-A margem direita mede sete.] _
+
+question = 'Reescreva para o TCC: A margem direita mede sete.'
+answer = 'A margem direita mede sete.'
+
+    @pytest.mark.parametrize(
+        "question,answer",
+        [
+            (
+                "Reescreva segundo a ABNT: A margem mede 7 cm.",
+                "A margem direita deve medir 7 cm.",
+            ),
+            (
+                "Reescreva para o TCC: Esta pesquisa analisa entrevistas.",
+                "A fonte deve ter 99 pontos.",
+            ),
+            ("Reescreva para o TCC: A fonte � Arial.", "Arial."),
+            ("Reescreva isso.", "Arial."),
+            (
+                "Reescreva para o TCC: A margem direita mede sete.",
+                "A margem direita mede sete.",
+            ),
+            (
+                "Reescreva para o TCC: A cita��o direta � livre.",
+                "A cita��o direta � livre.",
+            ),
+        ],
+    )
+    def test_text_rewriting_cannot_bypass_normative_grounding(question, answer):
+>       assert (
+            ground_answer(answer, {}, question, normative_context=True).status
+            == "insufficient"
+        )
+E       AssertionError: assert 'conversational' == 'insufficient'
+E         
+E         - insufficient
+E         + conversational
+
+tests\test_grounding_policy.py:651: AssertionError
+_ test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: A cita\xe7\xe3o direta \xe9 livre.-A cita\xe7\xe3o direta \xe9 livre.] _
+
+question = 'Reescreva para o TCC: A cita��o direta � livre.'
+answer = 'A cita��o direta � livre.'
+
+    @pytest.mark.parametrize(
+        "question,answer",
+        [
+            (
+                "Reescreva segundo a ABNT: A margem mede 7 cm.",
+                "A margem direita deve medir 7 cm.",
+            ),
+            (
+                "Reescreva para o TCC: Esta pesquisa analisa entrevistas.",
+                "A fonte deve ter 99 pontos.",
+            ),
+            ("Reescreva para o TCC: A fonte � Arial.", "Arial."),
+            ("Reescreva isso.", "Arial."),
+            (
+                "Reescreva para o TCC: A margem direita mede sete.",
+                "A margem direita mede sete.",
+            ),
+            (
+                "Reescreva para o TCC: A cita��o direta � livre.",
+                "A cita��o direta � livre.",
+            ),
+        ],
+    )
+    def test_text_rewriting_cannot_bypass_normative_grounding(question, answer):
+>       assert (
+            ground_answer(answer, {}, question, normative_context=True).status
+            == "insufficient"
+        )
+E       AssertionError: assert 'conversational' == 'insufficient'
+E         
+E         - insufficient
+E         + conversational
+
+tests\test_grounding_policy.py:651: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_grounding_policy.py::test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: A margem direita mede sete.-A margem direita mede sete.]
+FAILED tests/test_grounding_policy.py::test_text_rewriting_cannot_bypass_normative_grounding[Reescreva para o TCC: A cita\xe7\xe3o direta \xe9 livre.-A cita\xe7\xe3o direta \xe9 livre.]
+2 failed, 4 passed, 87 deselected in 0.22s

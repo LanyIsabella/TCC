@@ -1,0 +1,14 @@
+{
+  "src/app/agente.py": "0d5e4fdbcd5418a6473259c2ab08a31b75affb8034d160bed30c63836826f0e1",
+  "src/app/evidence.py": "237a07b994ad422707f8b15625568f61bc850067283547103e70ce7821babae0",
+  "src/api/schemas/agent.py": "5b9678d3c14917ce87d1f8c8ec08a84cb3cc2cb100eebef6c930dcfc80de5436",
+  "src/api/services/agent_service.py": "8b869c4f39f9d22c2caa254ab17c680c8845738fc8d186614e4eeabaca184637",
+  "src/terminal/main.py": "91c0ee7fd33771473c0ef058558ee06869abf5c382ee8e7a76a329037d6a4fd3",
+  "src/app/prompt/prompt_sys.yaml": "69d594fe9d3aefb5083f341134f87164aadf14d6e0b8765274a245189ed554d9",
+  "data/rag_pipeline.py": "a5c5455f992e73e467d5463fd0839e384f41ff3edca74cd96525e2fbb348fd22",
+  "data/rag_schema.sql": "c86b30c7a74d654ba46e24808dc5a163b6f648739e3663ce2c78f781a7dc5d06",
+  "tests/baseline/test_defect_agent.py": "3b7482f6239680791faa3679e2081e4e9324dcfb80dbbb92557f06f0a835a658",
+  "rag_eval/baseline/artifacts/manifest.json": "189277d06ab3759f5414a99e5df4ff06db77b8225f9ddb70d65bedc0d2b766e5",
+  "rag_eval/baseline/human_review/lote_2026-11-10/manifest.json": "cf0ead912a74372cce6c544ef77342fe5718219d13139c0d388d5af22f9d21a6",
+  "captured_at": "2026-11-10T03:24:04.599427+00:00"
+}

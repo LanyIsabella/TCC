@@ -1,0 +1,20 @@
+{
+  "tests": 251,
+  "skipped": 1,
+  "known_xfailed": 9,
+  "corrected_contracts_passed": 6,
+  "changed_functions": 61,
+  "max_changed_function_crap": 8.0,
+  "source_sha256": {
+    "src/app/grounding.py": "d81ae776c81cb233ac2c32828e58888ed5b57671dbec2d79db101a3d97649359",
+    "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+    "src/app/agente.py": "d1f4d0663255934cea5ae870aeb594cdd193ea9fa065709a48fa2e704f263f2d",
+    "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+    "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+    "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+  },
+  "baseline_and_human_package_preserved": true,
+  "real_model_validation": "pending: service unavailable; serve launch rejected by automatic approval review",
+  "implementation_and_deterministic_contracts": "passed",
+  "experimental_validation_complete": false
+}

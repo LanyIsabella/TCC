@@ -1,0 +1,62 @@
+{
+  "scope": "F10-F13 only",
+  "preparation": {
+    "branch": "fix/fase3-contratos-agente-20261110",
+    "baseline_preserved": true,
+    "baseline_tests": "before.xml",
+    "red_contracts": "contracts_red.xml",
+    "incremental_plan": "../README.md"
+  },
+  "grounding": {
+    "policy": "src/app/grounding.py",
+    "tests": "tests/test_grounding_policy.py",
+    "factual_limits_explicit": true
+  },
+  "turn_isolation": {
+    "association": "turn UUID + question hash + paired tool execution + evidence + sealed answer",
+    "tests": [
+      "tests/test_agent_turns.py",
+      "tests/test_agent_orchestration.py"
+    ]
+  },
+  "api_roles": {
+    "public": [
+      "user",
+      "assistant"
+    ],
+    "privileged_rejected": true,
+    "internal_langchain_contract_preserved": true,
+    "tests": [
+      "tests/api/test_agent_router.py",
+      "tests/test_agent_contract_channels.py"
+    ]
+  },
+  "tdd": {
+    "red_green_artifacts": "../README.md#red–green–refactor",
+    "corrected_xfails_removed": 6,
+    "remaining_xfails_other_defects": 9,
+    "full_suite_passed": 291
+  },
+  "restrictions": {
+    "ui_corpus_embedding_retrieval_rrf_db_schema_main_prompt_unchanged": true,
+    "new_tools_or_dependencies": false,
+    "production_db_writes": false
+  },
+  "acceptance": {
+    "six_corrected_contracts_passed": true,
+    "deterministic_regression_suite_passed": true,
+    "real_model_bounded_experiment": "experiment_summary.json",
+    "universal_factual_validation_claimed": false
+  },
+  "delivery": {
+    "report": "../README.md",
+    "experiment": "../EXPERIMENTO.md",
+    "quality_gate_global_pass_claimed": false,
+    "pending": [
+      "representative end-to-end RAG evaluation",
+      "human documentary validation",
+      "five unchanged legacy Crapper violations",
+      "two ensure_ascii mutation survivors; model effect unmeasured"
+    ]
+  }
+}

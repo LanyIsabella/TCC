@@ -1,0 +1,76 @@
+UNCOVERED src/app/grounding.py:65 True -> False
+UNCOVERED src/app/grounding.py:79 False -> True
+KILLED    src/app/grounding.py:83 + -> -
+KILLED    src/app/grounding.py:83 + -> -
+KILLED    src/app/grounding.py:83 or -> and
+KILLED    src/app/grounding.py:145 * -> /
+KILLED    src/app/grounding.py:153 delete not
+KILLED    src/app/grounding.py:153 or -> and
+KILLED    src/app/grounding.py:153 delete not
+KILLED    src/app/grounding.py:177 and -> or
+KILLED    src/app/grounding.py:178 True -> False
+UNCOVERED src/app/grounding.py:181 and -> or
+KILLED    src/app/grounding.py:184 True -> False
+KILLED    src/app/grounding.py:186 + -> -
+KILLED    src/app/grounding.py:186 + -> -
+KILLED    src/app/grounding.py:197 and -> or
+KILLED    src/app/grounding.py:198 True -> False
+SURVIVED  src/app/grounding.py:200 and -> or
+KILLED    src/app/grounding.py:201 True -> False
+KILLED    src/app/grounding.py:202 False -> True
+KILLED    src/app/grounding.py:207 delete not
+KILLED    src/app/grounding.py:210 != -> ==
+KILLED    src/app/grounding.py:229 or -> and
+KILLED    src/app/grounding.py:231 == -> !=
+KILLED    src/app/grounding.py:231 and -> or
+KILLED    src/app/grounding.py:260 delete not
+SURVIVED  src/app/grounding.py:260 or -> and
+KILLED    src/app/grounding.py:260 delete not
+KILLED    src/app/grounding.py:265 or -> and
+KILLED    src/app/grounding.py:266 and -> or
+KILLED    src/app/grounding.py:281 delete not
+SURVIVED  src/app/grounding.py:281 or -> and
+KILLED    src/app/grounding.py:286 0 -> 1
+KILLED    src/app/grounding.py:286 <= -> <
+SURVIVED  src/app/grounding.py:286 < -> <=
+KILLED    src/app/grounding.py:286 and -> or
+KILLED    src/app/grounding.py:286 == -> !=
+KILLED    src/app/grounding.py:286 1 -> 0
+KILLED    src/app/grounding.py:287 or -> and
+UNCOVERED src/app/grounding.py:299 or -> and
+KILLED    src/app/grounding.py:304 delete not
+KILLED    src/app/grounding.py:306 == -> !=
+UNCOVERED src/app/grounding.py:319 False -> True
+SURVIVED  src/app/grounding.py:322 or -> and
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+KILLED    src/app/grounding.py:322 delete not
+KILLED    src/app/grounding.py:323 or -> and
+Function            Namespace      Killed  Survived  Uncovered  Sites   Score
+-----------------------------------------------------------------------------
+_assess             app.grounding       0         0          0      0    n/a
+_canonical          app.grounding       0         0          0      0    n/a
+_claims             app.grounding       0         0          0      0    n/a
+_conversational     app.grounding       0         0          1      1    n/a
+_polarity           app.grounding       0         0          0      0    n/a
+_qualifiers         app.grounding       0         0          0      0    n/a
+_quote_context      app.grounding       0         0          0      0    n/a
+ground_answer       app.grounding       2         1          1      4  66.7%
+_claim_support      app.grounding       7         2          0      9  77.8%
+_modality_conflict  app.grounding       4         1          0      5  80.0%
+_verified_support   app.grounding       4         1          0      5  80.0%
+_compatible         app.grounding       2         0          0      2 100.0%
+_compose            app.grounding       2         0          1      3 100.0%
+_literal_support    app.grounding       3         0          0      3 100.0%
+_numeric_conflict   app.grounding       3         0          0      3 100.0%
+_qualifier_conflict app.grounding       5         0          1      6 100.0%
+_quantities         app.grounding       1         0          0      1 100.0%
+needs_support       app.grounding       3         0          1      4 100.0%
+-----------------------------------------------------------------------------
+Total                                  36         5          5     46   87.8%
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.agente.ScopedAgent.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.evidence.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/app.grounding.edn
+Wrote C:/Users/lany_/OneDrive/Desktop/TCC/.metrics/mutate/rag_eval.baseline.audit.edn

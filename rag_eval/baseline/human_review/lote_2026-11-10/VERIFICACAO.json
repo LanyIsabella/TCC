@@ -1,0 +1,20 @@
+{
+  "scope": "artifact_integrity_only_not_human_or_semantic_evaluation",
+  "snapshot_sha256": "ba555e70267df221683c429d7ab6c965d03b73e64e7d1d2e52dbe0d1ace9ba99",
+  "documents": 8,
+  "physical_pages": 12,
+  "complete_text_files": 36,
+  "copied_single_page_pdfs": 12,
+  "copied_preview_images": 12,
+  "original_pdf_hashes_match_snapshot": true,
+  "all_page_pdf_renders_match_original": true,
+  "all_png_pixels_match_original": true,
+  "all_text_utf8_hashes_match_snapshot": true,
+  "all_source_extraction_records_preserved": true,
+  "existing_review_protocol_accepts_rows": true,
+  "gold_selection_matches_readonly_database": true,
+  "human_transcriptions_filled": 0,
+  "human_reviews_completed": 0,
+  "ocr_embedding_ingestion_or_new_evaluations_executed": false,
+  "protected_baseline_artifacts_unchanged": true
+}

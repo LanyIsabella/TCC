@@ -1,0 +1,850 @@
+{
+  "document_quality_validated": false,
+  "text_hash_mismatches": [],
+  "active_manual_review_pages": [
+    {
+      "document_id": 4,
+      "physical_page": 9,
+      "page_extraction_id": 179
+    },
+    {
+      "document_id": 16,
+      "physical_page": 5,
+      "page_extraction_id": 785
+    },
+    {
+      "document_id": 16,
+      "physical_page": 8,
+      "page_extraction_id": 788
+    },
+    {
+      "document_id": 16,
+      "physical_page": 10,
+      "page_extraction_id": 790
+    },
+    {
+      "document_id": 16,
+      "physical_page": 11,
+      "page_extraction_id": 791
+    },
+    {
+      "document_id": 16,
+      "physical_page": 12,
+      "page_extraction_id": 792
+    },
+    {
+      "document_id": 16,
+      "physical_page": 13,
+      "page_extraction_id": 793
+    },
+    {
+      "document_id": 16,
+      "physical_page": 17,
+      "page_extraction_id": 797
+    },
+    {
+      "document_id": 16,
+      "physical_page": 18,
+      "page_extraction_id": 798
+    },
+    {
+      "document_id": 16,
+      "physical_page": 21,
+      "page_extraction_id": 801
+    },
+    {
+      "document_id": 16,
+      "physical_page": 22,
+      "page_extraction_id": 802
+    },
+    {
+      "document_id": 16,
+      "physical_page": 24,
+      "page_extraction_id": 804
+    },
+    {
+      "document_id": 16,
+      "physical_page": 25,
+      "page_extraction_id": 805
+    },
+    {
+      "document_id": 16,
+      "physical_page": 26,
+      "page_extraction_id": 806
+    },
+    {
+      "document_id": 16,
+      "physical_page": 27,
+      "page_extraction_id": 807
+    },
+    {
+      "document_id": 16,
+      "physical_page": 28,
+      "page_extraction_id": 808
+    },
+    {
+      "document_id": 16,
+      "physical_page": 29,
+      "page_extraction_id": 809
+    },
+    {
+      "document_id": 16,
+      "physical_page": 30,
+      "page_extraction_id": 810
+    },
+    {
+      "document_id": 16,
+      "physical_page": 31,
+      "page_extraction_id": 811
+    },
+    {
+      "document_id": 16,
+      "physical_page": 33,
+      "page_extraction_id": 813
+    },
+    {
+      "document_id": 16,
+      "physical_page": 34,
+      "page_extraction_id": 814
+    },
+    {
+      "document_id": 16,
+      "physical_page": 38,
+      "page_extraction_id": 818
+    },
+    {
+      "document_id": 16,
+      "physical_page": 40,
+      "page_extraction_id": 820
+    },
+    {
+      "document_id": 16,
+      "physical_page": 44,
+      "page_extraction_id": 824
+    },
+    {
+      "document_id": 16,
+      "physical_page": 54,
+      "page_extraction_id": 834
+    },
+    {
+      "document_id": 16,
+      "physical_page": 56,
+      "page_extraction_id": 836
+    },
+    {
+      "document_id": 16,
+      "physical_page": 57,
+      "page_extraction_id": 837
+    },
+    {
+      "document_id": 16,
+      "physical_page": 58,
+      "page_extraction_id": 838
+    }
+  ],
+  "active_completion_unconfirmed_pages": [
+    {
+      "document_id": 3,
+      "physical_page": 1,
+      "page_extraction_id": 129
+    },
+    {
+      "document_id": 3,
+      "physical_page": 2,
+      "page_extraction_id": 130
+    },
+    {
+      "document_id": 3,
+      "physical_page": 3,
+      "page_extraction_id": 131
+    },
+    {
+      "document_id": 3,
+      "physical_page": 4,
+      "page_extraction_id": 132
+    },
+    {
+      "document_id": 3,
+      "physical_page": 5,
+      "page_extraction_id": 133
+    },
+    {
+      "document_id": 3,
+      "physical_page": 6,
+      "page_extraction_id": 134
+    },
+    {
+      "document_id": 3,
+      "physical_page": 7,
+      "page_extraction_id": 135
+    },
+    {
+      "document_id": 3,
+      "physical_page": 8,
+      "page_extraction_id": 136
+    },
+    {
+      "document_id": 3,
+      "physical_page": 9,
+      "page_extraction_id": 137
+    },
+    {
+      "document_id": 3,
+      "physical_page": 10,
+      "page_extraction_id": 138
+    },
+    {
+      "document_id": 3,
+      "physical_page": 11,
+      "page_extraction_id": 139
+    },
+    {
+      "document_id": 3,
+      "physical_page": 12,
+      "page_extraction_id": 140
+    },
+    {
+      "document_id": 3,
+      "physical_page": 13,
+      "page_extraction_id": 141
+    },
+    {
+      "document_id": 3,
+      "physical_page": 14,
+      "page_extraction_id": 142
+    },
+    {
+      "document_id": 3,
+      "physical_page": 15,
+      "page_extraction_id": 143
+    },
+    {
+      "document_id": 3,
+      "physical_page": 16,
+      "page_extraction_id": 144
+    },
+    {
+      "document_id": 4,
+      "physical_page": 1,
+      "page_extraction_id": 171
+    },
+    {
+      "document_id": 4,
+      "physical_page": 2,
+      "page_extraction_id": 172
+    },
+    {
+      "document_id": 4,
+      "physical_page": 3,
+      "page_extraction_id": 173
+    },
+    {
+      "document_id": 4,
+      "physical_page": 4,
+      "page_extraction_id": 174
+    },
+    {
+      "document_id": 4,
+      "physical_page": 5,
+      "page_extraction_id": 175
+    },
+    {
+      "document_id": 4,
+      "physical_page": 6,
+      "page_extraction_id": 176
+    },
+    {
+      "document_id": 4,
+      "physical_page": 7,
+      "page_extraction_id": 177
+    },
+    {
+      "document_id": 4,
+      "physical_page": 8,
+      "page_extraction_id": 178
+    },
+    {
+      "document_id": 4,
+      "physical_page": 9,
+      "page_extraction_id": 179
+    },
+    {
+      "document_id": 4,
+      "physical_page": 10,
+      "page_extraction_id": 180
+    },
+    {
+      "document_id": 4,
+      "physical_page": 11,
+      "page_extraction_id": 181
+    },
+    {
+      "document_id": 4,
+      "physical_page": 12,
+      "page_extraction_id": 182
+    },
+    {
+      "document_id": 4,
+      "physical_page": 13,
+      "page_extraction_id": 183
+    },
+    {
+      "document_id": 16,
+      "physical_page": 1,
+      "page_extraction_id": 781
+    },
+    {
+      "document_id": 16,
+      "physical_page": 2,
+      "page_extraction_id": 782
+    },
+    {
+      "document_id": 16,
+      "physical_page": 3,
+      "page_extraction_id": 783
+    },
+    {
+      "document_id": 16,
+      "physical_page": 4,
+      "page_extraction_id": 784
+    },
+    {
+      "document_id": 16,
+      "physical_page": 5,
+      "page_extraction_id": 785
+    },
+    {
+      "document_id": 16,
+      "physical_page": 7,
+      "page_extraction_id": 787
+    },
+    {
+      "document_id": 16,
+      "physical_page": 8,
+      "page_extraction_id": 788
+    },
+    {
+      "document_id": 16,
+      "physical_page": 9,
+      "page_extraction_id": 789
+    },
+    {
+      "document_id": 16,
+      "physical_page": 10,
+      "page_extraction_id": 790
+    },
+    {
+      "document_id": 16,
+      "physical_page": 11,
+      "page_extraction_id": 791
+    },
+    {
+      "document_id": 16,
+      "physical_page": 12,
+      "page_extraction_id": 792
+    },
+    {
+      "document_id": 16,
+      "physical_page": 13,
+      "page_extraction_id": 793
+    },
+    {
+      "document_id": 16,
+      "physical_page": 14,
+      "page_extraction_id": 794
+    },
+    {
+      "document_id": 16,
+      "physical_page": 15,
+      "page_extraction_id": 795
+    },
+    {
+      "document_id": 16,
+      "physical_page": 16,
+      "page_extraction_id": 796
+    },
+    {
+      "document_id": 16,
+      "physical_page": 17,
+      "page_extraction_id": 797
+    },
+    {
+      "document_id": 16,
+      "physical_page": 18,
+      "page_extraction_id": 798
+    },
+    {
+      "document_id": 16,
+      "physical_page": 19,
+      "page_extraction_id": 799
+    },
+    {
+      "document_id": 16,
+      "physical_page": 20,
+      "page_extraction_id": 800
+    },
+    {
+      "document_id": 16,
+      "physical_page": 21,
+      "page_extraction_id": 801
+    },
+    {
+      "document_id": 16,
+      "physical_page": 22,
+      "page_extraction_id": 802
+    },
+    {
+      "document_id": 16,
+      "physical_page": 23,
+      "page_extraction_id": 803
+    },
+    {
+      "document_id": 16,
+      "physical_page": 24,
+      "page_extraction_id": 804
+    },
+    {
+      "document_id": 16,
+      "physical_page": 25,
+      "page_extraction_id": 805
+    },
+    {
+      "document_id": 16,
+      "physical_page": 26,
+      "page_extraction_id": 806
+    },
+    {
+      "document_id": 16,
+      "physical_page": 27,
+      "page_extraction_id": 807
+    },
+    {
+      "document_id": 16,
+      "physical_page": 28,
+      "page_extraction_id": 808
+    },
+    {
+      "document_id": 16,
+      "physical_page": 29,
+      "page_extraction_id": 809
+    },
+    {
+      "document_id": 16,
+      "physical_page": 30,
+      "page_extraction_id": 810
+    },
+    {
+      "document_id": 16,
+      "physical_page": 31,
+      "page_extraction_id": 811
+    },
+    {
+      "document_id": 16,
+      "physical_page": 32,
+      "page_extraction_id": 812
+    },
+    {
+      "document_id": 16,
+      "physical_page": 33,
+      "page_extraction_id": 813
+    },
+    {
+      "document_id": 16,
+      "physical_page": 34,
+      "page_extraction_id": 814
+    },
+    {
+      "document_id": 16,
+      "physical_page": 35,
+      "page_extraction_id": 815
+    },
+    {
+      "document_id": 16,
+      "physical_page": 36,
+      "page_extraction_id": 816
+    },
+    {
+      "document_id": 16,
+      "physical_page": 37,
+      "page_extraction_id": 817
+    },
+    {
+      "document_id": 16,
+      "physical_page": 38,
+      "page_extraction_id": 818
+    },
+    {
+      "document_id": 16,
+      "physical_page": 39,
+      "page_extraction_id": 819
+    },
+    {
+      "document_id": 16,
+      "physical_page": 40,
+      "page_extraction_id": 820
+    },
+    {
+      "document_id": 16,
+      "physical_page": 41,
+      "page_extraction_id": 821
+    },
+    {
+      "document_id": 16,
+      "physical_page": 42,
+      "page_extraction_id": 822
+    },
+    {
+      "document_id": 16,
+      "physical_page": 43,
+      "page_extraction_id": 823
+    },
+    {
+      "document_id": 16,
+      "physical_page": 44,
+      "page_extraction_id": 824
+    },
+    {
+      "document_id": 16,
+      "physical_page": 45,
+      "page_extraction_id": 825
+    },
+    {
+      "document_id": 16,
+      "physical_page": 46,
+      "page_extraction_id": 826
+    },
+    {
+      "document_id": 16,
+      "physical_page": 47,
+      "page_extraction_id": 827
+    },
+    {
+      "document_id": 16,
+      "physical_page": 48,
+      "page_extraction_id": 828
+    },
+    {
+      "document_id": 16,
+      "physical_page": 49,
+      "page_extraction_id": 829
+    },
+    {
+      "document_id": 16,
+      "physical_page": 50,
+      "page_extraction_id": 830
+    },
+    {
+      "document_id": 16,
+      "physical_page": 51,
+      "page_extraction_id": 831
+    },
+    {
+      "document_id": 16,
+      "physical_page": 52,
+      "page_extraction_id": 832
+    },
+    {
+      "document_id": 16,
+      "physical_page": 53,
+      "page_extraction_id": 833
+    },
+    {
+      "document_id": 16,
+      "physical_page": 54,
+      "page_extraction_id": 834
+    },
+    {
+      "document_id": 16,
+      "physical_page": 55,
+      "page_extraction_id": 835
+    },
+    {
+      "document_id": 16,
+      "physical_page": 56,
+      "page_extraction_id": 836
+    },
+    {
+      "document_id": 16,
+      "physical_page": 57,
+      "page_extraction_id": 837
+    },
+    {
+      "document_id": 16,
+      "physical_page": 58,
+      "page_extraction_id": 838
+    },
+    {
+      "document_id": 16,
+      "physical_page": 59,
+      "page_extraction_id": 839
+    },
+    {
+      "document_id": 16,
+      "physical_page": 60,
+      "page_extraction_id": 840
+    },
+    {
+      "document_id": 16,
+      "physical_page": 61,
+      "page_extraction_id": 841
+    },
+    {
+      "document_id": 16,
+      "physical_page": 62,
+      "page_extraction_id": 842
+    },
+    {
+      "document_id": 16,
+      "physical_page": 63,
+      "page_extraction_id": 843
+    },
+    {
+      "document_id": 16,
+      "physical_page": 64,
+      "page_extraction_id": 844
+    },
+    {
+      "document_id": 16,
+      "physical_page": 65,
+      "page_extraction_id": 845
+    },
+    {
+      "document_id": 16,
+      "physical_page": 66,
+      "page_extraction_id": 846
+    },
+    {
+      "document_id": 16,
+      "physical_page": 67,
+      "page_extraction_id": 847
+    },
+    {
+      "document_id": 16,
+      "physical_page": 68,
+      "page_extraction_id": 848
+    },
+    {
+      "document_id": 16,
+      "physical_page": 69,
+      "page_extraction_id": 849
+    },
+    {
+      "document_id": 16,
+      "physical_page": 71,
+      "page_extraction_id": 851
+    },
+    {
+      "document_id": 16,
+      "physical_page": 72,
+      "page_extraction_id": 852
+    },
+    {
+      "document_id": 16,
+      "physical_page": 73,
+      "page_extraction_id": 853
+    },
+    {
+      "document_id": 16,
+      "physical_page": 74,
+      "page_extraction_id": 854
+    },
+    {
+      "document_id": 17,
+      "physical_page": 1,
+      "page_extraction_id": 871
+    },
+    {
+      "document_id": 17,
+      "physical_page": 2,
+      "page_extraction_id": 872
+    },
+    {
+      "document_id": 17,
+      "physical_page": 3,
+      "page_extraction_id": 873
+    },
+    {
+      "document_id": 17,
+      "physical_page": 4,
+      "page_extraction_id": 874
+    },
+    {
+      "document_id": 17,
+      "physical_page": 5,
+      "page_extraction_id": 875
+    },
+    {
+      "document_id": 17,
+      "physical_page": 6,
+      "page_extraction_id": 876
+    },
+    {
+      "document_id": 17,
+      "physical_page": 7,
+      "page_extraction_id": 877
+    },
+    {
+      "document_id": 17,
+      "physical_page": 8,
+      "page_extraction_id": 878
+    },
+    {
+      "document_id": 18,
+      "physical_page": 1,
+      "page_extraction_id": 893
+    },
+    {
+      "document_id": 18,
+      "physical_page": 2,
+      "page_extraction_id": 894
+    },
+    {
+      "document_id": 18,
+      "physical_page": 3,
+      "page_extraction_id": 895
+    },
+    {
+      "document_id": 18,
+      "physical_page": 4,
+      "page_extraction_id": 896
+    },
+    {
+      "document_id": 18,
+      "physical_page": 5,
+      "page_extraction_id": 897
+    },
+    {
+      "document_id": 18,
+      "physical_page": 6,
+      "page_extraction_id": 898
+    },
+    {
+      "document_id": 18,
+      "physical_page": 7,
+      "page_extraction_id": 899
+    },
+    {
+      "document_id": 19,
+      "physical_page": 1,
+      "page_extraction_id": 914
+    },
+    {
+      "document_id": 19,
+      "physical_page": 2,
+      "page_extraction_id": 915
+    },
+    {
+      "document_id": 19,
+      "physical_page": 3,
+      "page_extraction_id": 916
+    },
+    {
+      "document_id": 19,
+      "physical_page": 4,
+      "page_extraction_id": 917
+    },
+    {
+      "document_id": 19,
+      "physical_page": 5,
+      "page_extraction_id": 918
+    },
+    {
+      "document_id": 19,
+      "physical_page": 6,
+      "page_extraction_id": 919
+    },
+    {
+      "document_id": 19,
+      "physical_page": 7,
+      "page_extraction_id": 920
+    },
+    {
+      "document_id": 20,
+      "physical_page": 1,
+      "page_extraction_id": 937
+    },
+    {
+      "document_id": 20,
+      "physical_page": 2,
+      "page_extraction_id": 938
+    },
+    {
+      "document_id": 20,
+      "physical_page": 3,
+      "page_extraction_id": 939
+    },
+    {
+      "document_id": 20,
+      "physical_page": 4,
+      "page_extraction_id": 940
+    },
+    {
+      "document_id": 20,
+      "physical_page": 5,
+      "page_extraction_id": 941
+    },
+    {
+      "document_id": 20,
+      "physical_page": 6,
+      "page_extraction_id": 942
+    },
+    {
+      "document_id": 20,
+      "physical_page": 7,
+      "page_extraction_id": 943
+    },
+    {
+      "document_id": 20,
+      "physical_page": 8,
+      "page_extraction_id": 944
+    }
+  ],
+  "gold_metadata_discrepancies": [
+    {
+      "document_id": 4,
+      "field": "title",
+      "column": null,
+      "metadata": "Informação e documentação — Projeto de pesquisa — Apresentação"
+    },
+    {
+      "document_id": 4,
+      "field": "version",
+      "column": null,
+      "metadata": "2025"
+    },
+    {
+      "document_id": 17,
+      "field": "title",
+      "column": null,
+      "metadata": "Informação e documentação — Numeração progressiva das seções de um documento — Apresentação"
+    },
+    {
+      "document_id": 17,
+      "field": "version",
+      "column": null,
+      "metadata": "2012"
+    },
+    {
+      "document_id": 18,
+      "field": "title",
+      "column": null,
+      "metadata": "Informação e documentação — Sumário — Apresentação"
+    },
+    {
+      "document_id": 18,
+      "field": "version",
+      "column": null,
+      "metadata": "2012"
+    }
+  ],
+  "edition_discrepancies": [
+    {
+      "document_id": 20,
+      "standard_id": "abnt_nbr_6034",
+      "manifest_edition": "2005",
+      "pdf_locator_edition": "2004"
+    }
+  ],
+  "interpretation": "Indicadores não comprovam perda de texto ou qualidade."
+}

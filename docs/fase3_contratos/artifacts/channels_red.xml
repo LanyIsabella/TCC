@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="11" time="4.257" timestamp="2026-11-10T09:58:34.040976-03:00" hostname="Lany"><testcase classname="tests.test_agent_contract_channels" name="test_api_does_not_leak_raw_structured_or_intermediate_unsupported_answers" time="0.067"><failure message="AssertionError: assert ['Qual a marg... medir 7 cm.'] == ['Qual a marg...o aplicável.']&#10;  &#10;  At index 1 diff: 'A fonte deve ter 99 pontos.' != 'Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.'&#10;  Left contains one more item: 'A margem direita deve medir 7 cm.'&#10;  Use -v to get more diff">def test_api_does_not_leak_raw_structured_or_intermediate_unsupported_answers():
+        class Executor:
+            def invoke(self, payload):
+                value = result()
+                value["messages"].insert(-1, {"role": "assistant", "content": "A fonte deve ter 99 pontos."})
+                return value
+    
+        response = AgentService(Executor()).chat(AgentChatRequest(message=QUESTION))
+        assert response.answer == INSUFFICIENT_EVIDENCE
+&gt;       assert [m.content for m in response.messages] == [QUESTION, INSUFFICIENT_EVIDENCE]
+E       AssertionError: assert ['Qual a marg... medir 7 cm.'] == ['Qual a marg...o aplicável.']
+E         
+E         At index 1 diff: 'A fonte deve ter 99 pontos.' != 'Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.'
+E         Left contains one more item: 'A margem direita deve medir 7 cm.'
+E         Use -v to get more diff
+
+tests\test_agent_contract_channels.py:37: AssertionError</failure></testcase><testcase classname="tests.test_agent_contract_channels" name="test_terminal_consumes_the_validated_answer" time="0.079"><failure message="assert &quot;{'role': 'as...medir 7 cm.'}&quot; == 'Não foi poss...ho aplicável.'&#10;  &#10;  - Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.&#10;  + {'role': 'assistant', 'content': 'A margem direita deve medir 7 cm.'}">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000164891B3A80&gt;
+
+    def test_terminal_consumes_the_validated_answer(monkeypatch):
+        monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "src" / "terminal"))
+        from src.terminal.main import ChatSession
+    
+        class Executor:
+            def invoke(self, payload):
+                return result()
+    
+        session = ChatSession(Executor())
+&gt;       assert session.ask(QUESTION) == INSUFFICIENT_EVIDENCE
+E       assert "{'role': 'as...medir 7 cm.'}" == 'Não foi poss...ho aplicável.'
+E         
+E         - Não foi possível fundamentar a resposta nos trechos documentais disponíveis para esta pergunta. É necessário consultar a norma e confirmar o trecho aplicável.
+E         + {'role': 'assistant', 'content': 'A margem direita deve medir 7 cm.'}
+
+tests\test_agent_contract_channels.py:49: AssertionError</failure></testcase><testcase classname="tests.test_agent_contract_channels" name="test_faithful_paraphrase_is_validated_once_and_reused_by_consumers" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_old_validation_cannot_approve_changed_response_inputs[answer]" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_old_validation_cannot_approve_changed_response_inputs[evidence]" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_old_validation_cannot_approve_changed_response_inputs[question]" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_old_validation_cannot_approve_changed_response_inputs[seal]" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_failed_recovery_never_preserves_candidate_or_prior_unsupported_rule[no_evidence]" time="3.800" /><testcase classname="tests.test_agent_contract_channels" name="test_failed_recovery_never_preserves_candidate_or_prior_unsupported_rule[error]" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_failed_recovery_never_preserves_candidate_or_prior_unsupported_rule[malformed]" time="0.001" /><testcase classname="tests.test_agent_contract_channels" name="test_failed_recovery_never_preserves_candidate_or_prior_unsupported_rule[exception]" time="0.001" /></testsuite></testsuites>

@@ -1,0 +1,49 @@
+## NORMA BRASILEIRA
+
+## Informac ¸a ˜ o e documentac ¸a ˜o - Numerac ¸a ˜o progressiva das sec ¸o ˜ es de um documento - Apresentac ¸a ˜o
+
+## 1  Escopo
+
+Esta Norma especifi  ca os princ ı ´p  ios  gerais  de  um  sistema  de  numerac ¸a ˜ o  progressiva  das  sec ¸o ˜ es de um documento, de modo a expor em uma seque ˆncia lo ´gica o inter-relacionamento da mate ´ria e a permitir sua localizac ¸a ˜ o.
+
+Esta Norma se aplica a ` redac ¸a ˜ o de todos os tipos de documentos, independentemente do seu suporte, com excec ¸a ˜ o daqueles que possuem sistematizac ¸a ˜o pro ´pria (diciona ´ rios, vocabula ´ rios etc.) ou que na ˜ o necessitam de sistematizac ¸a ˜ o (obras litera ´ rias em geral).
+
+## 2 Refere ˆncia normativa
+
+O documento relacionado a seguir  e ´  indispensa ´vel  a `   aplicac ¸a ˜ o  deste  documento.  Para  refere ˆ ncia datada, aplica-se somente a edic ¸a ˜ o citada. Para refere ˆ ncia na ˜ o datada, aplica-se a edic ¸a ˜ o mais recente do referido documento (incluindo emendas).
+
+ABNT NBR 6027, Informação e documentação - Sumário - Apresentação
+
+## 3 Termos e defi  nic ¸o ˜ es
+
+Para os efeitos deste documento, aplicam-se os seguintes termos e defi  nic ¸o ˜ es.
+
+## 3.1
+
+## al ı ´nea
+
+cada uma das subdiviso ˜es de uma sec ¸a ˜ o de um documento
+
+## 3.2
+
+## indicativo de sec ¸a ˜ o
+
+nu ´ mero ou grupo nume ´rico que antecede cada sec ¸a ˜ o do documento
+
+## 3.3
+
+## sec ¸a ˜ o
+
+parte em que se divide o texto de um documento, que conte ´m as mate ´rias consideradas afi  ns na exposic ¸a ˜ o ordenada do assunto.
+
+## 3.4
+
+## sec ¸a ˜ o prima ´ria
+
+principal divisa ˜ o do texto de um documento
+
+## 3.5
+
+## sec ¸a ˜ o secunda ´ria
+
+subdivisa ˜ o do texto a partir de uma sec ¸a ˜ o prima ´ ria

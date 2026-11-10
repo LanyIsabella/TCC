@@ -1,0 +1,6 @@
+{
+  "dryer_exit": 0,
+  "crapper_threshold": 9.999,
+  "dryer_threshold": 0.8,
+  "crapper_exit": 2
+}

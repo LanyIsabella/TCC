@@ -1,0 +1,64 @@
+{
+  "verified_at": "2026-11-10T02:21:13.512089+00:00",
+  "reference_commit": "3a279ab5bfe1215521e0fd476faaec8eab563baa",
+  "branch": "baseline/fase2-caracterizacao-20261109",
+  "production_modules_unchanged": true,
+  "unchanged_source_fingerprints": 45,
+  "authorized_configuration_differences": [
+    "pyproject.toml: pytest testpaths",
+    ".gitignore: generated tooling outputs"
+  ],
+  "existing_suite_before": {
+    "passed": 83,
+    "skipped": 1
+  },
+  "final_suite": {
+    "passed": 139,
+    "skipped": 1,
+    "expected_failures": 15,
+    "junit": {
+      "tests": 155,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 16
+    }
+  },
+  "known_defects_runxfail": {
+    "tests": 30,
+    "failures": 15,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ruff": "passed",
+  "crapper": {
+    "status": "passed",
+    "maximum_crap": 9.2,
+    "required": "CRAP < 10",
+    "log": "crapper.log"
+  },
+  "dryer": {
+    "status": "passed",
+    "threshold": 0.8,
+    "duplicate_candidates": 0,
+    "log": "dryer.log"
+  },
+  "mutator": {
+    "status": "incomplete",
+    "file": "rag_eval/baseline/audit.py",
+    "killed": 8,
+    "survived": 0,
+    "uncovered": 7,
+    "log": "mutator_targeted.log",
+    "limitations": [
+      "Other new modules not fully mutation-tested",
+      "Earlier broad run failed worker cleanup with WinError 32"
+    ]
+  },
+  "experimental_quality_validated": false,
+  "pending": [
+    "Human review of pages and query relevance/expected claims",
+    "Ollama generation and retrieval evaluation",
+    "PostgreSQL isolated integration for future fixes",
+    "Complete mutation validation"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "objective": "Technical closeout review of phase 3, no phase 4",
+  "verified_at": "2026-11-10T15:53:56.283757+00:00",
+  "ten_requested_controls_reviewed": true,
+  "controls": "controles.json",
+  "report": "PARECER.md",
+  "regression": {
+    "passed": 291,
+    "skipped": 1,
+    "xfail": 9,
+    "unexpected_failures": 0
+  },
+  "supplementary_tests_passed": 17,
+  "six_corrected_contracts_passed": true,
+  "unchanged_ast_of_five_old_functions_verified": true,
+  "coverage_environment_and_lcov_collision_investigated": true,
+  "dryer_new_and_old_candidates_reviewed": true,
+  "mutator_timeout_distinguished_from_real_survivors": true,
+  "two_ascii_survivors_reexecuted_and_reviewed": true,
+  "baseline_corpus_gold_outside_scope_preserved": true,
+  "preexisting_files_rehashed_unchanged": 1255,
+  "blocking_new_defect_demonstrated": false,
+  "whole_stop_gate_approved": false,
+  "formal_equivalence_of_model_inputs_proven": false,
+  "embedding_values_historical_comparison_possible": false,
+  "recommendation": "Close phase 3 with reservations; isolated ingestion reconstruction can be planned, no productive activation authorized. Existing F1/F2/F6 remain real defects.",
+  "phase4_started": false,
+  "production_code_or_tests_changed": false,
+  "dependencies_or_global_tooling_config_changed": false,
+  "report_links_verified": 28
+}

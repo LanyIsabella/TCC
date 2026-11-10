@@ -1,0 +1,159 @@
+{
+  "kind": "deterministic replay of recorded actual v5 model outputs; no new inference",
+  "source_sha256": {
+    "src/app/grounding.py": "fe39e907b1f64fa57998a9789872633f5184c5e09d50ce6edf8ce8c5c7c25ef6",
+    "src/app/evidence.py": "d8e4ef7049365805ab88b95f7afb497285ec30ee1b54b91b7f30ced52030f3dd",
+    "src/app/agente.py": "6c7c78d0f2abe2aea6c04f96cf75e8b1762e2a37bcec7947ff554b47ae07bf5d",
+    "src/api/schemas/agent.py": "bed1993717018adf8404ae8584dca9317d270cd2e044fc1bc78ff26eb4dcb729",
+    "src/api/services/agent_service.py": "12c1d29b3284caf0c41f882fc53000f671a65ca72802122968dd4a61efa453d8",
+    "src/terminal/main.py": "5024b2ad0fc5763ed03afa75ef50a54190158b1179c0d3ae7bb278fd7b759ff4"
+  },
+  "recording_sha256": "b5bc1535d54f2aae48480a23365271ca6cb27dca8f58d23abda1c59388a47e31",
+  "cases": [
+    {
+      "id": "literal_control",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 0
+    },
+    {
+      "id": "faithful_paraphrase",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "equivalent_units",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 0
+    },
+    {
+      "id": "condition_in_question",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "optional_not_mandatory",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "numeric_contradiction",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "negation_contradiction",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "omitted_condition",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "omitted_exception",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "same_number_wrong_entity",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "swapped_entity_values",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "supported_partial",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "equivalent_negated_minimum",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "optional_paraphrase",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 0
+    },
+    {
+      "id": "markdown_short_answer",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "faithful_negative_paraphrase",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "faithful_prohibition",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "no_current_evidence",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 0
+    },
+    {
+      "id": "partial_paraphrase_with_unsupported_addition",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "singular_unit_literal",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 0
+    },
+    {
+      "id": "singular_unit_contradiction",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 1
+    },
+    {
+      "id": "plain_text_rewrite",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 0
+    },
+    {
+      "id": "normative_rewrite_needs_proof",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 0
+    },
+    {
+      "id": "implicit_font_needs_proof",
+      "same_decision": true,
+      "same_verifier_arguments_and_call_count": true,
+      "calls": 0
+    }
+  ],
+  "matched": 24
+}

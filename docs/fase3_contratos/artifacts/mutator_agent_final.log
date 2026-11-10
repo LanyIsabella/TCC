@@ -1,0 +1,174 @@
+KILLED    src/app/agente.py:53 delete not
+SURVIVED  src/app/agente.py:105 False -> True
+KILLED    src/app/agente.py:122 - -> +
+KILLED    src/app/agente.py:122 1 -> 0
+KILLED    src/app/agente.py:122 delete -
+KILLED    src/app/agente.py:122 1 -> 0
+KILLED    src/app/agente.py:122 delete -
+KILLED    src/app/agente.py:122 1 -> 0
+KILLED    src/app/agente.py:140 delete not
+KILLED    src/app/agente.py:140 or -> and
+KILLED    src/app/agente.py:140 == -> !=
+KILLED    src/app/agente.py:160 delete not
+KILLED    src/app/agente.py:165 == -> !=
+KILLED    src/app/agente.py:166 and -> or
+KILLED    src/app/agente.py:167 and -> or
+KILLED    src/app/agente.py:171 delete not
+KILLED    src/app/agente.py:181 delete not
+KILLED    src/app/agente.py:185 or -> and
+KILLED    src/app/agente.py:189 or -> and
+KILLED    src/app/agente.py:189 delete not
+KILLED    src/app/agente.py:190 False -> True
+KILLED    src/app/agente.py:191 and -> or
+KILLED    src/app/agente.py:192 True -> False
+KILLED    src/app/agente.py:194 delete not
+KILLED    src/app/agente.py:194 or -> and
+KILLED    src/app/agente.py:201 or -> and
+KILLED    src/app/agente.py:202 False -> True
+KILLED    src/app/agente.py:205 == -> !=
+KILLED    src/app/agente.py:206 or -> and
+KILLED    src/app/agente.py:206 delete not
+KILLED    src/app/agente.py:207 or -> and
+KILLED    src/app/agente.py:208 or -> and
+KILLED    src/app/agente.py:219 delete not
+KILLED    src/app/agente.py:221 + -> -
+KILLED    src/app/agente.py:225 delete not
+SURVIVED  src/app/agente.py:229 False -> True
+KILLED    src/app/agente.py:255 == -> !=
+SURVIVED  src/app/agente.py:276 False -> True
+KILLED    src/app/agente.py:291 == -> !=
+KILLED    src/app/agente.py:311 delete not
+KILLED    src/app/agente.py:330 == -> !=
+KILLED    src/app/agente.py:335 delete -
+SURVIVED  src/app/agente.py:336 and -> or
+KILLED    src/app/agente.py:336 delete -
+KILLED    src/app/agente.py:336 1 -> 0
+SURVIVED  src/app/evidence.py:71 and -> or
+SURVIVED  src/app/evidence.py:75 or -> and
+SURVIVED  src/app/evidence.py:76 and -> or
+KILLED    src/app/evidence.py:84 or -> and
+KILLED    src/app/evidence.py:84 or -> and
+KILLED    src/app/evidence.py:91 - -> +
+KILLED    src/app/evidence.py:91 1 -> 0
+KILLED    src/app/evidence.py:91 delete -
+KILLED    src/app/evidence.py:91 1 -> 0
+KILLED    src/app/evidence.py:91 delete -
+KILLED    src/app/evidence.py:91 1 -> 0
+KILLED    src/app/evidence.py:115 delete not
+KILLED    src/app/evidence.py:118 delete not
+KILLED    src/app/evidence.py:119 == -> !=
+KILLED    src/app/evidence.py:132 delete not
+KILLED    src/app/evidence.py:138 - -> +
+KILLED    src/app/evidence.py:138 1 -> 0
+KILLED    src/app/evidence.py:138 delete -
+KILLED    src/app/evidence.py:138 1 -> 0
+KILLED    src/app/evidence.py:138 delete -
+KILLED    src/app/evidence.py:138 1 -> 0
+KILLED    src/app/evidence.py:141 delete -
+KILLED    src/app/evidence.py:141 1 -> 0
+KILLED    src/app/evidence.py:144 < -> <=
+KILLED    src/app/evidence.py:144 0 -> 1
+KILLED    src/app/evidence.py:148 != -> ==
+KILLED    src/app/evidence.py:149 or -> and
+KILLED    src/app/evidence.py:149 != -> ==
+KILLED    src/app/evidence.py:152 + -> -
+KILLED    src/app/evidence.py:152 1 -> 0
+KILLED    src/app/evidence.py:181 != -> ==
+KILLED    src/app/evidence.py:181 or -> and
+KILLED    src/app/evidence.py:181 != -> ==
+KILLED    src/app/evidence.py:184 and -> or
+KILLED    src/app/evidence.py:184 delete not
+KILLED    src/app/evidence.py:186 and -> or
+KILLED    src/app/evidence.py:186 != -> ==
+KILLED    src/app/evidence.py:195 delete not
+KILLED    src/app/evidence.py:212 or -> and
+KILLED    src/app/evidence.py:231 delete not
+KILLED    src/app/evidence.py:234 delete not
+KILLED    src/app/evidence.py:247 delete not
+KILLED    src/app/evidence.py:247 or -> and
+KILLED    src/app/evidence.py:247 delete not
+KILLED    src/app/evidence.py:249 delete not
+KILLED    src/app/evidence.py:249 or -> and
+KILLED    src/app/evidence.py:249 delete not
+KILLED    src/app/evidence.py:275 != -> ==
+KILLED    src/app/evidence.py:275 or -> and
+KILLED    src/app/evidence.py:275 False -> True
+KILLED    src/app/evidence.py:288 and -> or
+KILLED    src/app/evidence.py:289 or -> and
+KILLED    src/app/evidence.py:290 or -> and
+KILLED    src/app/evidence.py:291 or -> and
+KILLED    src/app/evidence.py:292 or -> and
+KILLED    src/app/evidence.py:293 or -> and
+KILLED    src/app/evidence.py:294 or -> and
+KILLED    src/app/evidence.py:338 True -> False
+KILLED    src/app/evidence.py:338 False -> True
+KILLED    src/app/evidence.py:343 == -> !=
+KILLED    src/app/evidence.py:357 == -> !=
+KILLED    src/app/evidence.py:358 and -> or
+KILLED    src/app/evidence.py:359 and -> or
+KILLED    src/app/evidence.py:359 == -> !=
+KILLED    src/app/evidence.py:389 and -> or
+KILLED    src/app/evidence.py:390 delete not
+KILLED    src/app/evidence.py:416 delete not
+Function                   Namespace               Killed  Survived  Uncovered  Sites   Score
+---------------------------------------------------------------------------------------------
+__init__                   app.agente.ScopedAgent       0         0          0      0    n/a
+_content_text              app.agente.ScopedAgent       0         0          0      0    n/a
+_extract_answer            app.evidence                 0         0          0      0    n/a
+_last_user_question        app.agente.ScopedAgent       0         0          0      0    n/a
+_message_value             app.evidence                 0         0          0      0    n/a
+_parse_tool_content        app.evidence                 0         0          0      0    n/a
+_retrieval_query           app.agente.ScopedAgent       0         0          0      0    n/a
+_structured_data           app.evidence                 0         0          0      0    n/a
+_without_content           app.evidence                 0         0          0      0    n/a
+build_agent                app.agente                   0         0          0      0    n/a
+last_user_question         app.evidence                 0         0          0      0    n/a
+_normalize_content         app.evidence                 0         3          0      3   0.0%
+_verify_claims             app.agente.ScopedAgent       0         1          0      1   0.0%
+_synthesize_from_retrieval app.agente.ScopedAgent       2         1          0      3  66.7%
+_recover_retrieval         app.agente.ScopedAgent       4         1          0      5  80.0%
+_synthesis_history         app.agente.ScopedAgent       4         1          0      5  80.0%
+_candidate_answer          app.agente.ScopedAgent       2         0          0      2 100.0%
+_collect_evidences         app.evidence                 3         0          0      3 100.0%
+_current_user_index        app.agente.ScopedAgent       6         0          0      6 100.0%
+_decision                  app.evidence                 4         0          0      4 100.0%
+_document_evidences        app.evidence                 2         0          0      2 100.0%
+_evidence_record           app.evidence                 6         0          0      6 100.0%
+_execution                 app.evidence                 1         0          0      1 100.0%
+_fingerprint               app.evidence                 2         0          0      2 100.0%
+_last_assistant_text       app.agente.ScopedAgent       1         0          0      1 100.0%
+_needs_retrieval_recovery  app.agente.ScopedAgent       7         0          0      7 100.0%
+_needs_synthesis           app.agente.ScopedAgent       7         0          0      7 100.0%
+_normative_context         app.evidence                 1         0          0      1 100.0%
+_rag_event                 app.evidence                 7         0          0      7 100.0%
+_tool_payloads             app.agente.ScopedAgent       4         0          0      4 100.0%
+_tool_payloads             app.evidence                 1         0          0      1 100.0%
+_with_retrieval_hint       app.agente.ScopedAgent       3         0          0      3 100.0%
+begin_turn                 app.evidence                 6         0          0      6 100.0%
+bind_turn                  app.evidence                 3         0          0      3 100.0%
+current_turn_messages      app.evidence                16         0          0     16 100.0%
+extract_agent_result       app.evidence                 1         0          0      1 100.0%
+finalize_grounding         app.evidence                 2         0          0      2 100.0%
+invoke                     app.agente.ScopedAgent       1         0          0      1 100.0%
+looks_like_guarded_answer  app.evidence                 7         0          0      7 100.0%
+message_role               app.evidence                 2         0          0      2 100.0%
+---------------------------------------------------------------------------------------------
+Total                                                 105         7          0    112   93.8%
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentExecutor.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentService.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.ScopedAgent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.evidence.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.AgentChatRequest.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.ConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.schemas.agent.PublicConversationMessage.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentExecutor.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/api.services.agent_service.AgentService.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.agente.ScopedAgent.edn
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-fase3-quality-p4l3c80f/.metrics/mutate/app.evidence.edn

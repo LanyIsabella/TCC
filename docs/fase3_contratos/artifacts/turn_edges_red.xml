@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="8" time="3.881" timestamp="2026-11-10T10:00:50.219177-03:00" hostname="Lany"><testcase classname="tests.test_agent_turns" name="test_history_is_context_but_not_current_documentary_evidence" time="0.063" /><testcase classname="tests.test_agent_turns" name="test_same_page_identifier_gets_current_content_and_not_old_content" time="0.000" /><testcase classname="tests.test_agent_turns" name="test_other_tool_and_failed_payload_cannot_supply_current_evidence" time="0.000" /><testcase classname="tests.test_agent_turns" name="test_langchain_tool_call_identifier_must_match_its_execution" time="0.001" /><testcase classname="tests.test_agent_turns" name="test_scoped_agent_binds_turn_and_preserves_question" time="3.729" /><testcase classname="tests.test_agent_turns" name="test_bound_turn_cannot_reuse_evidence_after_another_question_is_appended" time="0.001"><failure message="AssertionError: assert {'page:1': {'... atual', ...}} == {}&#10;  &#10;  Left contains 1 more item:&#10;  {'page:1': {'evidence_id': 'page:1',&#10;              'query': None,&#10;              'question_sha256': 'bc8d660433d9a16a546a493f500e9082c97a62e7aab4eb651b0a15aca3eccaf0',&#10;              'text': 'Trecho atual',&#10;              'tool_call_id': None,&#10;              'turn_id': 'de5c296207c5426187abf162ef4c4729'}}&#10;  Use -v to get more diff">def test_bound_turn_cannot_reuse_evidence_after_another_question_is_appended():
+        payload, turn = begin_turn({"messages": [{"role": "user", "content": "Margens ABNT?"}]})
+        value = bind_turn({"messages": [*payload["messages"], tool(),
+                                        {"role": "user", "content": "Qual a fonte do TCC?"}]}, payload, turn)
+&gt;       assert _collect_evidences(value) == {}
+E       AssertionError: assert {'page:1': {'... atual', ...}} == {}
+E         
+E         Left contains 1 more item:
+E         {'page:1': {'evidence_id': 'page:1',
+E                     'query': None,
+E                     'question_sha256': 'bc8d660433d9a16a546a493f500e9082c97a62e7aab4eb651b0a15aca3eccaf0',
+E                     'text': 'Trecho atual',
+E                     'tool_call_id': None,
+E                     'turn_id': 'de5c296207c5426187abf162ef4c4729'}}
+E         Use -v to get more diff
+
+tests\test_agent_turns.py:85: AssertionError</failure></testcase><testcase classname="tests.test_agent_turns" name="test_bound_turn_does_not_trust_an_unpaired_tool_result" time="0.001"><failure message="AssertionError: assert {'page:1': {'... atual', ...}} == {}&#10;  &#10;  Left contains 1 more item:&#10;  {'page:1': {'evidence_id': 'page:1',&#10;              'query': None,&#10;              'question_sha256': 'bc8d660433d9a16a546a493f500e9082c97a62e7aab4eb651b0a15aca3eccaf0',&#10;              'text': 'Trecho atual',&#10;              'tool_call_id': None,&#10;              'turn_id': '998177c239744d6584097c57787d4712'}}&#10;  Use -v to get more diff">def test_bound_turn_does_not_trust_an_unpaired_tool_result():
+        payload, turn = begin_turn({"messages": [HumanMessage(content="Margens ABNT?")]})
+        value = bind_turn({"messages": [*payload["messages"], tool()]}, payload, turn)
+&gt;       assert _collect_evidences(value) == {}
+E       AssertionError: assert {'page:1': {'... atual', ...}} == {}
+E         
+E         Left contains 1 more item:
+E         {'page:1': {'evidence_id': 'page:1',
+E                     'query': None,
+E                     'question_sha256': 'bc8d660433d9a16a546a493f500e9082c97a62e7aab4eb651b0a15aca3eccaf0',
+E                     'text': 'Trecho atual',
+E                     'tool_call_id': None,
+E                     'turn_id': '998177c239744d6584097c57787d4712'}}
+E         Use -v to get more diff
+
+tests\test_agent_turns.py:91: AssertionError</failure></testcase><testcase classname="tests.test_agent_turns" name="test_unbound_executor_result_does_not_relabel_old_tools_as_current" time="0.000" /></testsuite></testsuites>
