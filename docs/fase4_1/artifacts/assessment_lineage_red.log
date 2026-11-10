@@ -1,0 +1,27 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+________ test_gold_keeps_links_to_each_assessment_used_at_publication _________
+
+isolated_pg = (<function isolated_pg.<locals>.connect at 0x000002BC305C2AC0>, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-225/test_gold_keeps_links_to_each_0/synthetic.pdf'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002BC30242D70>
+
+    def test_gold_keeps_links_to_each_assessment_used_at_publication(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        configure_stubs(monkeypatch)
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        gold = pipeline.activate_gold(17, "pdf_reader", True)
+        monkeypatch.setenv("RAG_EVALUATION_CONTEXT", "8192")
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        assert pipeline.activate_gold(17, "pdf_reader", True) == gold
+        with connect() as connection:
+            links = connection.execute("SELECT evaluation_id,snapshot->'derived_gold'->>'id' FROM silver.page_extraction_history WHERE event_kind='gold_derivation'").fetchall()
+>           assert len(links) == 2 and links[0][0] != links[1][0]
+E           assert (0 == 2)
+E            +  where 0 = len([])
+
+tests\integration\test_postgres_provenance.py:446: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_postgres_provenance.py::test_gold_keeps_links_to_each_assessment_used_at_publication
+1 failed, 31 deselected in 4.57s

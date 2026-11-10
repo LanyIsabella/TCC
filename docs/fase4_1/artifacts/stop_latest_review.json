@@ -1,0 +1,119 @@
+{
+  "report_time_utc": "2026-11-10T20:14:29.904566+00:00",
+  "report_sha256": "5676f272a1eab5e27ce3e241e598c5cb351559b5459e58e7a94794718839d097",
+  "ok": false,
+  "source_preserved": true,
+  "incomplete": "The shared deadline expired; timeouts caused by this budget are not validated mutant kills.",
+  "tools": {
+    "crapper": {
+      "sha256": "804f213fec4d686765812ca5dcbcd95feacaf3f893d373acd5ec7d59957db7b7",
+      "exit_code": 2,
+      "ok": false,
+      "seconds": 0.375,
+      "diagnostics": [
+        "ModuleNotFoundError: No module named 'coverage'",
+        "CRAP threshold exceeded: 161.7 > 10.0",
+        "Coverage/test command failed; quality validation is incomplete."
+      ]
+    },
+    "dryer": {
+      "sha256": "ffed3a1446518bdd385c3113a167e8845ade153a2bad84c83ab534bc2bc8463c",
+      "exit_code": 0,
+      "ok": false,
+      "seconds": 0.547,
+      "diagnostics": []
+    },
+    "mutator": {
+      "sha256": "108bda342c4b03362b1d1ae7ac6346c5745b58c6f5a5411d9aeaa255f8032955",
+      "exit_code": 2,
+      "ok": false,
+      "seconds": 49.562,
+      "diagnostics": [
+        "Baseline failed for data/extraction_provenance.py: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe' -m pytest",
+        "================= 355 passed, 1 skipped, 5 xfailed in 46.67s ==================",
+        "Baseline failed for data/rag_pipeline.py: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe' -m pytest",
+        "Baseline failed for src/api/schemas/agent.py: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe' -m pytest",
+        "Baseline failed for src/api/services/agent_service.py: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe' -m pytest",
+        "Baseline failed for src/app/agente.py: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe' -m pytest",
+        "Baseline failed for src/app/evidence.py: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe' -m pytest",
+        "Baseline failed for src/app/grounding.py: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe' -m pytest",
+        "Baseline failed for src/terminal/main.py: 'C:\\Users\\lany_\\OneDrive\\Desktop\\TCC\\.venv\\Scripts\\python.exe' -m pytest"
+      ]
+    }
+  },
+  "changed_functions_matched": 24,
+  "changed_functions_max_crap": 9.0021,
+  "duplicates": [
+    {
+      "score": 1.0,
+      "language": "python",
+      "left": {
+        "file": "src/api/schemas/agent.py",
+        "start-line": 27,
+        "end-line": 30
+      },
+      "right": {
+        "file": "src/api/schemas/agent.py",
+        "start-line": 57,
+        "end-line": 60
+      },
+      "left-nodes": 29,
+      "right-nodes": 29
+    },
+    {
+      "score": 1.0,
+      "language": "python",
+      "left": {
+        "file": "src/app/evidence.py",
+        "start-line": 58,
+        "end-line": 61
+      },
+      "right": {
+        "file": "src/app/query_planner.py",
+        "start-line": 65,
+        "end-line": 68
+      },
+      "left-nodes": 60,
+      "right-nodes": 60
+    },
+    {
+      "score": 1.0,
+      "language": "python",
+      "left": {
+        "file": "src/app/evidence.py",
+        "start-line": 58,
+        "end-line": 61
+      },
+      "right": {
+        "file": "src/app/scope_guard.py",
+        "start-line": 173,
+        "end-line": 176
+      },
+      "left-nodes": 60,
+      "right-nodes": 60
+    },
+    {
+      "score": 0.928571428571,
+      "language": "python",
+      "left": {
+        "file": "data/rag_pipeline.py",
+        "start-line": 2107,
+        "end-line": 2142
+      },
+      "right": {
+        "file": "data/rag_pipeline.py",
+        "start-line": 2145,
+        "end-line": 2167
+      },
+      "left-nodes": 108,
+      "right-nodes": 101
+    }
+  ],
+  "mutation_counters_not_evidence_of_complete_execution": {
+    "killed": 75,
+    "survived": 0,
+    "uncovered": 160,
+    "sites": 235
+  },
+  "prior_delivery_manifest_still_valid": true
+}

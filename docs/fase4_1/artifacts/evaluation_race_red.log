@@ -1,0 +1,32 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+________ test_late_old_configuration_cannot_overwrite_newer_assessment ________
+
+isolated_pg = (<function isolated_pg.<locals>.connect at 0x00000281A871A840>, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-220/test_late_old_configuration_ca0/synthetic.pdf'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000281A8462C40>
+
+    def test_late_old_configuration_cannot_overwrite_newer_assessment(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        monkeypatch.setenv("RAG_EVALUATION_MODEL", "synthetic-evaluator")
+        monkeypatch.setattr(pipeline, "native_page_text", lambda _: "synthetic reference text")
+        calls = []
+        def evaluate(*_):
+            calls.append("evaluation")
+            if len(calls) == 1:
+                monkeypatch.setenv("RAG_EVALUATION_CONTEXT", "8192")
+                pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+                return {"overall_score": 11}, "page_image"
+            return {"overall_score": 82}, "page_image"
+        monkeypatch.setattr(pipeline, "evaluate_page", evaluate)
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        with connect() as connection:
+            score, context = connection.execute("SELECT quality_score,evaluation_config->>'num_ctx' FROM silver.silver_page_extractions").fetchone()
+>           assert score == 82 and context == "8192"
+E           AssertionError: assert (Decimal('11.00') == 82)
+
+tests\integration\test_extraction_provenance.py:409: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_extraction_provenance.py::test_late_old_configuration_cannot_overwrite_newer_assessment
+1 failed, 28 deselected in 4.53s

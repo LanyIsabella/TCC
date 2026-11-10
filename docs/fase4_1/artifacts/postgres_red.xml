@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="5.152" timestamp="2026-11-10T15:25:50.510858-03:00" hostname="Lany"><testcase classname="tests.integration.test_extraction_provenance" name="test_original_change_creates_new_execution" time="3.786"><failure message="assert 1 != 1">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x0000014713306E80&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-207/test_original_change_creates_n0/synthetic.pdf'))
+
+    def test_original_change_creates_new_execution(isolated_pg):
+        _, source = isolated_pg
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        source.write_bytes(b"synthetic source B")
+        second = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+&gt;       assert second != first
+E       assert 1 != 1
+
+tests\integration\test_extraction_provenance.py:11: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_configuration_change_creates_new_execution" time="0.353"><failure message="assert 1 != 1">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001471339B240&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-207/test_ocr_configuration_change_0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000014713240D60&gt;
+
+    def test_ocr_configuration_change_creates_new_execution(isolated_pg, monkeypatch):
+        monkeypatch.setenv("RAG_GLM_OCR_MODE", "direct_ollama")
+        monkeypatch.setenv("GLMOCR_MODEL", "synthetic-model-a")
+        first = pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False)
+        monkeypatch.setenv("GLMOCR_MODEL", "synthetic-model-b")
+        second = pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False)
+&gt;       assert second != first
+E       assert 1 != 1
+
+tests\integration\test_extraction_provenance.py:20: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_modified_text_cannot_keep_successful_evaluation" time="0.338"><failure message="AssertionError: assert ('success', Decimal('97.00')) == ('pending', None)&#10;  &#10;  At index 0 diff: 'success' != 'pending'&#10;  Use -v to get more diff">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x00000147133071A0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-207/test_modified_text_cannot_keep0/synthetic.pdf'))
+
+    def test_modified_text_cannot_keep_successful_evaluation(isolated_pg):
+        connect, _ = isolated_pg
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        with connect() as connection:
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='old', processing_status='success', evaluation_status='success', quality_score=97 WHERE extraction_id=%s", (execution,))
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='new' WHERE extraction_id=%s", (execution,))
+            result = connection.execute("SELECT evaluation_status,quality_score FROM silver.silver_page_extractions WHERE extraction_id=%s", (execution,)).fetchone()
+&gt;       assert result == ("pending", None)
+E       AssertionError: assert ('success', Decimal('97.00')) == ('pending', None)
+E         
+E         At index 0 diff: 'success' != 'pending'
+E         Use -v to get more diff
+
+tests\integration\test_extraction_provenance.py:30: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_forced_processing_preserves_previous_execution" time="0.523"><failure message="assert 1 != 1">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001471339B4C0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-207/test_forced_processing_preserv0/synthetic.pdf'))
+
+    def test_forced_processing_preserves_previous_execution(isolated_pg):
+        connect, _ = isolated_pg
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        with connect() as connection:
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='old', evaluation_status='success', quality_score=97 WHERE extraction_id=%s", (first,))
+        second = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, True)
+&gt;       assert first != second
+E       assert 1 != 1
+
+tests\integration\test_extraction_provenance.py:39: AssertionError</failure></testcase></testsuite></testsuites>

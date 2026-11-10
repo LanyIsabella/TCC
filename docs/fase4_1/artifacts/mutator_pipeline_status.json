@@ -1,0 +1,7 @@
+{
+  "scope": "eleven changed functions",
+  "coverage_filter": false,
+  "budget_seconds": 900,
+  "exit_code": 1,
+  "max_workers": 2
+}

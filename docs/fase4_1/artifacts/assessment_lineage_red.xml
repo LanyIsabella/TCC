@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="4.565" timestamp="2026-11-10T16:03:28.268555-03:00" hostname="Lany"><testcase classname="tests.integration.test_postgres_provenance" name="test_gold_keeps_links_to_each_assessment_used_at_publication" time="4.393"><failure message="assert (0 == 2)&#10; +  where 0 = len([])">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000002BC305C2AC0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-225/test_gold_keeps_links_to_each_0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000002BC30242D70&gt;
+
+    def test_gold_keeps_links_to_each_assessment_used_at_publication(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        configure_stubs(monkeypatch)
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        gold = pipeline.activate_gold(17, "pdf_reader", True)
+        monkeypatch.setenv("RAG_EVALUATION_CONTEXT", "8192")
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        assert pipeline.activate_gold(17, "pdf_reader", True) == gold
+        with connect() as connection:
+            links = connection.execute("SELECT evaluation_id,snapshot-&gt;'derived_gold'-&gt;&gt;'id' FROM silver.page_extraction_history WHERE event_kind='gold_derivation'").fetchall()
+&gt;           assert len(links) == 2 and links[0][0] != links[1][0]
+E           assert (0 == 2)
+E            +  where 0 = len([])
+
+tests\integration\test_postgres_provenance.py:446: AssertionError</failure></testcase></testsuite></testsuites>

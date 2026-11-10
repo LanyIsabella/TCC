@@ -1,0 +1,320 @@
+EEEE                                                                     [100%]
+=================================== ERRORS ====================================
+________ ERROR at setup of test_original_change_creates_new_execution _________
+
+    @pytest.fixture(scope="session")
+    def postgres_cluster():
+        binaries = Path(os.getenv("TCC_PG_BIN", "C:/Program Files/PostgreSQL/18/bin"))
+        if not (binaries / "initdb.exe").is_file():
+            if os.getenv("TCC_REQUIRE_PG") == "1":
+                pytest.fail("TCC_PG_BIN deve apontar para os bin�rios PostgreSQL locais")
+            pytest.skip("PostgreSQL local ausente; integra��o n�o executada")
+        workspace = Path(tempfile.mkdtemp(prefix="tcc-f41-pg-"))
+        data = workspace / "cluster"
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", 0))
+            port = sock.getsockname()[1]
+        _pg_command(binaries / "initdb.exe", "-D", data, "-U", "tcc_f41", "-A", "trust", "--encoding=UTF8", "--locale=C")
+>       _pg_command(binaries / "pg_ctl.exe", "-D", data, "-l", workspace / "server.log", "-o", f"-h 127.0.0.1 -p {port} -F", "-w", "-t", "25", "start")
+
+tests\conftest.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:19: in _pg_command
+    result = subprocess.run(
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:1222: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: 0 args: ['C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl...>
+input = None, endtime = 19745.5556444, orig_timeout = 45
+
+    def _communicate(self, input, endtime, orig_timeout):
+        # Start reader threads feeding into a list hanging off of this
+        # object, unless they've already been started.
+        if self.stdout and not hasattr(self, "_stdout_buff"):
+            self._stdout_buff = []
+            self.stdout_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stdout, self._stdout_buff))
+            self.stdout_thread.daemon = True
+            self.stdout_thread.start()
+        if self.stderr and not hasattr(self, "_stderr_buff"):
+            self._stderr_buff = []
+            self.stderr_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stderr, self._stderr_buff))
+            self.stderr_thread.daemon = True
+            self.stderr_thread.start()
+    
+        # Start writer thread to send input to stdin, unless already
+        # started.  The thread writes input and closes stdin when done,
+        # or continues in the background on timeout.
+        if self.stdin and not hasattr(self, "_stdin_thread"):
+            self._stdin_thread = \
+                    threading.Thread(target=self._writerthread,
+                                     args=(input,))
+            self._stdin_thread.daemon = True
+            self._stdin_thread.start()
+    
+        # Wait for the writer thread, or time out.  If we time out, the
+        # thread remains writing and the fd left open in case the user
+        # calls communicate again.
+        if hasattr(self, "_stdin_thread"):
+            self._stdin_thread.join(self._remaining_time(endtime))
+            if self._stdin_thread.is_alive():
+                raise TimeoutExpired(self.args, orig_timeout)
+    
+        # Wait for the reader threads, or time out.  If we time out, the
+        # threads remain reading and the fds left open in case the user
+        # calls communicate again.
+        if self.stdout is not None:
+            self.stdout_thread.join(self._remaining_time(endtime))
+            if self.stdout_thread.is_alive():
+>               raise TimeoutExpired(self.args, orig_timeout)
+E               subprocess.TimeoutExpired: Command '['C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe', '-D', 'C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pg-ew85qto2\\cluster', '-l', 'C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pg-ew85qto2\\server.log', '-o', '-h 127.0.0.1 -p 62803 -F', '-w', '-t', '25', 'start']' timed out after 45 seconds
+
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:1665: TimeoutExpired
+____ ERROR at setup of test_ocr_configuration_change_creates_new_execution ____
+
+    @pytest.fixture(scope="session")
+    def postgres_cluster():
+        binaries = Path(os.getenv("TCC_PG_BIN", "C:/Program Files/PostgreSQL/18/bin"))
+        if not (binaries / "initdb.exe").is_file():
+            if os.getenv("TCC_REQUIRE_PG") == "1":
+                pytest.fail("TCC_PG_BIN deve apontar para os bin�rios PostgreSQL locais")
+            pytest.skip("PostgreSQL local ausente; integra��o n�o executada")
+        workspace = Path(tempfile.mkdtemp(prefix="tcc-f41-pg-"))
+        data = workspace / "cluster"
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", 0))
+            port = sock.getsockname()[1]
+        _pg_command(binaries / "initdb.exe", "-D", data, "-U", "tcc_f41", "-A", "trust", "--encoding=UTF8", "--locale=C")
+>       _pg_command(binaries / "pg_ctl.exe", "-D", data, "-l", workspace / "server.log", "-o", f"-h 127.0.0.1 -p {port} -F", "-w", "-t", "25", "start")
+
+tests\conftest.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:19: in _pg_command
+    result = subprocess.run(
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:1222: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: 0 args: ['C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl...>
+input = None, endtime = 19745.5556444, orig_timeout = 45
+
+    def _communicate(self, input, endtime, orig_timeout):
+        # Start reader threads feeding into a list hanging off of this
+        # object, unless they've already been started.
+        if self.stdout and not hasattr(self, "_stdout_buff"):
+            self._stdout_buff = []
+            self.stdout_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stdout, self._stdout_buff))
+            self.stdout_thread.daemon = True
+            self.stdout_thread.start()
+        if self.stderr and not hasattr(self, "_stderr_buff"):
+            self._stderr_buff = []
+            self.stderr_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stderr, self._stderr_buff))
+            self.stderr_thread.daemon = True
+            self.stderr_thread.start()
+    
+        # Start writer thread to send input to stdin, unless already
+        # started.  The thread writes input and closes stdin when done,
+        # or continues in the background on timeout.
+        if self.stdin and not hasattr(self, "_stdin_thread"):
+            self._stdin_thread = \
+                    threading.Thread(target=self._writerthread,
+                                     args=(input,))
+            self._stdin_thread.daemon = True
+            self._stdin_thread.start()
+    
+        # Wait for the writer thread, or time out.  If we time out, the
+        # thread remains writing and the fd left open in case the user
+        # calls communicate again.
+        if hasattr(self, "_stdin_thread"):
+            self._stdin_thread.join(self._remaining_time(endtime))
+            if self._stdin_thread.is_alive():
+                raise TimeoutExpired(self.args, orig_timeout)
+    
+        # Wait for the reader threads, or time out.  If we time out, the
+        # threads remain reading and the fds left open in case the user
+        # calls communicate again.
+        if self.stdout is not None:
+            self.stdout_thread.join(self._remaining_time(endtime))
+            if self.stdout_thread.is_alive():
+>               raise TimeoutExpired(self.args, orig_timeout)
+E               subprocess.TimeoutExpired: Command '['C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe', '-D', 'C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pg-ew85qto2\\cluster', '-l', 'C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pg-ew85qto2\\server.log', '-o', '-h 127.0.0.1 -p 62803 -F', '-w', '-t', '25', 'start']' timed out after 45 seconds
+
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:1665: TimeoutExpired
+___ ERROR at setup of test_modified_text_cannot_keep_successful_evaluation ____
+
+    @pytest.fixture(scope="session")
+    def postgres_cluster():
+        binaries = Path(os.getenv("TCC_PG_BIN", "C:/Program Files/PostgreSQL/18/bin"))
+        if not (binaries / "initdb.exe").is_file():
+            if os.getenv("TCC_REQUIRE_PG") == "1":
+                pytest.fail("TCC_PG_BIN deve apontar para os bin�rios PostgreSQL locais")
+            pytest.skip("PostgreSQL local ausente; integra��o n�o executada")
+        workspace = Path(tempfile.mkdtemp(prefix="tcc-f41-pg-"))
+        data = workspace / "cluster"
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", 0))
+            port = sock.getsockname()[1]
+        _pg_command(binaries / "initdb.exe", "-D", data, "-U", "tcc_f41", "-A", "trust", "--encoding=UTF8", "--locale=C")
+>       _pg_command(binaries / "pg_ctl.exe", "-D", data, "-l", workspace / "server.log", "-o", f"-h 127.0.0.1 -p {port} -F", "-w", "-t", "25", "start")
+
+tests\conftest.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:19: in _pg_command
+    result = subprocess.run(
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:1222: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: 0 args: ['C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl...>
+input = None, endtime = 19745.5556444, orig_timeout = 45
+
+    def _communicate(self, input, endtime, orig_timeout):
+        # Start reader threads feeding into a list hanging off of this
+        # object, unless they've already been started.
+        if self.stdout and not hasattr(self, "_stdout_buff"):
+            self._stdout_buff = []
+            self.stdout_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stdout, self._stdout_buff))
+            self.stdout_thread.daemon = True
+            self.stdout_thread.start()
+        if self.stderr and not hasattr(self, "_stderr_buff"):
+            self._stderr_buff = []
+            self.stderr_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stderr, self._stderr_buff))
+            self.stderr_thread.daemon = True
+            self.stderr_thread.start()
+    
+        # Start writer thread to send input to stdin, unless already
+        # started.  The thread writes input and closes stdin when done,
+        # or continues in the background on timeout.
+        if self.stdin and not hasattr(self, "_stdin_thread"):
+            self._stdin_thread = \
+                    threading.Thread(target=self._writerthread,
+                                     args=(input,))
+            self._stdin_thread.daemon = True
+            self._stdin_thread.start()
+    
+        # Wait for the writer thread, or time out.  If we time out, the
+        # thread remains writing and the fd left open in case the user
+        # calls communicate again.
+        if hasattr(self, "_stdin_thread"):
+            self._stdin_thread.join(self._remaining_time(endtime))
+            if self._stdin_thread.is_alive():
+                raise TimeoutExpired(self.args, orig_timeout)
+    
+        # Wait for the reader threads, or time out.  If we time out, the
+        # threads remain reading and the fds left open in case the user
+        # calls communicate again.
+        if self.stdout is not None:
+            self.stdout_thread.join(self._remaining_time(endtime))
+            if self.stdout_thread.is_alive():
+>               raise TimeoutExpired(self.args, orig_timeout)
+E               subprocess.TimeoutExpired: Command '['C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe', '-D', 'C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pg-ew85qto2\\cluster', '-l', 'C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pg-ew85qto2\\server.log', '-o', '-h 127.0.0.1 -p 62803 -F', '-w', '-t', '25', 'start']' timed out after 45 seconds
+
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:1665: TimeoutExpired
+____ ERROR at setup of test_forced_processing_preserves_previous_execution ____
+
+    @pytest.fixture(scope="session")
+    def postgres_cluster():
+        binaries = Path(os.getenv("TCC_PG_BIN", "C:/Program Files/PostgreSQL/18/bin"))
+        if not (binaries / "initdb.exe").is_file():
+            if os.getenv("TCC_REQUIRE_PG") == "1":
+                pytest.fail("TCC_PG_BIN deve apontar para os bin�rios PostgreSQL locais")
+            pytest.skip("PostgreSQL local ausente; integra��o n�o executada")
+        workspace = Path(tempfile.mkdtemp(prefix="tcc-f41-pg-"))
+        data = workspace / "cluster"
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", 0))
+            port = sock.getsockname()[1]
+        _pg_command(binaries / "initdb.exe", "-D", data, "-U", "tcc_f41", "-A", "trust", "--encoding=UTF8", "--locale=C")
+>       _pg_command(binaries / "pg_ctl.exe", "-D", data, "-l", workspace / "server.log", "-o", f"-h 127.0.0.1 -p {port} -F", "-w", "-t", "25", "start")
+
+tests\conftest.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\conftest.py:19: in _pg_command
+    result = subprocess.run(
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:1222: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: 0 args: ['C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl...>
+input = None, endtime = 19745.5556444, orig_timeout = 45
+
+    def _communicate(self, input, endtime, orig_timeout):
+        # Start reader threads feeding into a list hanging off of this
+        # object, unless they've already been started.
+        if self.stdout and not hasattr(self, "_stdout_buff"):
+            self._stdout_buff = []
+            self.stdout_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stdout, self._stdout_buff))
+            self.stdout_thread.daemon = True
+            self.stdout_thread.start()
+        if self.stderr and not hasattr(self, "_stderr_buff"):
+            self._stderr_buff = []
+            self.stderr_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stderr, self._stderr_buff))
+            self.stderr_thread.daemon = True
+            self.stderr_thread.start()
+    
+        # Start writer thread to send input to stdin, unless already
+        # started.  The thread writes input and closes stdin when done,
+        # or continues in the background on timeout.
+        if self.stdin and not hasattr(self, "_stdin_thread"):
+            self._stdin_thread = \
+                    threading.Thread(target=self._writerthread,
+                                     args=(input,))
+            self._stdin_thread.daemon = True
+            self._stdin_thread.start()
+    
+        # Wait for the writer thread, or time out.  If we time out, the
+        # thread remains writing and the fd left open in case the user
+        # calls communicate again.
+        if hasattr(self, "_stdin_thread"):
+            self._stdin_thread.join(self._remaining_time(endtime))
+            if self._stdin_thread.is_alive():
+                raise TimeoutExpired(self.args, orig_timeout)
+    
+        # Wait for the reader threads, or time out.  If we time out, the
+        # threads remain reading and the fds left open in case the user
+        # calls communicate again.
+        if self.stdout is not None:
+            self.stdout_thread.join(self._remaining_time(endtime))
+            if self.stdout_thread.is_alive():
+>               raise TimeoutExpired(self.args, orig_timeout)
+E               subprocess.TimeoutExpired: Command '['C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe', '-D', 'C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pg-ew85qto2\\cluster', '-l', 'C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pg-ew85qto2\\server.log', '-o', '-h 127.0.0.1 -p 62803 -F', '-w', '-t', '25', 'start']' timed out after 45 seconds
+
+..\..\..\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py:1665: TimeoutExpired
+=========================== short test summary info ===========================
+ERROR tests/integration/test_extraction_provenance.py::test_original_change_creates_new_execution
+ERROR tests/integration/test_extraction_provenance.py::test_ocr_configuration_change_creates_new_execution
+ERROR tests/integration/test_extraction_provenance.py::test_modified_text_cannot_keep_successful_evaluation
+ERROR tests/integration/test_extraction_provenance.py::test_forced_processing_preserves_previous_execution
+4 errors in 168.32s (0:02:48)

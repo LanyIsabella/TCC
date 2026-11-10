@@ -1,0 +1,8 @@
+{:candidates [
+ {:score 0.928571428571
+  :language "python"
+  :left {:file "data/rag_pipeline.py", :start-line 2065, :end-line 2100}
+  :right {:file "data/rag_pipeline.py", :start-line 2103, :end-line 2125}
+  :left-nodes 108
+  :right-nodes 101}
+]}

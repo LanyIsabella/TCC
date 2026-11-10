@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="4" failures="0" skipped="0" tests="4" time="0.350" timestamp="2026-11-10T15:33:20.552302-03:00" hostname="Lany"><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_content_invalidates_score" time="0.069"><error message="failed on setup with &quot;IndexError: list index out of range&quot;">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000250275B2190&gt;
+isolated_silver = &lt;sqlite3.Connection object at 0x00000250277788B0&gt;
+
+    @pytest.fixture
+    def forced_reextraction(monkeypatch, isolated_silver):
+        database = isolated_silver
+&gt;       extraction_id = pipeline.create_or_resume_extraction(
+            17, "pdf_reader", 1, False, False
+        )
+
+tests\baseline\test_defect_pipeline.py:145: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+document_id = 17, extractor = 'pdf_reader', total_pages = 1
+retry_errors = False, force = False
+
+    def create_or_resume_extraction(
+        document_id: int,
+        extractor: str,
+        total_pages: int,
+        retry_errors: bool,
+        force: bool,
+    ) -&gt; int:
+&gt;       document = bronze_documents(document_id)[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+data\rag_pipeline.py:415: IndexError</error></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_force_content_is_evaluated_again" time="0.001"><error message="failed on setup with &quot;IndexError: list index out of range&quot;">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000250275B0D60&gt;
+isolated_silver = &lt;sqlite3.Connection object at 0x0000025027779300&gt;
+
+    @pytest.fixture
+    def forced_reextraction(monkeypatch, isolated_silver):
+        database = isolated_silver
+&gt;       extraction_id = pipeline.create_or_resume_extraction(
+            17, "pdf_reader", 1, False, False
+        )
+
+tests\baseline\test_defect_pipeline.py:145: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+document_id = 17, extractor = 'pdf_reader', total_pages = 1
+retry_errors = False, force = False
+
+    def create_or_resume_extraction(
+        document_id: int,
+        extractor: str,
+        total_pages: int,
+        retry_errors: bool,
+        force: bool,
+    ) -&gt; int:
+&gt;       document = bronze_documents(document_id)[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+data\rag_pipeline.py:415: IndexError</error></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_provenance_creates_new_extraction[source-bytes]" time="0.025"><error message="failed on setup with &quot;sqlite3.OperationalError: no such function: hashtextextended&quot;">request = &lt;SubRequest 'changed_extraction_identity' for &lt;Function test_f2_contract_changed_provenance_creates_new_extraction[source-bytes]&gt;&gt;
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000025027522690&gt;
+isolated_silver = &lt;sqlite3.Connection object at 0x0000025027779A80&gt;
+tmp_path = WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-210/test_f2_contract_changed_prove0')
+
+    @pytest.fixture(params=["source-bytes", "extractor-config"])
+    def changed_extraction_identity(request, monkeypatch, isolated_silver, tmp_path):
+        source = tmp_path / "synthetic.pdf"
+        source.write_bytes(b"synthetic source A")
+        isolated_silver.execute(
+            "INSERT INTO bronze.documents VALUES (?, ?, ?, ?, ?)",
+            (17, str(source), source.name, 1, "{}"),
+        )
+        isolated_silver.commit()
+        monkeypatch.setattr(pipeline, "extractor_versions", lambda: {"glm_ocr": "v1"})
+        monkeypatch.setenv("RAG_GLM_OCR_MODE", "direct_ollama")
+        monkeypatch.setenv("GLMOCR_MODEL", "synthetic-model-a")
+&gt;       first = pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\baseline\test_defect_pipeline.py:249: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+data\rag_pipeline.py:426: in create_or_resume_extraction
+    return provenance.start_execution(
+data\extraction_provenance.py:77: in start_execution
+    cursor.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (f"extraction:{document_id}:{extractor}",))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;test_defect_pipeline.SQLiteCursor object at 0x00000250275B3950&gt;
+sql = 'SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))'
+params = ('extraction:17:glm_ocr',)
+
+    def execute(self, sql, params=()):
+        values = iter(params)
+        bound = []
+    
+        def placeholder(match):
+            value = next(values)
+            if match.group() == "= ANY(%s)":
+                bound.extend(value)
+                return "IN (" + ",".join("?" for _ in value) + ")"
+            if isinstance(value, datetime):
+                value = value.isoformat()
+            bound.append(json.dumps(value.obj) if hasattr(value, "obj") else value)
+            return "?"
+    
+        translated = re.sub(r"= ANY\(%s\)|%s", placeholder, sql)
+&gt;       self.cursor.execute(translated.replace("now()", "CURRENT_TIMESTAMP"), bound)
+E       sqlite3.OperationalError: no such function: hashtextextended
+
+tests\baseline\test_defect_pipeline.py:41: OperationalError</error></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_provenance_creates_new_extraction[extractor-config]" time="0.005"><error message="failed on setup with &quot;sqlite3.OperationalError: no such function: hashtextextended&quot;">request = &lt;SubRequest 'changed_extraction_identity' for &lt;Function test_f2_contract_changed_provenance_creates_new_extraction[extractor-config]&gt;&gt;
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000250277E9480&gt;
+isolated_silver = &lt;sqlite3.Connection object at 0x0000025027805A80&gt;
+tmp_path = WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-210/test_f2_contract_changed_prove1')
+
+    @pytest.fixture(params=["source-bytes", "extractor-config"])
+    def changed_extraction_identity(request, monkeypatch, isolated_silver, tmp_path):
+        source = tmp_path / "synthetic.pdf"
+        source.write_bytes(b"synthetic source A")
+        isolated_silver.execute(
+            "INSERT INTO bronze.documents VALUES (?, ?, ?, ?, ?)",
+            (17, str(source), source.name, 1, "{}"),
+        )
+        isolated_silver.commit()
+        monkeypatch.setattr(pipeline, "extractor_versions", lambda: {"glm_ocr": "v1"})
+        monkeypatch.setenv("RAG_GLM_OCR_MODE", "direct_ollama")
+        monkeypatch.setenv("GLMOCR_MODEL", "synthetic-model-a")
+&gt;       first = pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\baseline\test_defect_pipeline.py:249: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+data\rag_pipeline.py:426: in create_or_resume_extraction
+    return provenance.start_execution(
+data\extraction_provenance.py:77: in start_execution
+    cursor.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (f"extraction:{document_id}:{extractor}",))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;test_defect_pipeline.SQLiteCursor object at 0x000002502760C050&gt;
+sql = 'SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))'
+params = ('extraction:17:glm_ocr',)
+
+    def execute(self, sql, params=()):
+        values = iter(params)
+        bound = []
+    
+        def placeholder(match):
+            value = next(values)
+            if match.group() == "= ANY(%s)":
+                bound.extend(value)
+                return "IN (" + ",".join("?" for _ in value) + ")"
+            if isinstance(value, datetime):
+                value = value.isoformat()
+            bound.append(json.dumps(value.obj) if hasattr(value, "obj") else value)
+            return "?"
+    
+        translated = re.sub(r"= ANY\(%s\)|%s", placeholder, sql)
+&gt;       self.cursor.execute(translated.replace("now()", "CURRENT_TIMESTAMP"), bound)
+E       sqlite3.OperationalError: no such function: hashtextextended
+
+tests\baseline\test_defect_pipeline.py:41: OperationalError</error></testcase></testsuite></testsuites>

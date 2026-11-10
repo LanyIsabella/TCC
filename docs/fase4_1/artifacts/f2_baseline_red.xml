@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="0.380" timestamp="2026-11-10T15:19:07.372357-03:00" hostname="Lany"><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_content_invalidates_score" time="0.159"><failure message="AssertionError: assert ('success', 97.0) == ('pending', None)&#10;  &#10;  At index 0 diff: 'success' != 'pending'&#10;  Use -v to get more diff">forced_reextraction = (&lt;sqlite3.Connection object at 0x0000027FA21572E0&gt;, 1)
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F2: forced text replacement preserves stale successful evaluation",
+    )
+    def test_f2_contract_changed_content_invalidates_score(forced_reextraction):
+        database, extraction_id = forced_reextraction
+        row = database.execute(
+            """SELECT evaluation_status, quality_score FROM silver.silver_page_extractions
+               WHERE extraction_id=?""",
+            (extraction_id,),
+        ).fetchone()
+&gt;       assert row == ("pending", None)
+E       AssertionError: assert ('success', 97.0) == ('pending', None)
+E         
+E         At index 0 diff: 'success' != 'pending'
+E         Use -v to get more diff
+
+tests\baseline\test_defect_pipeline.py:197: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_force_content_is_evaluated_again" time="0.001"><failure message="assert 0 == 1&#10; +  where 0 = len([])">evaluation_after_force = (&lt;sqlite3.Connection object at 0x0000027FA24BCD60&gt;, [])
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F2: evaluator only selects pending/error and skips changed content",
+    )
+    def test_f2_contract_force_content_is_evaluated_again(evaluation_after_force):
+        database, evaluated = evaluation_after_force
+&gt;       assert len(evaluated) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\baseline\test_defect_pipeline.py:231: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_provenance_creates_new_extraction[source-bytes]" time="0.009"><failure message="assert 1 != 1">changed_extraction_identity = (1, 1)
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F2: extraction identity lacks source hash and effective configuration",
+    )
+    def test_f2_contract_changed_provenance_creates_new_extraction(
+        changed_extraction_identity,
+    ):
+        first, second = changed_extraction_identity
+&gt;       assert second != first
+E       assert 1 != 1
+
+tests\baseline\test_defect_pipeline.py:277: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_provenance_creates_new_extraction[extractor-config]" time="0.003"><failure message="assert 1 != 1">changed_extraction_identity = (1, 1)
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="F2: extraction identity lacks source hash and effective configuration",
+    )
+    def test_f2_contract_changed_provenance_creates_new_extraction(
+        changed_extraction_identity,
+    ):
+        first, second = changed_extraction_identity
+&gt;       assert second != first
+E       assert 1 != 1
+
+tests\baseline\test_defect_pipeline.py:277: AssertionError</failure></testcase></testsuite></testsuites>

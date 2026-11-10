@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="4.277" timestamp="2026-11-10T16:19:52.999757-03:00" hostname="Lany"><testcase classname="tests.integration.test_postgres_provenance" name="test_processing_uses_identical_original_bytes_for_pages_and_identity" time="4.092"><failure message="AssertionError: assert 'ad0ab6527747...0521362eaed1e' == '16af40c669c2...ad0083a7a5c99'&#10;  &#10;  - 16af40c669c27b447fa539a7561ab17d864d316ae65564ab064ad0083a7a5c99&#10;  + ad0ab65277470c2c495f7594f66aa6c66b7ea149a7f724168570521362eaed1e">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x0000021476C972E0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-229/test_processing_uses_identical0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000214768E2FD0&gt;
+
+    def test_processing_uses_identical_original_bytes_for_pages_and_identity(isolated_pg, monkeypatch):
+        connect, source = isolated_pg
+        original_hash = provenance.file_digest(source)
+        def pages(snapshot, _document_id):
+            assert snapshot.read_bytes() == b"synthetic source A"
+            source.write_bytes(b"synthetic source changed after page preparation")
+            return [pipeline.ROOT / "data/page_cache/synthetic.pdf"]
+        monkeypatch.setattr(pipeline, "page_paths", pages)
+        monkeypatch.setattr(pipeline, "extract_page", lambda *_: ("from source A", "from source A", None))
+        pipeline.process_extractions(17, ["pdf_reader"], False, False)
+        with connect() as connection:
+            profile = connection.execute("SELECT input_provenance FROM silver.silver_document_extractions").fetchone()[0]
+&gt;       assert profile["source_sha256"] == original_hash
+E       AssertionError: assert 'ad0ab6527747...0521362eaed1e' == '16af40c669c2...ad0083a7a5c99'
+E         
+E         - 16af40c669c27b447fa539a7561ab17d864d316ae65564ab064ad0083a7a5c99
+E         + ad0ab65277470c2c495f7594f66aa6c66b7ea149a7f724168570521362eaed1e
+
+tests\integration\test_postgres_provenance.py:1103: AssertionError</failure></testcase></testsuite></testsuites>

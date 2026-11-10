@@ -1,0 +1,20 @@
+SURVIVED  data/extraction_provenance.py:39 False -> True
+KILLED    data/extraction_provenance.py:298 False -> True
+Function               Namespace                   Killed  Survived  Uncovered  Sites   Score
+---------------------------------------------------------------------------------------------
+_known_digest          data.extraction_provenance       0         0          0      1    n/a
+file_digest            data.extraction_provenance       0         0          0      0    n/a
+fingerprint            data.extraction_provenance       0         0          0      3    n/a
+input_fingerprint      data.extraction_provenance       0         0          0      1    n/a
+model_digest           data.extraction_provenance       0         0          0      3    n/a
+processing_profile     data.extraction_provenance       0         0          0      5    n/a
+record_gold_derivation data.extraction_provenance       0         0          0      4    n/a
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-f41-complementary-quality-567306933f8d4bb98a127a0f17722477/.metrics/mutate/data.extraction_provenance.edn
+require_schema         data.extraction_provenance       0         0          0      1    n/a
+reserve_evaluation     data.extraction_provenance       0         0          0      0    n/a
+save_evaluation        data.extraction_provenance       0         0          0      3    n/a
+start_execution        data.extraction_provenance       0         0          0      6    n/a
+original_snapshot      data.extraction_provenance       0         1          0      9   0.0%
+invalidate_evaluations data.extraction_provenance       1         0          0      1 100.0%
+---------------------------------------------------------------------------------------------
+Total                                                   1         1          0     37   50.0%

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="17" time="12.963" timestamp="2026-11-10T15:36:19.522366-03:00" hostname="Lany"><testcase classname="tests.integration.test_extraction_provenance" name="test_original_change_creates_new_execution" time="3.871" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_configuration_change_creates_new_execution" time="0.541" /><testcase classname="tests.integration.test_extraction_provenance" name="test_modified_text_cannot_keep_successful_evaluation" time="0.529" /><testcase classname="tests.integration.test_extraction_provenance" name="test_forced_processing_preserves_previous_execution" time="0.607" /><testcase classname="tests.integration.test_extraction_provenance" name="test_equivalent_inputs_resume_but_force_is_another_execution" time="0.515" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_MODEL_DIGEST-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc]" time="0.435" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_DIRECT_CONTEXT-8192]" time="0.463" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_DIRECT_MAX_TOKENS-1000]" time="0.458" /><testcase classname="tests.integration.test_extraction_provenance" name="test_extractor_version_changes_identity" time="0.433" /><testcase classname="tests.integration.test_extraction_provenance" name="test_history_keeps_evaluation_and_is_append_only" time="0.719" /><testcase classname="tests.integration.test_extraction_provenance" name="test_changed_evaluator_configuration_reevaluates_only_latest_text" time="0.683"><failure message="TypeError: unsupported operand type(s) for /: 'WindowsPath' and 'NoneType'">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x00000278E31F6CA0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-212/test_changed_evaluator_configu0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000278E2FA2C10&gt;
+
+    def test_changed_evaluator_configuration_reevaluates_only_latest_text(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        calls = configure_stubs(monkeypatch)
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, first, "old result")
+&gt;       pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+
+tests\integration\test_extraction_provenance.py:117: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+document_id = 17, extractor_names = ['pdf_reader'], retry_errors = False
+
+    def evaluate_extractions(
+        document_id: int | None, extractor_names: list[str], retry_errors: bool
+    ) -&gt; None:
+        model_name = os.getenv("RAG_EVALUATION_MODEL", os.getenv("OLLAMA_MODEL"))
+        from psycopg.types.json import Jsonb
+    
+        if not model_name:
+            raise ValueError("Defina OLLAMA_MODEL ou RAG_EVALUATION_MODEL no .env.")
+        query = """
+            SELECT p.id, p.extraction_id, p.source_page_path, p.extracted_text,
+                   p.extracted_markdown, d.document_id, p.evaluation_status
+            FROM silver.silver_page_extractions p
+            JOIN silver.silver_document_extractions d ON d.id = p.extraction_id
+            WHERE p.processing_status = 'success' AND p.extractor = ANY(%s)
+              AND (
+                  p.evaluation_status = 'pending'
+                  OR (p.evaluation_status = 'error' AND %s)
+              )
+        """
+        params: list[Any] = [extractor_names, retry_errors]
+        if document_id is not None:
+            query += " AND d.document_id = %s"
+            params.append(document_id)
+        with connect() as connection, connection.cursor() as cursor:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+        for page_id, _extraction_id, source_path, text, markdown, _doc_id, _status in rows:
+&gt;           page_path = ROOT / source_path
+                        ^^^^^^^^^^^^^^^^^^
+E           TypeError: unsupported operand type(s) for /: 'WindowsPath' and 'NoneType'
+
+data\rag_pipeline.py:988: TypeError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_equivalent_evaluation_is_not_repeated_and_binds_result" time="0.456"><failure message="TypeError: unsupported operand type(s) for /: 'WindowsPath' and 'NoneType'">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x00000278E31F72E0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-212/test_equivalent_evaluation_is_0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000278E31BAC30&gt;
+
+    def test_equivalent_evaluation_is_not_repeated_and_binds_result(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        calls = configure_stubs(monkeypatch)
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution)
+&gt;       pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+
+tests\integration\test_extraction_provenance.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+document_id = 17, extractor_names = ['pdf_reader'], retry_errors = False
+
+    def evaluate_extractions(
+        document_id: int | None, extractor_names: list[str], retry_errors: bool
+    ) -&gt; None:
+        model_name = os.getenv("RAG_EVALUATION_MODEL", os.getenv("OLLAMA_MODEL"))
+        from psycopg.types.json import Jsonb
+    
+        if not model_name:
+            raise ValueError("Defina OLLAMA_MODEL ou RAG_EVALUATION_MODEL no .env.")
+        query = """
+            SELECT p.id, p.extraction_id, p.source_page_path, p.extracted_text,
+                   p.extracted_markdown, d.document_id, p.evaluation_status
+            FROM silver.silver_page_extractions p
+            JOIN silver.silver_document_extractions d ON d.id = p.extraction_id
+            WHERE p.processing_status = 'success' AND p.extractor = ANY(%s)
+              AND (
+                  p.evaluation_status = 'pending'
+                  OR (p.evaluation_status = 'error' AND %s)
+              )
+        """
+        params: list[Any] = [extractor_names, retry_errors]
+        if document_id is not None:
+            query += " AND d.document_id = %s"
+            params.append(document_id)
+        with connect() as connection, connection.cursor() as cursor:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+        for page_id, _extraction_id, source_path, text, markdown, _doc_id, _status in rows:
+&gt;           page_path = ROOT / source_path
+                        ^^^^^^^^^^^^^^^^^^
+E           TypeError: unsupported operand type(s) for /: 'WindowsPath' and 'NoneType'
+
+data\rag_pipeline.py:988: TypeError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_late_evaluation_is_historical_without_approving_current_text" time="0.562" /><testcase classname="tests.integration.test_extraction_provenance" name="test_execution_creation_rollback_leaves_no_partial_pages" time="0.473" /><testcase classname="tests.integration.test_extraction_provenance" name="test_concurrent_equivalent_creation_is_idempotent" time="0.371" /><testcase classname="tests.integration.test_extraction_provenance" name="test_concurrent_processing_claims_each_page_once" time="0.753" /><testcase classname="tests.integration.test_extraction_provenance" name="test_can_reactivate_previous_gold_without_deleting_versions" time="0.880"><failure message="TypeError: activate_gold() got an unexpected keyword argument 'extraction_id'">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x00000278E32482C0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-212/test_can_reactivate_previous_g0/synthetic.pdf'))
+
+    def test_can_reactivate_previous_gold_without_deleting_versions(isolated_pg):
+        connect, _ = isolated_pg
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, first, "first version")
+        original = pipeline.activate_gold(17, "pdf_reader", True)
+        second = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, True)
+        complete(connect, second, "second version")
+        newer = pipeline.activate_gold(17, "pdf_reader", True)
+        assert original != newer
+&gt;       restored = pipeline.activate_gold(17, "pdf_reader", True, extraction_id=first)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: activate_gold() got an unexpected keyword argument 'extraction_id'
+
+tests\integration\test_extraction_provenance.py:207: TypeError</failure></testcase></testsuite></testsuites>

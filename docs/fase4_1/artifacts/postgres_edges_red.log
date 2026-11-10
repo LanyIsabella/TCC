@@ -1,0 +1,101 @@
+..........FF...FF                                                        [100%]
+================================== FAILURES ===================================
+______ test_changed_evaluator_configuration_reevaluates_only_latest_text ______
+
+isolated_pg = (<function isolated_pg.<locals>.connect at 0x000002C01A282CA0>, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-213/test_changed_evaluator_configu0/synthetic.pdf'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002C01A032C10>
+
+    def test_changed_evaluator_configuration_reevaluates_only_latest_text(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        calls = configure_stubs(monkeypatch)
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, first, "old result")
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        second = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, True)
+        complete(connect, second, "new result")
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        assert len(calls) == 2
+        monkeypatch.setenv("RAG_EVALUATION_CONTEXT", "8192")
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+>       assert len(calls) == 3
+E       AssertionError: assert 2 == 3
+E        +  where 2 = len([(WindowsPath('C:/Users/lany_/OneDrive/Desktop/TCC/data/page_cache/synthetic.png'), 'synthetic native reference text',...e/Desktop/TCC/data/page_cache/synthetic.png'), 'synthetic native reference text', 'new result', 'synthetic-evaluator')])
+
+tests\integration\test_extraction_provenance.py:124: AssertionError
+_________ test_equivalent_evaluation_is_not_repeated_and_binds_result _________
+
+isolated_pg = (<function isolated_pg.<locals>.connect at 0x000002C01A299580>, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-213/test_equivalent_evaluation_is_0/synthetic.pdf'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002C01A246C30>
+
+    def test_equivalent_evaluation_is_not_repeated_and_binds_result(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        calls = configure_stubs(monkeypatch)
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        assert len(calls) == 1
+        with connect() as connection:
+            result, target, config = connection.execute("SELECT result_fingerprint,evaluation_input_fingerprint,evaluation_config_fingerprint FROM silver.silver_page_extractions").fetchone()
+>       assert result == target and config is not None
+E       AssertionError: assert ('d9b18840bc88...9c715f2c8bc60' == 'd9b18840bc88...9c715f2c8bc60'
+E         
+E         Skipping 53 identical leading characters in diff, use -v to show
+E           715f2c8bc60 and None is not None)
+
+tests\integration\test_extraction_provenance.py:140: AssertionError
+______________ test_concurrent_processing_claims_each_page_once _______________
+
+isolated_pg = (<function isolated_pg.<locals>.connect at 0x000002C01A2999E0>, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-213/test_concurrent_processing_cla0/synthetic.pdf'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002C01A23E990>
+
+    def test_concurrent_processing_claims_each_page_once(isolated_pg, monkeypatch):
+        started, release = Event(), Event()
+        calls = []
+        monkeypatch.setattr(pipeline, "page_paths", lambda *_: [pipeline.ROOT / "data/page_cache/synthetic.pdf"])
+        def extract(*_):
+            calls.append("called")
+            if len(calls) == 1:
+                started.set()
+                assert release.wait(15)
+            return "synthetic", "synthetic", None
+        monkeypatch.setattr(pipeline, "extract_page", extract)
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            first = pool.submit(pipeline.process_extractions, 17, ["pdf_reader"], False, False)
+            try:
+                assert started.wait(10)
+                pool.submit(pipeline.process_extractions, 17, ["pdf_reader"], True, False).result(timeout=10)
+            finally:
+                release.set()
+            first.result(timeout=10)
+>       assert calls == ["called"]
+E       AssertionError: assert ['called', 'called'] == ['called']
+E         
+E         Left contains one more item: 'called'
+E         Use -v to get more diff
+
+tests\integration\test_extraction_provenance.py:195: AssertionError
+_________ test_can_reactivate_previous_gold_without_deleting_versions _________
+
+isolated_pg = (<function isolated_pg.<locals>.connect at 0x000002C01A298860>, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-213/test_can_reactivate_previous_g0/synthetic.pdf'))
+
+    def test_can_reactivate_previous_gold_without_deleting_versions(isolated_pg):
+        connect, _ = isolated_pg
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, first, "first version")
+        original = pipeline.activate_gold(17, "pdf_reader", True)
+        second = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, True)
+        complete(connect, second, "second version")
+        newer = pipeline.activate_gold(17, "pdf_reader", True)
+        assert original != newer
+>       restored = pipeline.activate_gold(17, "pdf_reader", True, extraction_id=first)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: activate_gold() got an unexpected keyword argument 'extraction_id'
+
+tests\integration\test_extraction_provenance.py:207: TypeError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_extraction_provenance.py::test_changed_evaluator_configuration_reevaluates_only_latest_text
+FAILED tests/integration/test_extraction_provenance.py::test_equivalent_evaluation_is_not_repeated_and_binds_result
+FAILED tests/integration/test_extraction_provenance.py::test_concurrent_processing_claims_each_page_once
+FAILED tests/integration/test_extraction_provenance.py::test_can_reactivate_previous_gold_without_deleting_versions
+4 failed, 13 passed in 13.94s

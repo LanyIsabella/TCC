@@ -1,0 +1,77 @@
+CRAP Report
+===========
+Languages: python
+
+Function                       Namespace                             CC    Cov%     CRAP
+----------------------------------------------------------------------------------------
+generate_embeddings            data.rag_pipeline                     13   4.2%    161.7
+main                           data.rag_pipeline                     12   1.8%    148.6
+search_documents               data.rag_pipeline                     12   2.1%    147.2
+validate_pipeline              data.rag_pipeline                      7   3.6%     50.9
+textual_search_query           data.rag_pipeline                      5  12.5%     21.7
+_embed_with_context_splitting  data.rag_pipeline.OllamaEmbedder      19  81.0%     21.5
+extract_page                   data.rag_pipeline                     10  52.2%     20.9
+page_paths                     data.rag_pipeline                      4   4.2%     18.1
+direct_ollama_glm_ocr          data.rag_pipeline                     16  87.5%     16.5
+standard_search_filters        data.rag_pipeline                      4   8.3%     16.3
+extract_standard_search_keys   data.rag_pipeline                      4  11.1%     15.2
+parse_json_response            data.rag_pipeline                     13  80.0%     14.4
+_evaluate_page_result          data.rag_pipeline                     10  75.0%     11.6
+refresh_silver_document        data.rag_pipeline                     11  95.2%     11.0
+process_extractions            data.rag_pipeline                     10  89.3%     10.1
+activate_gold                  data.rag_pipeline                      9  97.1%      9.0
+rebuild_extraction             data.rag_pipeline                      7 100.0%      7.0
+configure_utf8_output          data.rag_pipeline                      3  25.0%      6.8
+json_value                     data.rag_pipeline                      3  25.0%      6.8
+_get_digest                    data.rag_pipeline.OllamaEmbedder       6  81.2%      6.2
+model_digest                   data.extraction_provenance             6 100.0%      6.0
+comparison_is_ready            data.rag_pipeline                      6 100.0%      6.0
+is_gold_ready                  data.rag_pipeline                      6 100.0%      6.0
+start_execution                data.extraction_provenance             5 100.0%      5.0
+reconstruct_page_content       data.rag_pipeline                      5 100.0%      5.0
+create_docling_converter       data.rag_pipeline                      2  12.5%      4.7
+evaluate_page                  data.rag_pipeline                      4  89.5%      4.0
+is_likely_blank_page           data.rag_pipeline                      4  92.9%      4.0
+_select_gold_execution         data.rag_pipeline                      4  94.4%      4.0
+processing_profile             data.extraction_provenance             4 100.0%      4.0
+_process_extraction_page       data.rag_pipeline                      4 100.0%      4.0
+page_is_eligible               data.rag_pipeline                      4 100.0%      4.0
+native_page_text               data.rag_pipeline                      2  25.0%      3.7
+response_text                  data.rag_pipeline                      3  80.0%      3.1
+record_gold_derivation         data.extraction_provenance             3  85.7%      3.0
+_known_digest                  data.extraction_provenance             3 100.0%      3.0
+save_evaluation                data.extraction_provenance             3 100.0%      3.0
+evaluate_extractions           data.rag_pipeline                      3 100.0%      3.0
+levenshtein                    data.rag_pipeline                      3 100.0%      3.0
+parse_ids                      data.rag_pipeline                      2  50.0%      2.5
+package_version                data.rag_pipeline                      2  60.0%      2.3
+current_evaluation_identity    data.rag_pipeline                      2  80.0%      2.0
+evaluation_configuration       data.rag_pipeline                      2  83.3%      2.0
+input_fingerprint              data.extraction_provenance             2 100.0%      2.0
+require_schema                 data.extraction_provenance             2 100.0%      2.0
+reserve_evaluation             data.extraction_provenance             2 100.0%      2.0
+bronze_documents               data.rag_pipeline                      2 100.0%      2.0
+extractor_status_query         data.rag_pipeline                      2 100.0%      2.0
+page_status_query              data.rag_pipeline                      2 100.0%      2.0
+initialise_database            data.rag_pipeline                      1  16.7%      1.6
+connect                        data.rag_pipeline                      1  25.0%      1.4
+extractor_versions             data.rag_pipeline                      1  50.0%      1.1
+file_digest                    data.extraction_provenance             1 100.0%      1.0
+fingerprint                    data.extraction_provenance             1 100.0%      1.0
+invalidate_evaluations         data.extraction_provenance             1 100.0%      1.0
+context_token_limit            data.rag_pipeline                      1 100.0%      1.0
+create_or_resume_extraction    data.rag_pipeline                      1 100.0%      1.0
+deterministic_evaluation       data.rag_pipeline                      1 100.0%      1.0
+deterministic_metrics          data.rag_pipeline                      1 100.0%      1.0
+estimated_token_count          data.rag_pipeline                      1 100.0%      1.0
+image_data_url                 data.rag_pipeline                      1 100.0%      1.0
+refresh_quality_aggregates     data.rag_pipeline                      1 100.0%      1.0
+render_page_image              data.rag_pipeline                      1 100.0%      1.0
+text_hash                      data.rag_pipeline                      1 100.0%      1.0
+use_direct_ollama_glm_ocr      data.rag_pipeline                      1 100.0%      1.0
+utc_now                        data.rag_pipeline                      1 100.0%      1.0
+vector_literal                 data.rag_pipeline                      1 100.0%      1.0
+__init__                       data.rag_pipeline.OllamaEmbedder       1 100.0%      1.0
+embed                          data.rag_pipeline.OllamaEmbedder       1 100.0%      1.0
+Wrote C:\Users\lany_\AppData\Local\Temp\tcc-f41-quality-z5ub40ie\.metrics\crap.edn
+CRAP threshold exceeded: 161.7 > 10.0

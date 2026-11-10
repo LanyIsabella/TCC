@@ -1,0 +1,98 @@
+..FFFFF....                                                              [100%]
+================================== FAILURES ===================================
+_________ test_configured_digest_requires_actual_sha256[unknown-None] _________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000019D572D0E90>
+provided = 'unknown', expected = None
+
+    @pytest.mark.parametrize("provided,expected", [("unknown", None), ("sha256:" + "a" * 64, "a" * 64), ("A" * 64, "a" * 64)])
+    def test_configured_digest_requires_actual_sha256(monkeypatch, provided, expected):
+        monkeypatch.setenv("TCC_SYNTHETIC_DIGEST", provided)
+>       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") == expected
+E       AssertionError: assert 'unknown' == None
+E        +  where 'unknown' = <function model_digest at 0x0000019D57310E00>('synthetic', 'http://unused', 'TCC_SYNTHETIC_DIGEST')
+E        +    where <function model_digest at 0x0000019D57310E00> = provenance.model_digest
+
+tests\test_extraction_provenance.py:25: AssertionError
+_ test_configured_digest_requires_actual_sha256[sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000019D572D1220>
+provided = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+expected = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    @pytest.mark.parametrize("provided,expected", [("unknown", None), ("sha256:" + "a" * 64, "a" * 64), ("A" * 64, "a" * 64)])
+    def test_configured_digest_requires_actual_sha256(monkeypatch, provided, expected):
+        monkeypatch.setenv("TCC_SYNTHETIC_DIGEST", provided)
+>       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") == expected
+E       AssertionError: assert 'sha256:aaaaa...aaaaaaaaaaaaa' == 'aaaaaaaaaaaa...aaaaaaaaaaaaa'
+E         
+E         - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+E         + sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+E         ? +++++++
+
+tests\test_extraction_provenance.py:25: AssertionError
+_ test_configured_digest_requires_actual_sha256[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000019D5732C710>
+provided = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+expected = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    @pytest.mark.parametrize("provided,expected", [("unknown", None), ("sha256:" + "a" * 64, "a" * 64), ("A" * 64, "a" * 64)])
+    def test_configured_digest_requires_actual_sha256(monkeypatch, provided, expected):
+        monkeypatch.setenv("TCC_SYNTHETIC_DIGEST", provided)
+>       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") == expected
+E       AssertionError: assert 'AAAAAAAAAAAA...AAAAAAAAAAAAA' == 'aaaaaaaaaaaa...aaaaaaaaaaaaa'
+E         
+E         - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+E         + AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+tests\test_extraction_provenance.py:25: AssertionError
+_____________ test_malformed_model_registry_is_unknown[payload0] ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000019D5730A7A0>
+payload = {'models': [None]}
+
+    @pytest.mark.parametrize("payload", [{"models": [None]}, {"models": [{"name": "synthetic:latest", "digest": "unknown"}]}, {"models": None}, []])
+    def test_malformed_model_registry_is_unknown(monkeypatch, payload):
+        monkeypatch.delenv("TCC_SYNTHETIC_DIGEST", raising=False)
+        monkeypatch.setattr(provenance.requests, "get", lambda *a, **kw: SimpleNamespace(raise_for_status=lambda: None, json=lambda: payload))
+>       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_extraction_provenance.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+data\extraction_provenance.py:37: in model_digest
+    return next(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+.0 = <list_iterator object at 0x0000019D573C7D30>
+
+        (item.get("digest") for item in response.json()["models"]
+>        if item.get("name") in aliases), None,
+            ^^^^^^^^
+    )
+E   AttributeError: 'NoneType' object has no attribute 'get'
+
+data\extraction_provenance.py:39: AttributeError
+_____________ test_malformed_model_registry_is_unknown[payload1] ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000019D5730A690>
+payload = {'models': [{'digest': 'unknown', 'name': 'synthetic:latest'}]}
+
+    @pytest.mark.parametrize("payload", [{"models": [None]}, {"models": [{"name": "synthetic:latest", "digest": "unknown"}]}, {"models": None}, []])
+    def test_malformed_model_registry_is_unknown(monkeypatch, payload):
+        monkeypatch.delenv("TCC_SYNTHETIC_DIGEST", raising=False)
+        monkeypatch.setattr(provenance.requests, "get", lambda *a, **kw: SimpleNamespace(raise_for_status=lambda: None, json=lambda: payload))
+>       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") is None
+E       AssertionError: assert 'unknown' is None
+E        +  where 'unknown' = <function model_digest at 0x0000019D57310E00>('synthetic', 'http://unused', 'TCC_SYNTHETIC_DIGEST')
+E        +    where <function model_digest at 0x0000019D57310E00> = provenance.model_digest
+
+tests\test_extraction_provenance.py:32: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_extraction_provenance.py::test_configured_digest_requires_actual_sha256[unknown-None]
+FAILED tests/test_extraction_provenance.py::test_configured_digest_requires_actual_sha256[sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/test_extraction_provenance.py::test_configured_digest_requires_actual_sha256[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED tests/test_extraction_provenance.py::test_malformed_model_registry_is_unknown[payload0]
+FAILED tests/test_extraction_provenance.py::test_malformed_model_registry_is_unknown[payload1]
+5 failed, 6 passed in 0.24s

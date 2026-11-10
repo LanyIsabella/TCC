@@ -1,0 +1,78 @@
+{
+  "workspace": "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533",
+  "source": "data/rag_pipeline.py",
+  "max_workers": 1,
+  "coverage_mode": "no-coverage",
+  "selected_sites": 45,
+  "killed": 27,
+  "survived": 18,
+  "uncovered": 0,
+  "gate_passed": false,
+  "groups": [
+    {
+      "name": "execution_identity_and_page_lease",
+      "lines": [421, 423, 426, 586, 587, 595],
+      "sites": 7,
+      "killed": 7,
+      "survived": 0,
+      "tests": "tests/integration/test_postgres_provenance.py (full file, 43 cases)"
+    },
+    {
+      "name": "page_processing",
+      "lines": [524, 528, 529, 542, 556],
+      "sites": 9,
+      "killed": 2,
+      "survived": 7,
+      "tests": [
+        "test_concurrent_processing_claims_each_page_once",
+        "test_extraction_failure_does_not_overwrite_previous_success"
+      ]
+    },
+    {
+      "name": "processing_resume_loop",
+      "lines": [616, 622, 625, 627, 629, 631],
+      "sites": 8,
+      "killed": 5,
+      "survived": 3,
+      "tests": [
+        "test_interrupted_processing_can_resume_the_same_execution",
+        "test_summary_failure_resumes_without_extracting_completed_pages_again",
+        "test_processing_uses_identical_original_bytes_for_pages_and_identity"
+      ]
+    },
+    {
+      "name": "evaluation",
+      "lines": [1040, 1063, 1064, 1073, 1086, 1089, 1095, 1116],
+      "sites": 9,
+      "killed": 4,
+      "survived": 5,
+      "tests": [
+        "test_modified_text_cannot_keep_successful_evaluation",
+        "test_changed_evaluator_configuration_reevaluates_only_latest_text",
+        "test_equivalent_evaluation_is_not_repeated_and_binds_result",
+        "test_late_evaluation_is_historical_without_approving_current_text",
+        "test_unknown_evaluator_digest_cannot_preserve_success_across_invocations",
+        "test_unknown_evaluator_cannot_authorize_normal_promotion",
+        "test_job_selected_before_text_change_does_not_invoke_evaluator",
+        "test_failed_assessment_never_marks_result_successful"
+      ]
+    },
+    {
+      "name": "gold_selection_and_promotion",
+      "lines": [1292, 1300, 1319, 1336, 1337, 1380, 1388, 1407, 1420, 1481],
+      "sites": 12,
+      "killed": 9,
+      "survived": 3,
+      "tests": [
+        "test_can_reactivate_previous_gold_without_deleting_versions",
+        "test_derivation_status_marks_old_gold_and_index_without_rewriting_them",
+        "test_promotion_failure_rolls_back_active_variant",
+        "test_promotion_compares_current_runs_and_rejects_outdated_evaluator",
+        "test_gold_keeps_links_to_each_assessment_used_at_publication",
+        "test_changed_result_cannot_overwrite_already_published_gold",
+        "test_incomplete_new_execution_cannot_replace_previous_active_gold"
+      ]
+    }
+  ],
+  "interpretation": "All 45 selected sites were executed in grouped runs. Survivors are test gaps or boundary cases; no survivor was changed without a reproduced functional defect. The result is not an approval of the mutation gate."
+}

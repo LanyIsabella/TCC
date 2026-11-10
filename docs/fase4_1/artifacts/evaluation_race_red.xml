@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="4.535" timestamp="2026-11-10T15:51:50.290011-03:00" hostname="Lany"><testcase classname="tests.integration.test_extraction_provenance" name="test_late_old_configuration_cannot_overwrite_newer_assessment" time="4.348"><failure message="AssertionError: assert (Decimal('11.00') == 82)">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x00000281A871A840&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-220/test_late_old_configuration_ca0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000281A8462C40&gt;
+
+    def test_late_old_configuration_cannot_overwrite_newer_assessment(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        monkeypatch.setenv("RAG_EVALUATION_MODEL", "synthetic-evaluator")
+        monkeypatch.setattr(pipeline, "native_page_text", lambda _: "synthetic reference text")
+        calls = []
+        def evaluate(*_):
+            calls.append("evaluation")
+            if len(calls) == 1:
+                monkeypatch.setenv("RAG_EVALUATION_CONTEXT", "8192")
+                pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+                return {"overall_score": 11}, "page_image"
+            return {"overall_score": 82}, "page_image"
+        monkeypatch.setattr(pipeline, "evaluate_page", evaluate)
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        with connect() as connection:
+            score, context = connection.execute("SELECT quality_score,evaluation_config-&gt;&gt;'num_ctx' FROM silver.silver_page_extractions").fetchone()
+&gt;           assert score == 82 and context == "8192"
+E           AssertionError: assert (Decimal('11.00') == 82)
+
+tests\integration\test_extraction_provenance.py:409: AssertionError</failure></testcase></testsuite></testsuites>

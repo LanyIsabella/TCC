@@ -1,0 +1,6 @@
+Name                            Stmts   Miss  Cover
+---------------------------------------------------
+data\extraction_provenance.py      93      1    99%
+data\rag_pipeline.py              768    284    63%
+---------------------------------------------------
+TOTAL                             861    285    67%

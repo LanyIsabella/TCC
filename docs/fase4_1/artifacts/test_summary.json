@@ -1,0 +1,42 @@
+{
+  "suite": "full_verified.xml",
+  "cases": 361,
+  "passed": 355,
+  "unexpected_failures": 0,
+  "special_cases": [
+    {
+      "name": "test_f6_contract_answer_bearing_rule_survives_compaction[late-in-page]",
+      "kind": "pytest.xfail",
+      "reason": "F6: prefix compaction loses a late rule even on matched pages"
+    },
+    {
+      "name": "test_f6_contract_answer_bearing_rule_survives_compaction[late-in-document]",
+      "kind": "pytest.xfail",
+      "reason": "F6: prefix compaction loses a late rule even on matched pages"
+    },
+    {
+      "name": "test_f1_contract_legacy_untrusted_evaluation_blocks_gold[review]",
+      "kind": "pytest.xfail",
+      "reason": "F1: Gold gate ignores review, score and evaluation method"
+    },
+    {
+      "name": "test_f1_contract_legacy_untrusted_evaluation_blocks_gold[no-score]",
+      "kind": "pytest.xfail",
+      "reason": "F1: Gold gate ignores review, score and evaluation method"
+    },
+    {
+      "name": "test_f1_contract_legacy_untrusted_evaluation_blocks_gold[legacy-fallback]",
+      "kind": "pytest.xfail",
+      "reason": "F1: Gold gate ignores review, score and evaluation method"
+    },
+    {
+      "name": "test_gedweb_is_accessible_with_playwright",
+      "kind": "pytest.skip",
+      "reason": "defina RUN_GEDWEB_PLAYWRIGHT=1 para executar o teste real"
+    }
+  ],
+  "new_postgres_integration_cases": 43,
+  "new_unit_cases": 17,
+  "unit_reexecution": "unit_final.xml",
+  "unit_reexecution_passed": 17
+}

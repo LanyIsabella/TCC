@@ -1,0 +1,139 @@
+...........................F                                             [100%]
+================================== FAILURES ===================================
+_____ test_promotion_compares_current_runs_and_rejects_outdated_evaluator _____
+
+isolated_pg = (<function isolated_pg.<locals>.connect at 0x0000026738347EC0>, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-218/test_promotion_compares_curren0/synthetic.pdf'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000267382CA9E0>
+
+    def test_promotion_compares_current_runs_and_rejects_outdated_evaluator(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        configure_stubs(monkeypatch)
+        for extractor in ["pdf_reader", "docling", "glm_ocr"]:
+            execution = pipeline.create_or_resume_extraction(17, extractor, 1, False, False)
+            complete(connect, execution, "synthetic " + extractor)
+        pipeline.evaluate_extractions(17, ["pdf_reader", "docling", "glm_ocr"], False)
+        pipeline.activate_gold(17, "docling")
+        new = pipeline.create_or_resume_extraction(17, "docling", 1, False, True)
+        complete(connect, new, "new synthetic Docling")
+        pipeline.evaluate_extractions(17, ["docling"], False)
+>       active = pipeline.activate_gold(17, "docling")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\integration\test_extraction_provenance.py:383: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+document_id = 17, extractor = 'docling', allow_unvalidated = False
+
+    def activate_gold(
+        document_id: int,
+        extractor: str | None = None,
+        allow_unvalidated: bool = False,
+        *,
+        extraction_id: int | None = None,
+    ) -> int:
+        from psycopg.types.json import Jsonb
+    
+        with connect() as connection, connection.cursor() as cursor:
+            query = """
+                SELECT d.id, d.document_id, d.extractor, d.full_text,
+                       d.full_markdown, d.total_pages,
+                       COALESCE(
+                           d.weighted_quality_score,
+                           d.average_quality_score
+                       ) AS selection_quality_score,
+                       b.manifest_metadata
+                FROM silver.silver_document_extractions d
+                JOIN bronze.documents b ON b.record_id = d.document_id
+                WHERE d.document_id = %s AND d.processing_status = 'success'
+            """
+            params: list[Any] = [document_id]
+            if extraction_id is not None:
+                query += " AND d.id = %s"
+                params.append(extraction_id)
+            else:
+                query += """ AND d.id IN (
+                    SELECT DISTINCT ON (extractor) id
+                    FROM silver.silver_document_extractions
+                    WHERE document_id = %s ORDER BY extractor,id DESC
+                )"""
+                params.append(document_id)
+            if extractor:
+                query += " AND d.extractor = %s"
+                params.append(extractor)
+            query += (
+                " ORDER BY d.weighted_quality_score DESC NULLS LAST, "
+                "d.average_quality_score DESC NULLS LAST, d.id DESC LIMIT 1"
+            )
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+            if not row:
+                raise ValueError("Nenhuma extra��o completa dispon�vel para ativa��o.")
+            (
+                extraction_id,
+                doc_id,
+                source_extractor,
+                full_text,
+                full_markdown,
+                total_pages,
+                quality,
+                metadata,
+            ) = row
+            metadata = metadata or {}
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS total_pages,
+                       COUNT(*) FILTER (WHERE processing_status = 'success')
+                           AS successful_pages,
+                       array_agg(CASE
+                           WHEN evaluation_input_fingerprint = result_fingerprint
+                             AND evaluation_config_fingerprint = %s
+                           THEN evaluation_status ELSE 'pending' END ORDER BY page_number)
+                           AS evaluation_statuses
+                FROM silver.silver_page_extractions
+                WHERE extraction_id = %s
+                """,
+                (provenance.fingerprint("evaluation-config-v1", evaluation_configuration())
+                 if not allow_unvalidated else None, extraction_id),
+            )
+            evaluated_total, successful_pages, evaluation_statuses = cursor.fetchone()
+            evaluation_statuses = evaluation_statuses or []
+            if not is_gold_ready(
+                "success",
+                evaluated_total,
+                successful_pages,
+                evaluation_statuses,
+                allow_unvalidated,
+            ):
+                raise ValueError(
+                    "Extra��o n�o validada: avalie todas as p�ginas antes de promover "
+                    "para a Gold ou use --allow-unvalidated explicitamente."
+                )
+            cursor.execute(
+                """
+                SELECT e.extractor, e.processing_status, e.total_pages,
+                       COUNT(p.id) AS page_rows,
+                       COUNT(p.id) FILTER (WHERE p.processing_status = 'success')
+                           AS successful_pages,
+                       COUNT(p.id) FILTER (WHERE p.evaluation_status = 'success')
+                           AS evaluated_pages
+                FROM silver.silver_document_extractions e
+                LEFT JOIN silver.silver_page_extractions p
+                    ON p.extraction_id = e.id
+                WHERE e.document_id = %s AND e.extractor = ANY(%s)
+                GROUP BY e.extractor, e.processing_status, e.total_pages
+                """,
+                (doc_id, ["docling", "glm_ocr"]),
+            )
+            comparison_rows = cursor.fetchall()
+            comparison_ready = comparison_is_ready(comparison_rows)
+            if not comparison_ready and not allow_unvalidated:
+>               raise ValueError(
+                    "Docling e GLM-OCR precisam estar completos e avaliados antes "
+                    "da promo��o normal para a Gold."
+                )
+E               ValueError: Docling e GLM-OCR precisam estar completos e avaliados antes da promo��o normal para a Gold.
+
+data\rag_pipeline.py:1244: ValueError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_extraction_provenance.py::test_promotion_compares_current_runs_and_rejects_outdated_evaluator
+1 failed, 27 passed in 25.40s

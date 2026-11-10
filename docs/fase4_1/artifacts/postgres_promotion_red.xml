@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="28" time="25.399" timestamp="2026-11-10T15:47:47.448971-03:00" hostname="Lany"><testcase classname="tests.integration.test_extraction_provenance" name="test_original_change_creates_new_execution" time="7.758" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_configuration_change_creates_new_execution" time="0.669" /><testcase classname="tests.integration.test_extraction_provenance" name="test_modified_text_cannot_keep_successful_evaluation" time="0.536" /><testcase classname="tests.integration.test_extraction_provenance" name="test_forced_processing_preserves_previous_execution" time="0.719" /><testcase classname="tests.integration.test_extraction_provenance" name="test_equivalent_inputs_resume_but_force_is_another_execution" time="0.550" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_MODEL_DIGEST-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc]" time="0.562" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_DIRECT_CONTEXT-8192]" time="0.501" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_DIRECT_MAX_TOKENS-1000]" time="0.512" /><testcase classname="tests.integration.test_extraction_provenance" name="test_extractor_version_changes_identity" time="0.520" /><testcase classname="tests.integration.test_extraction_provenance" name="test_history_keeps_evaluation_and_is_append_only" time="0.608" /><testcase classname="tests.integration.test_extraction_provenance" name="test_changed_evaluator_configuration_reevaluates_only_latest_text" time="0.949" /><testcase classname="tests.integration.test_extraction_provenance" name="test_equivalent_evaluation_is_not_repeated_and_binds_result" time="0.699" /><testcase classname="tests.integration.test_extraction_provenance" name="test_late_evaluation_is_historical_without_approving_current_text" time="0.571" /><testcase classname="tests.integration.test_extraction_provenance" name="test_execution_creation_rollback_leaves_no_partial_pages" time="0.460" /><testcase classname="tests.integration.test_extraction_provenance" name="test_concurrent_equivalent_creation_is_idempotent" time="0.366" /><testcase classname="tests.integration.test_extraction_provenance" name="test_concurrent_processing_claims_each_page_once" time="0.675" /><testcase classname="tests.integration.test_extraction_provenance" name="test_can_reactivate_previous_gold_without_deleting_versions" time="0.686" /><testcase classname="tests.integration.test_extraction_provenance" name="test_derivation_status_marks_old_gold_and_index_without_rewriting_them" time="0.774" /><testcase classname="tests.integration.test_extraction_provenance" name="test_promotion_failure_rolls_back_active_variant" time="0.686" /><testcase classname="tests.integration.test_extraction_provenance" name="test_extraction_failure_does_not_overwrite_previous_success" time="0.877" /><testcase classname="tests.integration.test_extraction_provenance" name="test_legacy_migration_is_explicit_idempotent_and_reversible_before_new_work[False]" time="0.365" /><testcase classname="tests.integration.test_extraction_provenance" name="test_schema_downgrade_refuses_to_erase_used_history" time="0.426" /><testcase classname="tests.integration.test_extraction_provenance" name="test_unknown_ocr_digest_cannot_authorize_automatic_reuse" time="0.422" /><testcase classname="tests.integration.test_extraction_provenance" name="test_unknown_evaluator_digest_cannot_preserve_success_across_invocations" time="0.780" /><testcase classname="tests.integration.test_extraction_provenance" name="test_formatting_only_yaml_change_has_same_effective_identity" time="0.438" /><testcase classname="tests.integration.test_extraction_provenance" name="test_explicit_default_matches_effective_ocr_configuration" time="0.434" /><testcase classname="tests.integration.test_extraction_provenance" name="test_backup_restoration_reverts_schema_and_keeps_new_version_archive[False]" time="1.180" /><testcase classname="tests.integration.test_extraction_provenance" name="test_promotion_compares_current_runs_and_rejects_outdated_evaluator" time="1.472"><failure message="ValueError: Docling e GLM-OCR precisam estar completos e avaliados antes da promoção normal para a Gold.">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x0000026738347EC0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-218/test_promotion_compares_curren0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000267382CA9E0&gt;
+
+    def test_promotion_compares_current_runs_and_rejects_outdated_evaluator(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        configure_stubs(monkeypatch)
+        for extractor in ["pdf_reader", "docling", "glm_ocr"]:
+            execution = pipeline.create_or_resume_extraction(17, extractor, 1, False, False)
+            complete(connect, execution, "synthetic " + extractor)
+        pipeline.evaluate_extractions(17, ["pdf_reader", "docling", "glm_ocr"], False)
+        pipeline.activate_gold(17, "docling")
+        new = pipeline.create_or_resume_extraction(17, "docling", 1, False, True)
+        complete(connect, new, "new synthetic Docling")
+        pipeline.evaluate_extractions(17, ["docling"], False)
+&gt;       active = pipeline.activate_gold(17, "docling")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\integration\test_extraction_provenance.py:383: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+document_id = 17, extractor = 'docling', allow_unvalidated = False
+
+    def activate_gold(
+        document_id: int,
+        extractor: str | None = None,
+        allow_unvalidated: bool = False,
+        *,
+        extraction_id: int | None = None,
+    ) -&gt; int:
+        from psycopg.types.json import Jsonb
+    
+        with connect() as connection, connection.cursor() as cursor:
+            query = """
+                SELECT d.id, d.document_id, d.extractor, d.full_text,
+                       d.full_markdown, d.total_pages,
+                       COALESCE(
+                           d.weighted_quality_score,
+                           d.average_quality_score
+                       ) AS selection_quality_score,
+                       b.manifest_metadata
+                FROM silver.silver_document_extractions d
+                JOIN bronze.documents b ON b.record_id = d.document_id
+                WHERE d.document_id = %s AND d.processing_status = 'success'
+            """
+            params: list[Any] = [document_id]
+            if extraction_id is not None:
+                query += " AND d.id = %s"
+                params.append(extraction_id)
+            else:
+                query += """ AND d.id IN (
+                    SELECT DISTINCT ON (extractor) id
+                    FROM silver.silver_document_extractions
+                    WHERE document_id = %s ORDER BY extractor,id DESC
+                )"""
+                params.append(document_id)
+            if extractor:
+                query += " AND d.extractor = %s"
+                params.append(extractor)
+            query += (
+                " ORDER BY d.weighted_quality_score DESC NULLS LAST, "
+                "d.average_quality_score DESC NULLS LAST, d.id DESC LIMIT 1"
+            )
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+            if not row:
+                raise ValueError("Nenhuma extração completa disponível para ativação.")
+            (
+                extraction_id,
+                doc_id,
+                source_extractor,
+                full_text,
+                full_markdown,
+                total_pages,
+                quality,
+                metadata,
+            ) = row
+            metadata = metadata or {}
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS total_pages,
+                       COUNT(*) FILTER (WHERE processing_status = 'success')
+                           AS successful_pages,
+                       array_agg(CASE
+                           WHEN evaluation_input_fingerprint = result_fingerprint
+                             AND evaluation_config_fingerprint = %s
+                           THEN evaluation_status ELSE 'pending' END ORDER BY page_number)
+                           AS evaluation_statuses
+                FROM silver.silver_page_extractions
+                WHERE extraction_id = %s
+                """,
+                (provenance.fingerprint("evaluation-config-v1", evaluation_configuration())
+                 if not allow_unvalidated else None, extraction_id),
+            )
+            evaluated_total, successful_pages, evaluation_statuses = cursor.fetchone()
+            evaluation_statuses = evaluation_statuses or []
+            if not is_gold_ready(
+                "success",
+                evaluated_total,
+                successful_pages,
+                evaluation_statuses,
+                allow_unvalidated,
+            ):
+                raise ValueError(
+                    "Extração não validada: avalie todas as páginas antes de promover "
+                    "para a Gold ou use --allow-unvalidated explicitamente."
+                )
+            cursor.execute(
+                """
+                SELECT e.extractor, e.processing_status, e.total_pages,
+                       COUNT(p.id) AS page_rows,
+                       COUNT(p.id) FILTER (WHERE p.processing_status = 'success')
+                           AS successful_pages,
+                       COUNT(p.id) FILTER (WHERE p.evaluation_status = 'success')
+                           AS evaluated_pages
+                FROM silver.silver_document_extractions e
+                LEFT JOIN silver.silver_page_extractions p
+                    ON p.extraction_id = e.id
+                WHERE e.document_id = %s AND e.extractor = ANY(%s)
+                GROUP BY e.extractor, e.processing_status, e.total_pages
+                """,
+                (doc_id, ["docling", "glm_ocr"]),
+            )
+            comparison_rows = cursor.fetchall()
+            comparison_ready = comparison_is_ready(comparison_rows)
+            if not comparison_ready and not allow_unvalidated:
+&gt;               raise ValueError(
+                    "Docling e GLM-OCR precisam estar completos e avaliados antes "
+                    "da promoção normal para a Gold."
+                )
+E               ValueError: Docling e GLM-OCR precisam estar completos e avaliados antes da promoção normal para a Gold.
+
+data\rag_pipeline.py:1244: ValueError</failure></testcase></testsuite></testsuites>

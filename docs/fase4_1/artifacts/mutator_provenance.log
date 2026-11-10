@@ -1,0 +1,55 @@
+UNCOVERED data/extraction_provenance.py:22 False -> True
+Wrote C:/Users/lany_/AppData/Local/Temp/tcc-f41-release-quality-n8osjv8u/.metrics/mutate/data.extraction_provenance.edn
+UNCOVERED data/extraction_provenance.py:23 True -> False
+UNCOVERED data/extraction_provenance.py:25 False -> True
+KILLED    data/extraction_provenance.py:37 True -> False
+KILLED    data/extraction_provenance.py:37 True -> False
+SURVIVED  data/extraction_provenance.py:39 False -> True
+KILLED    data/extraction_provenance.py:46 / -> *
+KILLED    data/extraction_provenance.py:46 + -> -
+KILLED    data/extraction_provenance.py:47 == -> !=
+KILLED    data/extraction_provenance.py:49 delete not
+KILLED    data/extraction_provenance.py:53 != -> ==
+KILLED    data/extraction_provenance.py:59 True -> False
+KILLED    data/extraction_provenance.py:63 delete not
+KILLED    data/extraction_provenance.py:74 + -> -
+KILLED    data/extraction_provenance.py:76 + -> -
+KILLED    data/extraction_provenance.py:82 and -> or
+KILLED    data/extraction_provenance.py:97 == -> !=
+KILLED    data/extraction_provenance.py:101 / -> *
+KILLED    data/extraction_provenance.py:110 == -> !=
+KILLED    data/extraction_provenance.py:115 / -> *
+KILLED    data/extraction_provenance.py:128 == -> !=
+UNCOVERED data/extraction_provenance.py:159 != -> ==
+KILLED    data/extraction_provenance.py:168 0 -> 1
+UNCOVERED data/extraction_provenance.py:190 0 -> 1
+KILLED    data/extraction_provenance.py:195 and -> or
+KILLED    data/extraction_provenance.py:195 0 -> 1
+KILLED    data/extraction_provenance.py:195 != -> ==
+UNCOVERED data/extraction_provenance.py:239 != -> ==
+UNCOVERED data/extraction_provenance.py:240 or -> and
+KILLED    data/extraction_provenance.py:247 delete not
+KILLED    data/extraction_provenance.py:247 and -> or
+KILLED    data/extraction_provenance.py:258 0 -> 1
+KILLED    data/extraction_provenance.py:275 0 -> 1
+UNCOVERED data/extraction_provenance.py:298 False -> True
+KILLED    data/extraction_provenance.py:351 or -> and
+KILLED    data/extraction_provenance.py:382 True -> False
+KILLED    data/extraction_provenance.py:399 False -> True
+Function               Namespace                   Killed  Survived  Uncovered  Sites   Score
+---------------------------------------------------------------------------------------------
+file_digest            data.extraction_provenance       0         0          0      0    n/a
+fingerprint            data.extraction_provenance       0         0          3      3    n/a
+input_fingerprint      data.extraction_provenance       0         0          1      1    n/a
+invalidate_evaluations data.extraction_provenance       0         0          1      1    n/a
+reserve_evaluation     data.extraction_provenance       0         0          0      0    n/a
+original_snapshot      data.extraction_provenance       8         1          0      9  88.9%
+_known_digest          data.extraction_provenance       1         0          0      1 100.0%
+model_digest           data.extraction_provenance       3         0          0      3 100.0%
+processing_profile     data.extraction_provenance       5         0          0      5 100.0%
+record_gold_derivation data.extraction_provenance       3         0          1      4 100.0%
+require_schema         data.extraction_provenance       1         0          0      1 100.0%
+save_evaluation        data.extraction_provenance       3         0          0      3 100.0%
+start_execution        data.extraction_provenance       4         0          2      6 100.0%
+---------------------------------------------------------------------------------------------
+Total                                                  28         1          8     37   96.6%

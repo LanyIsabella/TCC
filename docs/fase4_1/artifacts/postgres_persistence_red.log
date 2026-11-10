@@ -1,0 +1,26 @@
+..F...................                                                   [100%]
+================================== FAILURES ===================================
+____________ test_modified_text_cannot_keep_successful_evaluation _____________
+
+isolated_pg = (<function isolated_pg.<locals>.connect at 0x00000209AAE41C60>, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-215/test_modified_text_cannot_keep0/synthetic.pdf'))
+
+    def test_modified_text_cannot_keep_successful_evaluation(isolated_pg):
+        connect, _ = isolated_pg
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        with connect() as connection:
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='old', processing_status='success' WHERE extraction_id=%s", (execution,))
+            connection.execute("UPDATE silver.silver_page_extractions SET evaluation_status='success', quality_score=97 WHERE extraction_id=%s", (execution,))
+            assert connection.execute("SELECT quality_score FROM silver.silver_page_extractions WHERE extraction_id=%s", (execution,)).fetchone()[0] == 97
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='new' WHERE extraction_id=%s", (execution,))
+            result = connection.execute("SELECT evaluation_status,quality_score FROM silver.silver_page_extractions WHERE extraction_id=%s", (execution,)).fetchone()
+        assert result == ("pending", None)
+        with connect() as connection:
+>           assert connection.execute("SELECT content_hash FROM silver.silver_page_extractions").fetchone()[0] == pipeline.text_hash("new")
+E           AssertionError: assert None == '11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437'
+E            +  where '11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437' = <function text_hash at 0x00000209AAE21800>('new')
+E            +    where <function text_hash at 0x00000209AAE21800> = pipeline.text_hash
+
+tests\integration\test_extraction_provenance.py:42: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_extraction_provenance.py::test_modified_text_cannot_keep_successful_evaluation
+1 failed, 21 passed in 16.31s

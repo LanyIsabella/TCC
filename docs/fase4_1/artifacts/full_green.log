@@ -1,0 +1,12 @@
+........................xx...............xxx............................ [ 20%]
+........................................................................ [ 41%]
+..........................................................s............. [ 62%]
+........................................................................ [ 83%]
+..........................................................               [100%]
+=========================== short test summary info ===========================
+XFAIL tests/baseline/test_defect_agent.py::test_f6_contract_answer_bearing_rule_survives_compaction[late-in-page] - F6: prefix compaction loses a late rule even on matched pages
+XFAIL tests/baseline/test_defect_agent.py::test_f6_contract_answer_bearing_rule_survives_compaction[late-in-document] - F6: prefix compaction loses a late rule even on matched pages
+XFAIL tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[review] - F1: Gold gate ignores review, score and evaluation method
+XFAIL tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[no-score] - F1: Gold gate ignores review, score and evaluation method
+XFAIL tests/baseline/test_defect_pipeline.py::test_f1_contract_legacy_untrusted_evaluation_blocks_gold[legacy-fallback] - F1: Gold gate ignores review, score and evaluation method
+340 passed, 1 skipped, 5 xfailed in 46.79s

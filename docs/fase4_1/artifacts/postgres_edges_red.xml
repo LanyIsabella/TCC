@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="17" time="13.937" timestamp="2026-11-10T15:37:07.585358-03:00" hostname="Lany"><testcase classname="tests.integration.test_extraction_provenance" name="test_original_change_creates_new_execution" time="3.703" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_configuration_change_creates_new_execution" time="0.690" /><testcase classname="tests.integration.test_extraction_provenance" name="test_modified_text_cannot_keep_successful_evaluation" time="0.503" /><testcase classname="tests.integration.test_extraction_provenance" name="test_forced_processing_preserves_previous_execution" time="0.502" /><testcase classname="tests.integration.test_extraction_provenance" name="test_equivalent_inputs_resume_but_force_is_another_execution" time="0.621" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_MODEL_DIGEST-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc]" time="0.433" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_DIRECT_CONTEXT-8192]" time="0.545" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_DIRECT_MAX_TOKENS-1000]" time="0.435" /><testcase classname="tests.integration.test_extraction_provenance" name="test_extractor_version_changes_identity" time="0.621" /><testcase classname="tests.integration.test_extraction_provenance" name="test_history_keeps_evaluation_and_is_append_only" time="0.689" /><testcase classname="tests.integration.test_extraction_provenance" name="test_changed_evaluator_configuration_reevaluates_only_latest_text" time="0.858"><failure message="AssertionError: assert 2 == 3&#10; +  where 2 = len([(WindowsPath('C:/Users/lany_/OneDrive/Desktop/TCC/data/page_cache/synthetic.png'), 'synthetic native reference text',...e/Desktop/TCC/data/page_cache/synthetic.png'), 'synthetic native reference text', 'new result', 'synthetic-evaluator')])">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000002C01A282CA0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-213/test_changed_evaluator_configu0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000002C01A032C10&gt;
+
+    def test_changed_evaluator_configuration_reevaluates_only_latest_text(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        calls = configure_stubs(monkeypatch)
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, first, "old result")
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        second = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, True)
+        complete(connect, second, "new result")
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        assert len(calls) == 2
+        monkeypatch.setenv("RAG_EVALUATION_CONTEXT", "8192")
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+&gt;       assert len(calls) == 3
+E       AssertionError: assert 2 == 3
+E        +  where 2 = len([(WindowsPath('C:/Users/lany_/OneDrive/Desktop/TCC/data/page_cache/synthetic.png'), 'synthetic native reference text',...e/Desktop/TCC/data/page_cache/synthetic.png'), 'synthetic native reference text', 'new result', 'synthetic-evaluator')])
+
+tests\integration\test_extraction_provenance.py:124: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_equivalent_evaluation_is_not_repeated_and_binds_result" time="0.826"><failure message="AssertionError: assert ('d9b18840bc88...9c715f2c8bc60' == 'd9b18840bc88...9c715f2c8bc60'&#10;  &#10;  Skipping 53 identical leading characters in diff, use -v to show&#10;    715f2c8bc60 and None is not None)">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000002C01A299580&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-213/test_equivalent_evaluation_is_0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000002C01A246C30&gt;
+
+    def test_equivalent_evaluation_is_not_repeated_and_binds_result(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        calls = configure_stubs(monkeypatch)
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        assert len(calls) == 1
+        with connect() as connection:
+            result, target, config = connection.execute("SELECT result_fingerprint,evaluation_input_fingerprint,evaluation_config_fingerprint FROM silver.silver_page_extractions").fetchone()
+&gt;       assert result == target and config is not None
+E       AssertionError: assert ('d9b18840bc88...9c715f2c8bc60' == 'd9b18840bc88...9c715f2c8bc60'
+E         
+E         Skipping 53 identical leading characters in diff, use -v to show
+E           715f2c8bc60 and None is not None)
+
+tests\integration\test_extraction_provenance.py:140: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_late_evaluation_is_historical_without_approving_current_text" time="0.470" /><testcase classname="tests.integration.test_extraction_provenance" name="test_execution_creation_rollback_leaves_no_partial_pages" time="0.577" /><testcase classname="tests.integration.test_extraction_provenance" name="test_concurrent_equivalent_creation_is_idempotent" time="0.474" /><testcase classname="tests.integration.test_extraction_provenance" name="test_concurrent_processing_claims_each_page_once" time="0.827"><failure message="AssertionError: assert ['called', 'called'] == ['called']&#10;  &#10;  Left contains one more item: 'called'&#10;  Use -v to get more diff">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000002C01A2999E0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-213/test_concurrent_processing_cla0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000002C01A23E990&gt;
+
+    def test_concurrent_processing_claims_each_page_once(isolated_pg, monkeypatch):
+        started, release = Event(), Event()
+        calls = []
+        monkeypatch.setattr(pipeline, "page_paths", lambda *_: [pipeline.ROOT / "data/page_cache/synthetic.pdf"])
+        def extract(*_):
+            calls.append("called")
+            if len(calls) == 1:
+                started.set()
+                assert release.wait(15)
+            return "synthetic", "synthetic", None
+        monkeypatch.setattr(pipeline, "extract_page", extract)
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            first = pool.submit(pipeline.process_extractions, 17, ["pdf_reader"], False, False)
+            try:
+                assert started.wait(10)
+                pool.submit(pipeline.process_extractions, 17, ["pdf_reader"], True, False).result(timeout=10)
+            finally:
+                release.set()
+            first.result(timeout=10)
+&gt;       assert calls == ["called"]
+E       AssertionError: assert ['called', 'called'] == ['called']
+E         
+E         Left contains one more item: 'called'
+E         Use -v to get more diff
+
+tests\integration\test_extraction_provenance.py:195: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_can_reactivate_previous_gold_without_deleting_versions" time="0.971"><failure message="TypeError: activate_gold() got an unexpected keyword argument 'extraction_id'">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000002C01A298860&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-213/test_can_reactivate_previous_g0/synthetic.pdf'))
+
+    def test_can_reactivate_previous_gold_without_deleting_versions(isolated_pg):
+        connect, _ = isolated_pg
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, first, "first version")
+        original = pipeline.activate_gold(17, "pdf_reader", True)
+        second = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, True)
+        complete(connect, second, "second version")
+        newer = pipeline.activate_gold(17, "pdf_reader", True)
+        assert original != newer
+&gt;       restored = pipeline.activate_gold(17, "pdf_reader", True, extraction_id=first)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: activate_gold() got an unexpected keyword argument 'extraction_id'
+
+tests\integration\test_extraction_provenance.py:207: TypeError</failure></testcase></testsuite></testsuites>

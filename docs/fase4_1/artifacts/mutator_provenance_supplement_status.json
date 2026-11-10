@@ -1,0 +1,7 @@
+{
+  "max_workers": 2,
+  "selected_lines": "22,23,25,159,190,239,240,298",
+  "exit_code": 3,
+  "budget_seconds": 600,
+  "coverage_filter": false
+}

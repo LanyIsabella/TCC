@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="11" time="0.237" timestamp="2026-11-10T15:55:20.221452-03:00" hostname="Lany"><testcase classname="tests.test_extraction_provenance" name="test_fingerprint_is_canonical_but_preserves_content_and_sequence" time="0.070" /><testcase classname="tests.test_extraction_provenance" name="test_non_finite_configuration_is_not_fingerprinted" time="0.000" /><testcase classname="tests.test_extraction_provenance" name="test_configured_digest_requires_actual_sha256[unknown-None]" time="0.001"><failure message="AssertionError: assert 'unknown' == None&#10; +  where 'unknown' = &lt;function model_digest at 0x0000019D57310E00&gt;('synthetic', 'http://unused', 'TCC_SYNTHETIC_DIGEST')&#10; +    where &lt;function model_digest at 0x0000019D57310E00&gt; = provenance.model_digest">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000019D572D0E90&gt;
+provided = 'unknown', expected = None
+
+    @pytest.mark.parametrize("provided,expected", [("unknown", None), ("sha256:" + "a" * 64, "a" * 64), ("A" * 64, "a" * 64)])
+    def test_configured_digest_requires_actual_sha256(monkeypatch, provided, expected):
+        monkeypatch.setenv("TCC_SYNTHETIC_DIGEST", provided)
+&gt;       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") == expected
+E       AssertionError: assert 'unknown' == None
+E        +  where 'unknown' = &lt;function model_digest at 0x0000019D57310E00&gt;('synthetic', 'http://unused', 'TCC_SYNTHETIC_DIGEST')
+E        +    where &lt;function model_digest at 0x0000019D57310E00&gt; = provenance.model_digest
+
+tests\test_extraction_provenance.py:25: AssertionError</failure></testcase><testcase classname="tests.test_extraction_provenance" name="test_configured_digest_requires_actual_sha256[sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]" time="0.001"><failure message="AssertionError: assert 'sha256:aaaaa...aaaaaaaaaaaaa' == 'aaaaaaaaaaaa...aaaaaaaaaaaaa'&#10;  &#10;  - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&#10;  + sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&#10;  ? +++++++">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000019D572D1220&gt;
+provided = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+expected = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    @pytest.mark.parametrize("provided,expected", [("unknown", None), ("sha256:" + "a" * 64, "a" * 64), ("A" * 64, "a" * 64)])
+    def test_configured_digest_requires_actual_sha256(monkeypatch, provided, expected):
+        monkeypatch.setenv("TCC_SYNTHETIC_DIGEST", provided)
+&gt;       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") == expected
+E       AssertionError: assert 'sha256:aaaaa...aaaaaaaaaaaaa' == 'aaaaaaaaaaaa...aaaaaaaaaaaaa'
+E         
+E         - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+E         + sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+E         ? +++++++
+
+tests\test_extraction_provenance.py:25: AssertionError</failure></testcase><testcase classname="tests.test_extraction_provenance" name="test_configured_digest_requires_actual_sha256[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]" time="0.001"><failure message="AssertionError: assert 'AAAAAAAAAAAA...AAAAAAAAAAAAA' == 'aaaaaaaaaaaa...aaaaaaaaaaaaa'&#10;  &#10;  - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&#10;  + AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000019D5732C710&gt;
+provided = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+expected = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    @pytest.mark.parametrize("provided,expected", [("unknown", None), ("sha256:" + "a" * 64, "a" * 64), ("A" * 64, "a" * 64)])
+    def test_configured_digest_requires_actual_sha256(monkeypatch, provided, expected):
+        monkeypatch.setenv("TCC_SYNTHETIC_DIGEST", provided)
+&gt;       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") == expected
+E       AssertionError: assert 'AAAAAAAAAAAA...AAAAAAAAAAAAA' == 'aaaaaaaaaaaa...aaaaaaaaaaaaa'
+E         
+E         - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+E         + AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+tests\test_extraction_provenance.py:25: AssertionError</failure></testcase><testcase classname="tests.test_extraction_provenance" name="test_malformed_model_registry_is_unknown[payload0]" time="0.000"><failure message="AttributeError: 'NoneType' object has no attribute 'get'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000019D5730A7A0&gt;
+payload = {'models': [None]}
+
+    @pytest.mark.parametrize("payload", [{"models": [None]}, {"models": [{"name": "synthetic:latest", "digest": "unknown"}]}, {"models": None}, []])
+    def test_malformed_model_registry_is_unknown(monkeypatch, payload):
+        monkeypatch.delenv("TCC_SYNTHETIC_DIGEST", raising=False)
+        monkeypatch.setattr(provenance.requests, "get", lambda *a, **kw: SimpleNamespace(raise_for_status=lambda: None, json=lambda: payload))
+&gt;       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_extraction_provenance.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+data\extraction_provenance.py:37: in model_digest
+    return next(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+.0 = &lt;list_iterator object at 0x0000019D573C7D30&gt;
+
+        (item.get("digest") for item in response.json()["models"]
+&gt;        if item.get("name") in aliases), None,
+            ^^^^^^^^
+    )
+E   AttributeError: 'NoneType' object has no attribute 'get'
+
+data\extraction_provenance.py:39: AttributeError</failure></testcase><testcase classname="tests.test_extraction_provenance" name="test_malformed_model_registry_is_unknown[payload1]" time="0.000"><failure message="AssertionError: assert 'unknown' is None&#10; +  where 'unknown' = &lt;function model_digest at 0x0000019D57310E00&gt;('synthetic', 'http://unused', 'TCC_SYNTHETIC_DIGEST')&#10; +    where &lt;function model_digest at 0x0000019D57310E00&gt; = provenance.model_digest">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000019D5730A690&gt;
+payload = {'models': [{'digest': 'unknown', 'name': 'synthetic:latest'}]}
+
+    @pytest.mark.parametrize("payload", [{"models": [None]}, {"models": [{"name": "synthetic:latest", "digest": "unknown"}]}, {"models": None}, []])
+    def test_malformed_model_registry_is_unknown(monkeypatch, payload):
+        monkeypatch.delenv("TCC_SYNTHETIC_DIGEST", raising=False)
+        monkeypatch.setattr(provenance.requests, "get", lambda *a, **kw: SimpleNamespace(raise_for_status=lambda: None, json=lambda: payload))
+&gt;       assert provenance.model_digest("synthetic", "http://unused", "TCC_SYNTHETIC_DIGEST") is None
+E       AssertionError: assert 'unknown' is None
+E        +  where 'unknown' = &lt;function model_digest at 0x0000019D57310E00&gt;('synthetic', 'http://unused', 'TCC_SYNTHETIC_DIGEST')
+E        +    where &lt;function model_digest at 0x0000019D57310E00&gt; = provenance.model_digest
+
+tests\test_extraction_provenance.py:32: AssertionError</failure></testcase><testcase classname="tests.test_extraction_provenance" name="test_malformed_model_registry_is_unknown[payload2]" time="0.000" /><testcase classname="tests.test_extraction_provenance" name="test_malformed_model_registry_is_unknown[payload3]" time="0.000" /><testcase classname="tests.test_extraction_provenance" name="test_model_registry_alias_is_observed_without_inference" time="0.000" /><testcase classname="tests.test_extraction_provenance" name="test_model_registry_timeout_does_not_invent_a_digest" time="0.000" /></testsuite></testsuites>

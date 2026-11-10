@@ -1,0 +1,76 @@
+{
+  "phase": "4.1",
+  "defect": "F2",
+  "production_migration_executed": false,
+  "criteria": [
+    {
+      "criterion": "Quatro contratos F2",
+      "status": "passed",
+      "evidence": "f2_contracts_current_green.xml"
+    },
+    {
+      "criterion": "PostgreSQL físico isolado",
+      "status": "passed",
+      "evidence": [
+        "postgres_runs/",
+        "full_verified.xml"
+      ]
+    },
+    {
+      "criterion": "Avaliações vinculadas ao resultado e configuração; histórico preservado",
+      "status": "passed_in_synthetic_scenarios",
+      "evidence": [
+        "postgres_identity_edges_green.xml",
+        "postgres_concurrency_green.xml",
+        "full_verified.xml"
+      ]
+    },
+    {
+      "criterion": "Idempotência, concorrência e falhas",
+      "status": "passed_in_synthetic_scenarios",
+      "evidence": [
+        "postgres_edges_green.xml",
+        "full_verified.xml"
+      ]
+    },
+    {
+      "criterion": "Migração legada, down limitado e restauração em outro banco",
+      "status": "passed_in_synthetic_postgresql",
+      "evidence": "full_verified.xml"
+    },
+    {
+      "criterion": "Sem regressões inesperadas; F10-F13 preservados",
+      "status": "passed",
+      "evidence": [
+        "full_verified.xml",
+        "agent_contracts_green.xml"
+      ]
+    },
+    {
+      "criterion": "Banco e corpus/baseline/revisão intactos",
+      "status": "verified_at_capture",
+      "evidence": [
+        "production_after.json",
+        "preservation.json"
+      ]
+    },
+    {
+      "criterion": "Qualidade automática global",
+      "status": "incomplete_preexisting_and_pipeline_worker_cleanup_failure",
+      "evidence": [
+        "../QUALITY.md",
+        "mutation_pipeline_summary.json",
+        "mutation_provenance_summary.json"
+      ]
+    },
+    {
+      "criterion": "Implantação/migração produtiva e Fase 4.2",
+      "status": "not_executed_pending_human_review"
+    }
+  ],
+  "known_limits": [
+    "Synthetic extraction/evaluation outputs do not demonstrate real OCR or LLM fidelity.",
+    "Historical settings not captured earlier remain unknown.",
+    "Rollback after new history requires pre-migration backup restoration into another database and retention of the versioned archive."
+  ]
+}

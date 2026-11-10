@@ -1,0 +1,9 @@
+{
+  "path": "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-quality-z5ub40ie",
+  "source_sha256": {
+    "data/rag_pipeline.py": "85818be13af0e106cfdc705f2899a3f4d0180ef3f6d589791749cd19c77afcbf",
+    "data/extraction_provenance.py": "158f88c3f8740d110c5a00f0a881a752cc20981c572fe0e52efd70d031b96911"
+  },
+  "single_fresh_lcov": true,
+  "contains_credentials_or_corpus": false
+}

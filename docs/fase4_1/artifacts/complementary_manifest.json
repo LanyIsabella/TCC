@@ -1,0 +1,29 @@
+{
+  "base_manifest": "manifest.json",
+  "base_manifest_sha256": "aa29d09f84d72d55dc2523c2f2d75f7f627b8fbf67a71dfee76df2ea2bb7ebff",
+  "phase3_commit": "27551cef7d033061dc740f455a3c28f5b3966f22",
+  "purpose": "Hashes of files added or changed by the complementary Fase 4.1 verification",
+  "files": {
+    "docs/fase4_1/PARECER_COMPLEMENTAR.md": "9326a542b352d943a24cadfad7b5a08220d428ad4dc6ee1654652713170a3bde",
+    "docs/fase4_1/README.md": "dbdad76dc357abed27d2caf9af52973f62c3ad4145ddfe0d3c4e2574d8de9893",
+    "docs/fase4_1/QUALITY.md": "ce677a4b0358c195ba3c4ff0693ed470baf6d5a9d7af555cb3d28bf58a68dcc1",
+    "docs/fase4_1/RELATORIO.md": "71f68cbe618051d9f95b6c7f65b955bbffb7111120677b3ea37833edfe5fff3b",
+    "docs/fase4_1/artifacts/complementary_full_green.xml": "efe69e1dfcdf5c0fdb2b540ee94c8c4548b0d84d060fca4a72c31d8d99f40015",
+    "docs/fase4_1/artifacts/complementary_isolation_recheck.json": "08467f2a8f11d3f3cf9246229652166c28881776a6d2254548352837184fdff2",
+    "docs/fase4_1/artifacts/complementary_pg_green.xml": "fe5efb11ff9dbb40626d8759f7dac5635484b2cdeff93de227754387d1a14abc",
+    "docs/fase4_1/artifacts/complementary_source_recheck.json": "156b8f71213f58f6c6577b84d879926fc9bd84c4157dc0175af7322257e162ce",
+    "docs/fase4_1/artifacts/complementary_unit_green.xml": "b59f73386961323a2fd704455cd805136e87884e11811eb44b367c04a0089fdf",
+    "docs/fase4_1/artifacts/invalidate_default_green.xml": "9877141dcccbb12209d0a1938af14b06fe8a412d0f071347f3a51f4177ac690a",
+    "docs/fase4_1/artifacts/mutator_force_default_status.json": "a94ab7f49e20e4d143c949bda896968da433666b8d91f16f3d84028d660014d2",
+    "docs/fase4_1/artifacts/mutator_force_default.log": "39b5a2dca117b3478e016db8845256a59e2894d9bf288e60f2c2c2c32a337b7d",
+    "docs/fase4_1/artifacts/mutator_pipeline_group_identity_status.json": "8fce0d9964750e5c07bc077e74f79477bb7cdf9a8127a0add268bb7cad931713",
+    "docs/fase4_1/artifacts/mutator_pipeline_group_identity.log": "02ded4cd19aa2bf5a03b0b5f67bfe07c06ea8a59b6fa0d35c1e694c6742b7674",
+    "docs/fase4_1/artifacts/mutator_snapshot_delete_false_status.json": "fd0ce78e1989a13ee3760b539c1dedc96ba6d9adce49912c901aef475e68be85",
+    "docs/fase4_1/artifacts/mutator_snapshot_delete_false.log": "2fe8b6454529bb24f2470878c0b6b14aceeccc3b5f45ad3a2751d22a4082bcaf",
+    "docs/fase4_1/artifacts/pipeline_mutation_groups.json": "c068c5c07621deed5d56b7a44655d788dbd9bceedd50830b2923aeeb4fad4317",
+    "docs/fase4_1/artifacts/pipeline_mutation_workspace.json": "c3ab9f1ced73e57e814d41c80384c169f076f080d1b681fbfe09d0e80ebe3525",
+    "docs/fase4_1/artifacts/production_recheck.json": "c0cce5fbe36980433fe1c58c19be3471f44ab1e72d30f86e6c410450f4eddcb6",
+    "tests/test_extraction_provenance.py": "fe91ec3847572e7c05357d6226b9542ccfccab95c238920c1b6692eb30438644"
+  },
+  "not_a_commit": true
+}

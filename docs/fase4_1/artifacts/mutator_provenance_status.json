@@ -1,0 +1,5 @@
+{
+  "max_workers": 2,
+  "budget_seconds": 600,
+  "exit_code": 3
+}

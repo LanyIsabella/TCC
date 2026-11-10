@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import inspect
 import json
 import logging
 import math
@@ -24,6 +25,11 @@ from typing import Any
 
 import requests
 from dotenv import load_dotenv
+
+if __package__:
+    from . import extraction_provenance as provenance
+else:
+    import extraction_provenance as provenance
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
@@ -408,61 +414,40 @@ def create_or_resume_extraction(
     total_pages: int,
     retry_errors: bool,
     force: bool,
+    *,
+    source_snapshot: tuple[Path, str] | None = None,
 ) -> int:
-    extractor_version = extractor_versions()[extractor]
-    now = utc_now()
-    with connect() as connection, connection.cursor() as cursor:
-        cursor.execute(
-            """
-            INSERT INTO silver.silver_document_extractions
-                (document_id, extractor, extractor_version, total_pages,
-                 processing_status, started_at, updated_at)
-            VALUES (%s, %s, %s, %s, 'pending', %s, %s)
-            ON CONFLICT (document_id, extractor, extractor_version) DO NOTHING
-            RETURNING id
-            """,
-            (document_id, extractor, extractor_version, total_pages, now, now),
+    if source_snapshot is None:
+        document = bronze_documents(document_id)[0]
+        source_snapshot = provenance.original_snapshot(
+            RAW_DIR / document["relative_path"], PAGE_CACHE / "originals"
         )
-        row = cursor.fetchone()
-        if row:
-            extraction_id = row[0]
-        else:
-            cursor.execute(
-                """
-                SELECT id FROM silver.silver_document_extractions
-                WHERE document_id = %s AND extractor = %s
-                  AND extractor_version = %s
-                """,
-                (document_id, extractor, extractor_version),
+    snapshot, source_digest = source_snapshot
+    if provenance.file_digest(snapshot) != source_digest:
+        raise ValueError("O snapshot original mudou durante a preparação.")
+    recipe = text_hash(
+        "\n".join(
+            inspect.getsource(function)
+            for function in (
+                extract_page,
+                native_page_text,
+                direct_ollama_glm_ocr,
+                create_docling_converter,
             )
-            extraction_id = cursor.fetchone()[0]
-        cursor.execute(
-            """
-            UPDATE silver.silver_document_extractions
-            SET total_pages = %s, updated_at = now()
-            WHERE id = %s
-            """,
-            (total_pages, extraction_id),
         )
-        for page_number in range(1, total_pages + 1):
-            cursor.execute(
-                """
-                INSERT INTO silver.silver_page_extractions
-                    (extraction_id, document_id, extractor, extractor_version,
-                     page_number, processing_status)
-                VALUES (%s, %s, %s, %s, %s, 'pending')
-                ON CONFLICT (extraction_id, page_number) DO NOTHING
-                """,
-                (
-                    extraction_id,
-                    document_id,
-                    extractor,
-                    extractor_version,
-                    page_number,
-                ),
-            )
-        connection.commit()
-    return extraction_id
+    )
+    profile = {
+        "source_sha256": source_digest,
+        "source_snapshot": snapshot.name,
+        "physical_pages": total_pages,
+        "processing": provenance.processing_profile(
+            ROOT, extractor, extractor_versions(), recipe
+        ),
+    }
+    with connect() as connection:
+        return provenance.start_execution(
+            connection, document_id, extractor, total_pages, profile, force
+        )
 
 
 def page_is_eligible(status: str, retry_errors: bool, force: bool) -> bool:
@@ -513,14 +498,119 @@ def extract_page(
     return result.markdown_result or "", result.markdown_result or "", None
 
 
+def _process_extraction_page(
+    page_id, page_number, paths, extractor, document, docling_converter, glmocr_parser
+) -> None:
+    from psycopg.types.json import Jsonb
+
+    started = time.perf_counter()
+    attempt_time = utc_now()
+    with connect() as connection, connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE silver.silver_page_extractions
+            SET processing_status = 'processing',
+                attempt_count = attempt_count + 1,
+                last_attempt_at = %s, updated_at = now(),
+                error_message = NULL
+            WHERE id = %s
+            """,
+            (attempt_time, page_id),
+        )
+        connection.commit()
+    try:
+        extracted_text, extracted_markdown, structured = extract_page(
+            extractor,
+            paths[page_number - 1],
+            docling_converter,
+            glmocr_parser,
+        )
+        elapsed = int((time.perf_counter() - started) * 1000)
+        content = extracted_text or extracted_markdown
+        with connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE silver.silver_page_extractions
+                SET source_page_path = %s, extracted_text = %s,
+                    extracted_markdown = %s, structured_output = %s,
+                    character_count = %s, word_count = %s,
+                    content_hash = %s, processing_status = 'success',
+                    processing_time_ms = %s, updated_at = now()
+                WHERE id = %s
+                """,
+                (
+                    str(paths[page_number - 1].relative_to(ROOT)),
+                    extracted_text,
+                    extracted_markdown,
+                    Jsonb(structured) if structured else None,
+                    len(content),
+                    len(content.split()),
+                    text_hash(content),
+                    elapsed,
+                    page_id,
+                ),
+            )
+            connection.commit()
+        refresh_silver_document(document["record_id"], extractor)
+    except Exception as error:
+        elapsed = int((time.perf_counter() - started) * 1000)
+        with connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE silver.silver_page_extractions
+                SET processing_status = 'error', error_message = %s,
+                    processing_time_ms = %s, updated_at = now()
+                WHERE id = %s
+                """,
+                (str(error)[:4000], elapsed, page_id),
+            )
+            connection.commit()
+        refresh_silver_document(document["record_id"], extractor)
+
+
+def _process_available_page(
+    page_id,
+    page_number,
+    paths,
+    extractor,
+    document,
+    docling_converter,
+    glmocr_parser,
+    retry_errors,
+    force,
+) -> None:
+    with connect() as lease:
+        acquired = lease.execute(
+            "SELECT pg_try_advisory_lock(hashtextextended(%s,0))",
+            (f"page-extraction:{page_id}",),
+        ).fetchone()[0]
+        if not acquired:
+            return
+        status = lease.execute(
+            (
+                "SELECT processing_status FROM "
+                "silver.silver_page_extractions WHERE id=%s"
+            ),
+            (page_id,),
+        ).fetchone()[0]
+        if page_is_eligible(status, retry_errors, force):
+            _process_extraction_page(
+                page_id,
+                page_number,
+                paths,
+                extractor,
+                document,
+                docling_converter,
+                glmocr_parser,
+            )
+
+
 def process_extractions(
     document_id: int | None,
     extractor_names: list[str],
     retry_errors: bool,
     force: bool,
 ) -> None:
-    from psycopg.types.json import Jsonb
-
     versions = extractor_versions()
     documents = bronze_documents(document_id)
     if not documents:
@@ -535,7 +625,10 @@ def process_extractions(
         glmocr_parser = GlmOcr(config_path=str(ROOT / "config" / "glmocr.yaml"))
     for document in documents:
         pdf_path = RAW_DIR / document["relative_path"]
-        paths = page_paths(pdf_path, document["record_id"])
+        source_snapshot = provenance.original_snapshot(
+            pdf_path, PAGE_CACHE / "originals"
+        )
+        paths = page_paths(source_snapshot[0], document["record_id"])
         for extractor in extractor_names:
             extraction_id = create_or_resume_extraction(
                 document["record_id"],
@@ -543,6 +636,7 @@ def process_extractions(
                 len(paths),
                 retry_errors,
                 force,
+                source_snapshot=source_snapshot,
             )
             with connect() as connection, connection.cursor() as cursor:
                 cursor.execute(
@@ -554,72 +648,18 @@ def process_extractions(
                     (extraction_id,),
                 )
                 pages = cursor.fetchall()
-            for page_id, page_number, status in pages:
-                if not page_is_eligible(status, retry_errors, force):
-                    continue
-                started = time.perf_counter()
-                attempt_time = utc_now()
-                with connect() as connection, connection.cursor() as cursor:
-                    cursor.execute(
-                        """
-                        UPDATE silver.silver_page_extractions
-                        SET processing_status = 'processing',
-                            attempt_count = attempt_count + 1,
-                            last_attempt_at = %s, updated_at = now(),
-                            error_message = NULL
-                        WHERE id = %s
-                        """,
-                        (attempt_time, page_id),
-                    )
-                    connection.commit()
-                try:
-                    extracted_text, extracted_markdown, structured = extract_page(
-                        extractor,
-                        paths[page_number - 1],
-                        docling_converter,
-                        glmocr_parser,
-                    )
-                    elapsed = int((time.perf_counter() - started) * 1000)
-                    content = extracted_text or extracted_markdown
-                    with connect() as connection, connection.cursor() as cursor:
-                        cursor.execute(
-                            """
-                            UPDATE silver.silver_page_extractions
-                            SET source_page_path = %s, extracted_text = %s,
-                                extracted_markdown = %s, structured_output = %s,
-                                character_count = %s, word_count = %s,
-                                content_hash = %s, processing_status = 'success',
-                                processing_time_ms = %s, updated_at = now()
-                            WHERE id = %s
-                            """,
-                            (
-                                str(paths[page_number - 1].relative_to(ROOT)),
-                                extracted_text,
-                                extracted_markdown,
-                                Jsonb(structured) if structured else None,
-                                len(content),
-                                len(content.split()),
-                                text_hash(content),
-                                elapsed,
-                                page_id,
-                            ),
-                        )
-                        connection.commit()
-                    refresh_silver_document(document["record_id"], extractor)
-                except Exception as error:
-                    elapsed = int((time.perf_counter() - started) * 1000)
-                    with connect() as connection, connection.cursor() as cursor:
-                        cursor.execute(
-                            """
-                            UPDATE silver.silver_page_extractions
-                            SET processing_status = 'error', error_message = %s,
-                                processing_time_ms = %s, updated_at = now()
-                            WHERE id = %s
-                            """,
-                            (str(error)[:4000], elapsed, page_id),
-                        )
-                        connection.commit()
-                    refresh_silver_document(document["record_id"], extractor)
+            for page_id, page_number, _status in pages:
+                _process_available_page(
+                    page_id,
+                    page_number,
+                    paths,
+                    extractor,
+                    document,
+                    docling_converter,
+                    glmocr_parser,
+                    retry_errors,
+                    force,
+                )
             rebuild_extraction(extraction_id, versions[extractor])
             refresh_silver_document(document["record_id"], extractor)
 
@@ -995,103 +1035,148 @@ justification.
             return deterministic_evaluation(text_error), "deterministic_fallback"
 
 
+def evaluation_configuration() -> dict[str, Any]:
+    model = os.getenv("RAG_EVALUATION_MODEL", os.getenv("OLLAMA_MODEL"))
+    if not model:
+        raise ValueError("Defina OLLAMA_MODEL ou RAG_EVALUATION_MODEL no .env.")
+    implementation = text_hash(
+        "\n".join(
+            inspect.getsource(function)
+            for function in (
+                evaluate_page,
+                parse_json_response,
+                deterministic_metrics,
+                deterministic_evaluation,
+            )
+        )
+    )
+    return {
+        "engine_version": EVALUATION_PROMPT_VERSION,
+        "implementation_sha256": implementation,
+        "client_version": package_version("langchain-ollama"),
+        "model": model,
+        "model_digest_observed": provenance.model_digest(
+            model,
+            os.getenv("OLLAMA_HOST", "http://localhost:11434"),
+            "RAG_EVALUATION_MODEL_DIGEST",
+        ),
+        "temperature": 0,
+        "reasoning": False,
+        "format": "json",
+        "num_ctx": int(os.getenv("RAG_EVALUATION_CONTEXT", "16384")),
+        "num_predict": int(os.getenv("RAG_EVALUATION_MAX_TOKENS", "2400")),
+    }
+
+
+def _evaluation_failure(native: str, error: Exception) -> tuple[str, str, str]:
+    message = str(error)[:4000]
+    if len(native) < 20:
+        return "reference_unavailable", "reference_unavailable", message
+    return "page_image", "error", message
+
+
+def _evaluate_page_result(row: tuple, configuration: dict) -> None:
+    page_id, _execution, source, text, markdown, _document, status, target = row
+    with connect() as connection:
+        request_id = provenance.reserve_evaluation(
+            connection, page_id, target, status, configuration
+        )
+    if request_id is None:
+        return
+    path = ROOT / source
+    native = native_page_text(path)
+    started = utc_now()
+    extracted = text or markdown or ""
+    try:
+        evaluation, method = evaluate_page(
+            path.with_suffix(".png"), native, extracted, configuration["model"]
+        )
+        metrics = deterministic_metrics(native, extracted)
+        review = bool(evaluation.get("requires_manual_review", False))
+        metrics["requires_manual_review"] = review
+        status = "error" if review else "success"
+        error = (
+            str(evaluation.get("fallback_error", "A avaliação requer revisão manual."))[
+                :4000
+            ]
+            if review
+            else None
+        )
+    except Exception as exc:
+        evaluation, metrics = {}, None
+        method, status, error = _evaluation_failure(native, exc)
+    with connect() as connection:
+        provenance.save_evaluation(
+            connection,
+            page_id,
+            target,
+            configuration,
+            {
+                "score": evaluation.get("overall_score"),
+                "metrics": {**(metrics or {}), "evaluation": evaluation},
+                "status": status,
+                "method": method,
+                "error": error,
+                "evaluated_at": started,
+            },
+            request_id=request_id,
+        )
+
+
+def current_evaluation_identity() -> str | None:
+    configuration = evaluation_configuration()
+    if configuration["model_digest_observed"] is None:
+        return None
+    return provenance.fingerprint("evaluation-config-v1", configuration)
+
+
 def evaluate_extractions(
     document_id: int | None, extractor_names: list[str], retry_errors: bool
 ) -> None:
-    model_name = os.getenv("RAG_EVALUATION_MODEL", os.getenv("OLLAMA_MODEL"))
-    from psycopg.types.json import Jsonb
-
-    if not model_name:
-        raise ValueError("Defina OLLAMA_MODEL ou RAG_EVALUATION_MODEL no .env.")
-    query = """
-        SELECT p.id, p.extraction_id, p.source_page_path, p.extracted_text,
-               p.extracted_markdown, d.document_id, p.evaluation_status
-        FROM silver.silver_page_extractions p
-        JOIN silver.silver_document_extractions d ON d.id = p.extraction_id
-        WHERE p.processing_status = 'success' AND p.extractor = ANY(%s)
-          AND (
-              p.evaluation_status = 'pending'
-              OR (p.evaluation_status = 'error' AND %s)
-          )
-    """
-    params: list[Any] = [extractor_names, retry_errors]
-    if document_id is not None:
-        query += " AND d.document_id = %s"
-        params.append(document_id)
-    with connect() as connection, connection.cursor() as cursor:
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
-    for page_id, _extraction_id, source_path, text, markdown, _doc_id, _status in rows:
-        page_path = ROOT / source_path
-        native = native_page_text(page_path)
-        extracted = text or markdown or ""
-        started = utc_now()
-        try:
-            evaluation, method = evaluate_page(
-                page_path.with_suffix(".png"), native, extracted, model_name
-            )
-            metrics = deterministic_metrics(native, extracted)
-            requires_manual_review = bool(
-                evaluation.get("requires_manual_review", False)
-            )
-            metrics["requires_manual_review"] = requires_manual_review
-            if requires_manual_review:
-                evaluation_status = "error"
-                error = str(
-                    evaluation.get(
-                        "fallback_error",
-                        "A avaliação requer revisão manual.",
-                    )
-                )[:4000]
-            else:
-                evaluation_status = "success"
-                error = None
-        except Exception as exc:
-            evaluation = {}
-            metrics = None
-            if len(native) < 20:
-                method = "reference_unavailable"
-                evaluation_status = "reference_unavailable"
-            else:
-                method = "page_image"
-                evaluation_status = "error"
-            error = str(exc)[:4000]
-        with connect() as connection, connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE silver.silver_page_extractions
-                SET quality_score = %s, quality_metrics = %s,
-                    evaluation_status = %s, evaluation_method = %s,
-                    evaluation_model = %s, evaluation_prompt_version = %s,
-                    evaluation_error = %s, evaluated_at = %s, updated_at = now()
-                WHERE id = %s
-                """,
-                (
-                    evaluation.get("overall_score"),
-                    Jsonb({**(metrics or {}), "evaluation": evaluation}),
-                    evaluation_status,
-                    method,
-                    model_name,
-                    EVALUATION_PROMPT_VERSION,
-                    error,
-                    started,
-                    page_id,
-                ),
-            )
-            connection.commit()
-    refresh_quality_aggregates()
-    with connect() as connection, connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT DISTINCT d.document_id, d.extractor
-            FROM silver.silver_document_extractions d
-            WHERE d.extractor = ANY(%s)
-            """,
-            (extractor_names,),
+    configuration = evaluation_configuration()
+    identity = provenance.fingerprint("evaluation-config-v1", configuration)
+    with connect() as connection:
+        provenance.require_schema(connection)
+        provenance.invalidate_evaluations(
+            connection,
+            identity,
+            extractor_names,
+            document_id,
+            force=configuration["model_digest_observed"] is None,
         )
-        refreshed = cursor.fetchall()
-    for refreshed_document_id, refreshed_extractor in refreshed:
-        refresh_silver_document(refreshed_document_id, refreshed_extractor)
+        rows = connection.execute(
+            """
+            SELECT p.id,p.extraction_id,p.source_page_path,p.extracted_text,
+                   p.extracted_markdown,p.document_id,p.evaluation_status,p.result_fingerprint
+            FROM silver.silver_page_extractions p
+            WHERE p.processing_status='success' AND p.extractor=ANY(%s)
+              AND (%s::bigint IS NULL OR p.document_id=%s)
+              AND (p.evaluation_status='pending'
+                   OR (p.evaluation_status='error' AND %s))
+              AND p.extraction_id IN (
+                  SELECT DISTINCT ON (document_id,extractor) id
+                  FROM silver.silver_document_extractions
+                  ORDER BY document_id,extractor,id DESC
+              )
+            ORDER BY p.id
+            """,
+            (extractor_names, document_id, document_id, retry_errors),
+        ).fetchall()
+    for row in rows:
+        _evaluate_page_result(row, configuration)
+    refresh_quality_aggregates()
+    with connect() as connection:
+        refreshed = connection.execute(
+            (
+                "SELECT DISTINCT document_id,extractor FROM "
+                "silver.silver_document_extractions WHERE "
+                "extractor=ANY(%s)"
+            ),
+            (extractor_names,),
+        ).fetchall()
+    for doc_id, extractor in refreshed:
+        refresh_silver_document(doc_id, extractor)
+
 
 
 def refresh_quality_aggregates() -> None:
@@ -1168,38 +1253,59 @@ def comparison_is_ready(rows: list[tuple[Any, ...]]) -> bool:
     )
 
 
+def _select_gold_execution(
+    cursor: Any, document_id: int, extractor: str | None, extraction_id: int | None
+) -> tuple:
+    provenance.require_schema(cursor.connection)
+    query = """
+        SELECT d.id, d.document_id, d.extractor, d.full_text,
+               d.full_markdown, d.total_pages,
+               COALESCE(
+                   d.weighted_quality_score,
+                   d.average_quality_score
+               ) AS selection_quality_score,
+               b.manifest_metadata
+        FROM silver.silver_document_extractions d
+        JOIN bronze.documents b ON b.record_id = d.document_id
+        WHERE d.document_id = %s AND d.processing_status = 'success'
+    """
+    params: list[Any] = [document_id]
+    if extraction_id is not None:
+        query += " AND d.id = %s"
+        params.append(extraction_id)
+    else:
+        query += """ AND d.id IN (
+            SELECT DISTINCT ON (extractor) id
+            FROM silver.silver_document_extractions
+            WHERE document_id = %s ORDER BY extractor,id DESC
+        )"""
+        params.append(document_id)
+    if extractor:
+        query += " AND d.extractor = %s"
+        params.append(extractor)
+    query += (
+        " ORDER BY d.weighted_quality_score DESC NULLS LAST, "
+        "d.average_quality_score DESC NULLS LAST, d.id DESC LIMIT 1"
+    )
+    cursor.execute(query, params)
+    row = cursor.fetchone()
+    if not row:
+        raise ValueError("Nenhuma extração completa disponível para ativação.")
+    return row
+
+
 def activate_gold(
     document_id: int,
     extractor: str | None = None,
     allow_unvalidated: bool = False,
+    *,
+    extraction_id: int | None = None,
 ) -> int:
     from psycopg.types.json import Jsonb
 
+    evaluation_identity = None if allow_unvalidated else current_evaluation_identity()
     with connect() as connection, connection.cursor() as cursor:
-        query = """
-            SELECT d.id, d.document_id, d.extractor, d.full_text,
-                   d.full_markdown, d.total_pages,
-                   COALESCE(
-                       d.weighted_quality_score,
-                       d.average_quality_score
-                   ) AS selection_quality_score,
-                   b.manifest_metadata
-            FROM silver.silver_document_extractions d
-            JOIN bronze.documents b ON b.record_id = d.document_id
-            WHERE d.document_id = %s AND d.processing_status = 'success'
-        """
-        params: list[Any] = [document_id]
-        if extractor:
-            query += " AND d.extractor = %s"
-            params.append(extractor)
-        query += (
-            " ORDER BY d.weighted_quality_score DESC NULLS LAST, "
-            "d.average_quality_score DESC NULLS LAST, d.id DESC LIMIT 1"
-        )
-        cursor.execute(query, params)
-        row = cursor.fetchone()
-        if not row:
-            raise ValueError("Nenhuma extração completa disponível para ativação.")
+        row = _select_gold_execution(cursor, document_id, extractor, extraction_id)
         (
             extraction_id,
             doc_id,
@@ -1216,12 +1322,15 @@ def activate_gold(
             SELECT COUNT(*) AS total_pages,
                    COUNT(*) FILTER (WHERE processing_status = 'success')
                        AS successful_pages,
-                   array_agg(evaluation_status ORDER BY page_number)
+                   array_agg(CASE
+                       WHEN evaluation_input_fingerprint = result_fingerprint
+                         AND evaluation_config_fingerprint = %s
+                       THEN evaluation_status ELSE 'pending' END ORDER BY page_number)
                        AS evaluation_statuses
             FROM silver.silver_page_extractions
             WHERE extraction_id = %s
             """,
-            (extraction_id,),
+            (evaluation_identity, extraction_id),
         )
         evaluated_total, successful_pages, evaluation_statuses = cursor.fetchone()
         evaluation_statuses = evaluation_statuses or []
@@ -1242,15 +1351,29 @@ def activate_gold(
                    COUNT(p.id) AS page_rows,
                    COUNT(p.id) FILTER (WHERE p.processing_status = 'success')
                        AS successful_pages,
-                   COUNT(p.id) FILTER (WHERE p.evaluation_status = 'success')
+                   COUNT(p.id) FILTER (WHERE p.evaluation_status = 'success'
+                       AND p.evaluation_input_fingerprint = p.result_fingerprint
+                       AND p.evaluation_config_fingerprint = %s)
                        AS evaluated_pages
             FROM silver.silver_document_extractions e
             LEFT JOIN silver.silver_page_extractions p
                 ON p.extraction_id = e.id
             WHERE e.document_id = %s AND e.extractor = ANY(%s)
+              AND (e.id = %s OR (e.extractor <> %s AND e.id IN (
+                  SELECT DISTINCT ON (extractor) id
+                  FROM silver.silver_document_extractions WHERE document_id = %s
+                  ORDER BY extractor,id DESC
+              )))
             GROUP BY e.extractor, e.processing_status, e.total_pages
             """,
-            (doc_id, ["docling", "glm_ocr"]),
+            (
+                evaluation_identity,
+                doc_id,
+                ["docling", "glm_ocr"],
+                extraction_id,
+                source_extractor,
+                doc_id,
+            ),
         )
         comparison_rows = cursor.fetchall()
         comparison_ready = comparison_is_ready(comparison_rows)
@@ -1413,6 +1536,7 @@ def activate_gold(
                 extraction_id,
             ),
         )
+        provenance.record_gold_derivation(connection, rag_document_id)
         connection.commit()
     return rag_document_id
 

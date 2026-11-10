@@ -1,0 +1,15 @@
+{
+  "owned_clusters_stopped": [
+    {
+      "temporary_directory": "tcc-f41-pg-ym_06fwi",
+      "cluster_identifier": "7706637950390199516",
+      "directory_verified": true,
+      "distinct_from_original": true,
+      "stopped": true,
+      "reason": "isolated cluster left after mutation worker cleanup failure"
+    }
+  ],
+  "remaining_test_pid_files": 0,
+  "no_recursive_file_deletion": true,
+  "production_service_untouched": true
+}

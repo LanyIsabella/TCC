@@ -1,0 +1,6 @@
+{
+  "files_checked": 134,
+  "matching_files": [],
+  "scope": "new delivery plus three modified files",
+  "limitations": "Pattern scan is not an exhaustive secret audit; production credentials were never exported."
+}

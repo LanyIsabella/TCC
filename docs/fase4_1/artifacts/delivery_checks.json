@@ -1,0 +1,38 @@
+{
+  "source_matches_quality_workspace": true,
+  "protected_algorithms_ast_unchanged": [
+    "main",
+    "is_gold_ready",
+    "comparison_is_ready",
+    "evaluate_page",
+    "extract_page",
+    "direct_ollama_glm_ocr",
+    "page_paths",
+    "OllamaEmbedder",
+    "generate_embeddings",
+    "search_documents"
+  ],
+  "postgres_receipts": 4,
+  "all_reported_clusters_stopped": true,
+  "source_hashes": {
+    "data/rag_pipeline.py": "964d3bcf577a07a0577fa1dc974285aa9dd53bef5c655ed87c83ac682a2d13c2",
+    "data/extraction_provenance.py": "f8dcc9ba0a254d399eac8dc086f964792ae08dc37c03151bc656c93490e0dbab",
+    "data/migrations/0001_extraction_provenance.up.sql": "59afefc7fac856a4d03ef787c57dde16106b33b60755beb19dd91d08f32d5218",
+    "data/migrations/0001_extraction_provenance.down.sql": "57edb6452ed92dcdafe573d1c0ce5e3baba91b97e53f1d12af72d78feca1367b"
+  },
+  "all_prior_files_except_three_authorized_changes_equal": true,
+  "changed_preexisting_files": [
+    "data/rag_pipeline.py",
+    "tests/baseline/test_defect_pipeline.py",
+    "tests/conftest.py"
+  ],
+  "quality_copy_verified_files": 70,
+  "all_delivery_markdown_links_exist": true,
+  "no_staged_changes": true,
+  "no_test_cluster_pidfile_remaining": true,
+  "pipeline_mutation_validation": "incomplete_worker_cleanup_failure",
+  "provenance_mutation_validation": "35 killed 2 survived of 37; gate not passed",
+  "latest_stop_reviewed": "stop_latest_review.json",
+  "latest_stop_ok": false,
+  "latest_stop_source_preserved": true
+}

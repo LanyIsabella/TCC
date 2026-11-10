@@ -1,0 +1,202 @@
+{
+  "changed_functions": [
+    {
+      "function": "data.rag_pipeline.create_or_resume_extraction",
+      "complexity": 3.0,
+      "coverage": 90.9091,
+      "crap": 3.0068
+    },
+    {
+      "function": "data.rag_pipeline._process_extraction_page",
+      "complexity": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "data.rag_pipeline._process_available_page",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "data.rag_pipeline.process_extractions",
+      "complexity": 8.0,
+      "coverage": 86.9565,
+      "crap": 8.142
+    },
+    {
+      "function": "data.rag_pipeline.evaluation_configuration",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "data.rag_pipeline._evaluation_failure",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "data.rag_pipeline._evaluate_page_result",
+      "complexity": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "function": "data.rag_pipeline.current_evaluation_identity",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "data.rag_pipeline.evaluate_extractions",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "data.rag_pipeline._select_gold_execution",
+      "complexity": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "data.rag_pipeline.activate_gold",
+      "complexity": 9.0,
+      "coverage": 97.0588,
+      "crap": 9.0021
+    },
+    {
+      "function": "data.extraction_provenance.fingerprint",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "data.extraction_provenance.file_digest",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "data.extraction_provenance.original_snapshot",
+      "complexity": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "data.extraction_provenance._known_digest",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "data.extraction_provenance.model_digest",
+      "complexity": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "function": "data.extraction_provenance.processing_profile",
+      "complexity": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "function": "data.extraction_provenance.input_fingerprint",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "data.extraction_provenance.require_schema",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "data.extraction_provenance.record_gold_derivation",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "function": "data.extraction_provenance.start_execution",
+      "complexity": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "function": "data.extraction_provenance.invalidate_evaluations",
+      "complexity": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "function": "data.extraction_provenance.reserve_evaluation",
+      "complexity": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "function": "data.extraction_provenance.save_evaluation",
+      "complexity": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    }
+  ],
+  "count": 24,
+  "max_crap": 9.0021,
+  "unchanged_pipeline_functions_and_classes": [
+    "utc_now",
+    "package_version",
+    "text_hash",
+    "estimated_token_count",
+    "context_token_limit",
+    "extract_standard_search_keys",
+    "standard_search_filters",
+    "textual_search_query",
+    "configure_utf8_output",
+    "reconstruct_page_content",
+    "connect",
+    "json_value",
+    "initialise_database",
+    "bronze_documents",
+    "page_paths",
+    "native_page_text",
+    "is_likely_blank_page",
+    "use_direct_ollama_glm_ocr",
+    "create_docling_converter",
+    "direct_ollama_glm_ocr",
+    "extractor_versions",
+    "page_is_eligible",
+    "extract_page",
+    "rebuild_extraction",
+    "refresh_silver_document",
+    "render_page_image",
+    "image_data_url",
+    "response_text",
+    "parse_json_response",
+    "levenshtein",
+    "deterministic_metrics",
+    "deterministic_evaluation",
+    "evaluate_page",
+    "refresh_quality_aggregates",
+    "is_gold_ready",
+    "comparison_is_ready",
+    "OllamaEmbedder",
+    "vector_literal",
+    "generate_embeddings",
+    "search_documents",
+    "extractor_status_query",
+    "page_status_query",
+    "validate_pipeline",
+    "parse_ids",
+    "main"
+  ],
+  "whole_file_gate_passed": false,
+  "source_sha256": {
+    "data/rag_pipeline.py": "964d3bcf577a07a0577fa1dc974285aa9dd53bef5c655ed87c83ac682a2d13c2",
+    "data/extraction_provenance.py": "f8dcc9ba0a254d399eac8dc086f964792ae08dc37c03151bc656c93490e0dbab"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "file": "data/rag_pipeline.py",
+  "scope": "eleven changed functions listed in quality_workspace_verified.json",
+  "selected_operator_sites": 45,
+  "budget_seconds": 900,
+  "max_workers": 2,
+  "exit_code": 1,
+  "failure": "PermissionError WinError 32 during worker directory cleanup",
+  "validated_killed": null,
+  "validated_survived": null,
+  "completed_scope": false,
+  "gate_passed": false,
+  "evidence": [
+    "mutator_pipeline_scan.log",
+    "mutator_pipeline.log",
+    "mutator_pipeline_status.json",
+    "mutation_cleanup.json"
+  ]
+}

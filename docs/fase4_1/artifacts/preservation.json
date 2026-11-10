@@ -1,0 +1,16 @@
+{
+  "phase3_commit": "27551cef7d033061dc740f455a3c28f5b3966f22",
+  "modified_preexisting_files": [
+    "data/rag_pipeline.py",
+    "tests/baseline/test_defect_pipeline.py",
+    "tests/conftest.py"
+  ],
+  "all_other_preexisting_files_preserved": true,
+  "frozen_artifacts_and_corpus_files": 301,
+  "production_comparison": "production_after.json",
+  "phase3_agent_sources_unchanged": true,
+  "schema_file_unchanged": true,
+  "rrf_embeddings_real_ocr_and_evaluator_algorithms_unchanged": true,
+  "reserved_cases_not_used_for_tuning": true,
+  "no_productive_migration_or_write_performed": true
+}

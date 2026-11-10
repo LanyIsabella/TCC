@@ -1,0 +1,14 @@
+{
+  "files": [
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\pyproject.toml",
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\config\\glmocr.yaml",
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\data\\extraction_provenance.py",
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\data\\rag_pipeline.py",
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\data\\rag_schema.sql",
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\data\\migrations\\0001_extraction_provenance.down.sql",
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\data\\migrations\\0001_extraction_provenance.up.sql",
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\tests\\conftest.py",
+    "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533\\tests\\integration\\test_postgres_provenance.py"
+  ],
+  "workspace": "C:\\Users\\lany_\\AppData\\Local\\Temp\\tcc-f41-pipeline-groups-1996cd5077fd434db506da0ef9c06533"
+}

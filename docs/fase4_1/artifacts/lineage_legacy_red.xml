@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="4.613" timestamp="2026-11-10T15:58:55.773016-03:00" hostname="Lany"><testcase classname="tests.integration.test_postgres_provenance" name="test_unmigrated_database_fails_closed_with_explicit_guidance[False]" time="3.644"><failure message="psycopg.errors.UndefinedColumn: column &quot;input_fingerprint&quot; does not exist&#10;LINE 1: ...actions WHERE document_id=$1 AND extractor=$2 AND input_fing...&#10;                                                             ^">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001FA1AEE07C0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-223/test_unmigrated_database_fails0/synthetic.pdf'))
+
+    @pytest.mark.parametrize("isolated_pg", [False], indirect=True)
+    def test_unmigrated_database_fails_closed_with_explicit_guidance(isolated_pg):
+        connect, _ = isolated_pg
+        with pytest.raises(RuntimeError, match="0001_extraction_provenance"):
+&gt;           pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+
+tests\integration\test_postgres_provenance.py:417: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+data\rag_pipeline.py:429: in create_or_resume_extraction
+    return provenance.start_execution(
+data\extraction_provenance.py:101: in start_execution
+    cursor.execute("SELECT id FROM silver.silver_document_extractions WHERE document_id=%s AND extractor=%s AND input_fingerprint=%s ORDER BY id DESC LIMIT 1", (document_id, extractor, identity))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;psycopg.Cursor [closed] [BAD] at 0x1fa1ad8dd90&gt;
+query = 'SELECT id FROM silver.silver_document_extractions WHERE document_id=%s AND extractor=%s AND input_fingerprint=%s ORDER BY id DESC LIMIT 1'
+params = (17, 'pdf_reader', 'b2eb82463205f5e93dfb7bb4cbdc352c124da3ad3089fb8a883c54a3518de867')
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool | None = None,
+    ) -&gt; Self:
+        """
+        Execute a query or command to the database.
+        """
+        try:
+            with self._conn.lock:
+                self._conn.wait(
+                    self._execute_gen(query, params, prepare=prepare, binary=binary)
+                )
+        except e._NO_TRACEBACK as ex:
+&gt;           raise ex.with_traceback(None)
+E           psycopg.errors.UndefinedColumn: column "input_fingerprint" does not exist
+E           LINE 1: ...actions WHERE document_id=$1 AND extractor=$2 AND input_fing...
+E                                                                        ^
+
+.venv\Lib\site-packages\psycopg\cursor.py:117: UndefinedColumn</failure></testcase><testcase classname="tests.integration.test_postgres_provenance" name="test_current_page_change_marks_gold_stale_before_summary_rebuild" time="0.762"><failure message="assert False is True">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001FA1B184AE0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-223/test_current_page_change_marks0/synthetic.pdf'))
+
+    def test_current_page_change_marks_gold_stale_before_summary_rebuild(isolated_pg):
+        connect, _ = isolated_pg
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution, "source before change")
+        gold = pipeline.activate_gold(17, "pdf_reader", True)
+        with connect() as connection:
+            before = connection.execute("SELECT full_text FROM gold.gold_rag_documents WHERE id=%s", (gold,)).fetchone()[0]
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='changed source'")
+&gt;           assert connection.execute("SELECT is_stale FROM gold.gold_rag_derivation_status WHERE rag_document_id=%s", (gold,)).fetchone()[0] is True
+E           assert False is True
+
+tests\integration\test_postgres_provenance.py:430: AssertionError</failure></testcase></testsuite></testsuites>

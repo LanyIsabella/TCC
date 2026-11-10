@@ -1,0 +1,33 @@
+{
+  "file": "data/extraction_provenance.py",
+  "operator_sites": 37,
+  "initial": {
+    "killed": 28,
+    "survived": 1,
+    "uncovered": 8,
+    "exit_code": 3,
+    "log": "mutator_provenance.log"
+  },
+  "supplement": {
+    "newly_executed": 8,
+    "carried_forward": 29,
+    "aggregate_killed": 35,
+    "aggregate_survived": 2,
+    "aggregate_uncovered": 0,
+    "exit_code": 3,
+    "log": "mutator_provenance_supplement.log"
+  },
+  "gate_passed": false,
+  "survivors": [
+    {
+      "line": 39,
+      "mutation": "delete=False -> True",
+      "limit": "Tests observe final snapshot bytes, not reservation lifetime between closing and reopening a temporary filename."
+    },
+    {
+      "line": 298,
+      "mutation": "default force=False -> True",
+      "limit": "Pipeline always passes force explicitly; omitted-argument helper contract is not exercised."
+    }
+  ]
+}

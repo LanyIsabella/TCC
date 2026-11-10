@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="26" time="17.789" timestamp="2026-11-10T15:44:01.707963-03:00" hostname="Lany"><testcase classname="tests.integration.test_extraction_provenance" name="test_original_change_creates_new_execution" time="3.579" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_configuration_change_creates_new_execution" time="0.435" /><testcase classname="tests.integration.test_extraction_provenance" name="test_modified_text_cannot_keep_successful_evaluation" time="0.416"><failure message="AssertionError: assert None == '11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437'&#10; +  where '11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437' = &lt;function text_hash at 0x000001E769FB5A80&gt;('new')&#10; +    where &lt;function text_hash at 0x000001E769FB5A80&gt; = pipeline.text_hash">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001E76A166480&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-216/test_modified_text_cannot_keep0/synthetic.pdf'))
+
+    def test_modified_text_cannot_keep_successful_evaluation(isolated_pg):
+        connect, _ = isolated_pg
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        with connect() as connection:
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='old', processing_status='success' WHERE extraction_id=%s", (execution,))
+            connection.execute("UPDATE silver.silver_page_extractions SET evaluation_status='success', quality_score=97 WHERE extraction_id=%s", (execution,))
+            assert connection.execute("SELECT quality_score FROM silver.silver_page_extractions WHERE extraction_id=%s", (execution,)).fetchone()[0] == 97
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='new' WHERE extraction_id=%s", (execution,))
+            result = connection.execute("SELECT evaluation_status,quality_score FROM silver.silver_page_extractions WHERE extraction_id=%s", (execution,)).fetchone()
+        assert result == ("pending", None)
+        with connect() as connection:
+&gt;           assert connection.execute("SELECT content_hash FROM silver.silver_page_extractions").fetchone()[0] == pipeline.text_hash("new")
+E           AssertionError: assert None == '11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437'
+E            +  where '11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437' = &lt;function text_hash at 0x000001E769FB5A80&gt;('new')
+E            +    where &lt;function text_hash at 0x000001E769FB5A80&gt; = pipeline.text_hash
+
+tests\integration\test_extraction_provenance.py:42: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_forced_processing_preserves_previous_execution" time="0.590" /><testcase classname="tests.integration.test_extraction_provenance" name="test_equivalent_inputs_resume_but_force_is_another_execution" time="0.488" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_MODEL_DIGEST-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc]" time="0.429" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_DIRECT_CONTEXT-8192]" time="0.429" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_digest_and_parameter_changes_are_new_inputs[GLMOCR_DIRECT_MAX_TOKENS-1000]" time="0.411" /><testcase classname="tests.integration.test_extraction_provenance" name="test_extractor_version_changes_identity" time="0.422" /><testcase classname="tests.integration.test_extraction_provenance" name="test_history_keeps_evaluation_and_is_append_only" time="0.495" /><testcase classname="tests.integration.test_extraction_provenance" name="test_changed_evaluator_configuration_reevaluates_only_latest_text" time="0.948" /><testcase classname="tests.integration.test_extraction_provenance" name="test_equivalent_evaluation_is_not_repeated_and_binds_result" time="0.655" /><testcase classname="tests.integration.test_extraction_provenance" name="test_late_evaluation_is_historical_without_approving_current_text" time="0.463" /><testcase classname="tests.integration.test_extraction_provenance" name="test_execution_creation_rollback_leaves_no_partial_pages" time="0.467" /><testcase classname="tests.integration.test_extraction_provenance" name="test_concurrent_equivalent_creation_is_idempotent" time="0.374" /><testcase classname="tests.integration.test_extraction_provenance" name="test_concurrent_processing_claims_each_page_once" time="0.678" /><testcase classname="tests.integration.test_extraction_provenance" name="test_can_reactivate_previous_gold_without_deleting_versions" time="0.860" /><testcase classname="tests.integration.test_extraction_provenance" name="test_derivation_status_marks_old_gold_and_index_without_rewriting_them" time="0.668" /><testcase classname="tests.integration.test_extraction_provenance" name="test_promotion_failure_rolls_back_active_variant" time="0.873" /><testcase classname="tests.integration.test_extraction_provenance" name="test_extraction_failure_does_not_overwrite_previous_success" time="0.801" /><testcase classname="tests.integration.test_extraction_provenance" name="test_legacy_migration_is_explicit_idempotent_and_reversible_before_new_work[False]" time="0.379" /><testcase classname="tests.integration.test_extraction_provenance" name="test_schema_downgrade_refuses_to_erase_used_history" time="0.556" /><testcase classname="tests.integration.test_extraction_provenance" name="test_unknown_ocr_digest_cannot_authorize_automatic_reuse" time="0.423"><failure message="AssertionError: assert 1 != 1&#10; +  where 1 = &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt;(17, 'glm_ocr', 1, False, False)&#10; +    where &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt; = pipeline.create_or_resume_extraction">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001E76A1E8220&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-216/test_unknown_ocr_digest_cannot0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001E76A025010&gt;
+
+    def test_unknown_ocr_digest_cannot_authorize_automatic_reuse(isolated_pg, monkeypatch):
+        monkeypatch.setattr(provenance, "model_digest", lambda *_: None)
+        first = pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False)
+&gt;       assert pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False) != first
+E       AssertionError: assert 1 != 1
+E        +  where 1 = &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt;(17, 'glm_ocr', 1, False, False)
+E        +    where &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt; = pipeline.create_or_resume_extraction
+
+tests\integration\test_extraction_provenance.py:299: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_unknown_evaluator_digest_cannot_preserve_success_across_invocations" time="0.749"><failure message="AssertionError: assert 1 == 2&#10; +  where 1 = len([(WindowsPath('C:/Users/lany_/OneDrive/Desktop/TCC/data/page_cache/synthetic.png'), 'synthetic native reference text', 'synthetic text', 'synthetic-evaluator')])">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001E76A1E93A0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-216/test_unknown_evaluator_digest_0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001E76A027AF0&gt;
+
+    def test_unknown_evaluator_digest_cannot_preserve_success_across_invocations(isolated_pg, monkeypatch):
+        connect, _ = isolated_pg
+        calls = configure_stubs(monkeypatch)
+        monkeypatch.setattr(provenance, "model_digest", lambda *_: None)
+        execution = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        complete(connect, execution)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+        pipeline.evaluate_extractions(17, ["pdf_reader"], False)
+&gt;       assert len(calls) == 2
+E       AssertionError: assert 1 == 2
+E        +  where 1 = len([(WindowsPath('C:/Users/lany_/OneDrive/Desktop/TCC/data/page_cache/synthetic.png'), 'synthetic native reference text', 'synthetic text', 'synthetic-evaluator')])
+
+tests\integration\test_extraction_provenance.py:310: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_formatting_only_yaml_change_has_same_effective_identity" time="0.437"><failure message="AssertionError: assert 2 == 1&#10; +  where 2 = &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt;(17, 'glm_ocr', 1, False, False)&#10; +    where &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt; = pipeline.create_or_resume_extraction">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001E76A1EB060&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-216/test_formatting_only_yaml_chan0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001E76A027380&gt;
+tmp_path = WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-216/test_formatting_only_yaml_chan0')
+
+    def test_formatting_only_yaml_change_has_same_effective_identity(isolated_pg, monkeypatch, tmp_path):
+        config = tmp_path / "config/glmocr.yaml"
+        config.parent.mkdir()
+        config.write_text("pipeline: {ocr_api: {model: synthetic}, page_loader: {max_tokens: 2048}}", encoding="utf-8")
+        monkeypatch.setattr(pipeline, "ROOT", tmp_path)
+        first = pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False)
+        config.write_text("# formatting only\npipeline:\n  page_loader:\n    max_tokens: 2048\n  ocr_api:\n    model: synthetic\n", encoding="utf-8")
+&gt;       assert pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False) == first
+E       AssertionError: assert 2 == 1
+E        +  where 2 = &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt;(17, 'glm_ocr', 1, False, False)
+E        +    where &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt; = pipeline.create_or_resume_extraction
+
+tests\integration\test_extraction_provenance.py:320: AssertionError</failure></testcase><testcase classname="tests.integration.test_extraction_provenance" name="test_explicit_default_matches_effective_ocr_configuration" time="0.565"><failure message="AssertionError: assert 2 == 1&#10; +  where 2 = &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt;(17, 'glm_ocr', 1, False, False)&#10; +    where &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt; = pipeline.create_or_resume_extraction">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001E76A1EBBA0&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-216/test_explicit_default_matches_0/synthetic.pdf'))
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001E76A026430&gt;
+
+    def test_explicit_default_matches_effective_ocr_configuration(isolated_pg, monkeypatch):
+        monkeypatch.setenv("RAG_GLM_OCR_MODE", "direct_ollama")
+        monkeypatch.delenv("GLMOCR_DIRECT_RETRY_MAX_TOKENS", raising=False)
+        first = pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False)
+        monkeypatch.setenv("GLMOCR_DIRECT_RETRY_MAX_TOKENS", "32768")
+&gt;       assert pipeline.create_or_resume_extraction(17, "glm_ocr", 1, False, False) == first
+E       AssertionError: assert 2 == 1
+E        +  where 2 = &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt;(17, 'glm_ocr', 1, False, False)
+E        +    where &lt;function create_or_resume_extraction at 0x000001E769FB6660&gt; = pipeline.create_or_resume_extraction
+
+tests\integration\test_extraction_provenance.py:328: AssertionError</failure></testcase></testsuite></testsuites>

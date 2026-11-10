@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="5.452" timestamp="2026-11-10T15:30:43.423850-03:00" hostname="Lany"><testcase classname="tests.integration.test_extraction_provenance" name="test_original_change_creates_new_execution" time="3.614" /><testcase classname="tests.integration.test_extraction_provenance" name="test_ocr_configuration_change_creates_new_execution" time="0.561" /><testcase classname="tests.integration.test_extraction_provenance" name="test_modified_text_cannot_keep_successful_evaluation" time="0.499" /><testcase classname="tests.integration.test_extraction_provenance" name="test_forced_processing_preserves_previous_execution" time="0.631"><failure message="AssertionError: assert ('old', None) == ('old', 97)&#10;  &#10;  At index 1 diff: None != 97&#10;  Use -v to get more diff">isolated_pg = (&lt;function isolated_pg.&lt;locals&gt;.connect at 0x000001C7FA607F60&gt;, WindowsPath('C:/Users/lany_/AppData/Local/Temp/pytest-of-lany_/pytest-208/test_forced_processing_preserv0/synthetic.pdf'))
+
+    def test_forced_processing_preserves_previous_execution(isolated_pg):
+        connect, _ = isolated_pg
+        first = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, False)
+        with connect() as connection:
+            connection.execute("UPDATE silver.silver_page_extractions SET extracted_text='old', evaluation_status='success', quality_score=97 WHERE extraction_id=%s", (first,))
+        second = pipeline.create_or_resume_extraction(17, "pdf_reader", 1, False, True)
+        assert first != second
+        with connect() as connection:
+&gt;           assert connection.execute("SELECT extracted_text,quality_score FROM silver.silver_page_extractions WHERE extraction_id=%s", (first,)).fetchone() == ("old", 97)
+E           AssertionError: assert ('old', None) == ('old', 97)
+E             
+E             At index 1 diff: None != 97
+E             Use -v to get more diff
+
+tests\integration\test_extraction_provenance.py:41: AssertionError</failure></testcase></testsuite></testsuites>

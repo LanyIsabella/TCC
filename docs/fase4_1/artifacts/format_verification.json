@@ -1,0 +1,26 @@
+[
+  {
+    "file": "data/extraction_provenance.py",
+    "ast_preserved": true
+  },
+  {
+    "file": "data/rag_pipeline.py",
+    "ast_preserved": true
+  },
+  {
+    "file": "tests/conftest.py",
+    "ast_preserved": true
+  },
+  {
+    "file": "tests/test_extraction_provenance.py",
+    "ast_preserved": true
+  },
+  {
+    "file": "tests/integration/test_postgres_provenance.py",
+    "ast_preserved": true
+  },
+  {
+    "file": "tests/baseline/test_defect_pipeline.py",
+    "ast_preserved": true
+  }
+]
