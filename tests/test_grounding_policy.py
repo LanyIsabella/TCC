@@ -3,7 +3,7 @@
 import json
 
 import pytest
-from src.app.grounding import INSUFFICIENT_EVIDENCE, ground_answer
+from src.app.grounding import INSUFFICIENT_EVIDENCE, PARTIAL_LIMITATION, ground_answer
 
 QUESTION = "Qual a regra de formatação segundo a ABNT?"
 
@@ -252,6 +252,24 @@ def test_complete_literal_sentence_can_be_supported_inside_larger_paragraph():
     answer = "A margem direita deve medir 2 cm."
     source = answer + " A fonte deve ter 12 pontos."
     assert ground_answer(answer, evidence(source), QUESTION).answer == answer
+
+
+def test_omitted_context_prevents_complete_normative_grounding():
+    answer = "A margem direita deve medir 2 cm."
+    value = ground_answer(
+        answer,
+        {
+            "e1": {
+                "evidence_id": "e1",
+                "text": answer,
+                "omitted_content": {"characters": 12, "pages": [1]},
+            }
+        },
+        QUESTION,
+    )
+
+    assert value.status == "partial"
+    assert value.answer.endswith(PARTIAL_LIMITATION)
 
 
 @pytest.mark.parametrize(

@@ -9,7 +9,7 @@ import re
 import unicodedata
 from typing import Any
 
-from data.rag_pipeline import search_documents
+from data.rag_pipeline import estimated_token_count, search_documents
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 MAX_FULL_TEXT_CHARS = 6_000
 MAX_PAGE_TEXT_CHARS = 1_800
 MAX_CONTEXT_CHARS = 5_000
+MAX_CONTEXT_TOKENS = 1_200
 MATCH_WINDOW_CHARS = 240
 PAGE_MARKER_PATTERN = re.compile(r"<<<PÁGINA\s+(\d+)(?:\s+—[^>]*)?>>>")
 MATCH_TERM_PATTERN = re.compile(r"[\wÀ-ÿ]{4,}", flags=re.UNICODE)
@@ -155,27 +156,101 @@ def _match_prefixes(question: str) -> list[str]:
     return sorted(prefixes, key=lambda value: (-len(value), value))
 
 
-def _matched_text(text: str, question: str) -> str | None:
-    """Retorna um recorte original em torno do primeiro match da consulta."""
-
+def _match_spans(text: str, question: str) -> list[tuple[int, int]]:
     prefixes = _match_prefixes(question)
     if not prefixes:
-        return None
+        return []
 
     normalized_text, positions = _normalized_with_positions(text)
     pattern = re.compile(
         rf"\b(?:{'|'.join(re.escape(prefix) for prefix in prefixes)})\w*",
         flags=re.UNICODE,
     )
-    match = pattern.search(normalized_text)
-    if match is None:
+    return [
+        (
+            positions[match.start()],
+            positions[match.end() - 1] + 1,
+        )
+        for match in pattern.finditer(normalized_text)
+    ]
+
+
+def _matched_text(text: str, question: str) -> str | None:
+    """Retorna um recorte original em torno do primeiro match da consulta."""
+
+    spans = _match_spans(text, question)
+    if not spans:
         return None
 
-    original_start = positions[match.start()]
-    original_end = positions[match.end() - 1] + 1
+    original_start, original_end = spans[0]
     window_start = max(0, original_start - MATCH_WINDOW_CHARS // 2)
     window_end = min(len(text), original_end + MATCH_WINDOW_CHARS // 2)
     return text[window_start:window_end].strip()
+
+
+def _semantic_units(text: str) -> list[tuple[int, int]]:
+    """Divide o texto em unidades contíguas sem criar conteúdo novo."""
+
+    units: list[tuple[int, int]] = []
+    start = 0
+    for boundary in re.finditer(r"\n\s*\n|(?<=[.!?])\s+|\n", text):
+        end = boundary.start()
+        if text[start:end].strip():
+            units.append((start, end))
+        start = boundary.end()
+    if text[start:].strip():
+        units.append((start, len(text)))
+    return units or ([(0, len(text))] if text else [])
+
+
+def _semantic_excerpt(
+    text: str,
+    question: str,
+    max_chars: int,
+    max_tokens: int,
+) -> str:
+    """Preserva unidades próximas da consulta dentro do orçamento local."""
+
+    if not text:
+        return ""
+    units = _semantic_units(text)
+    spans = _match_spans(text, question)
+    target = spans[0][0] if spans else 0
+    target_index = next(
+        (
+            index
+            for index, (start, end) in enumerate(units)
+            if start <= target < end
+        ),
+        0,
+    )
+    selected = [target_index]
+    while True:
+        candidates = [
+            index
+            for index in (target_index + 1, target_index - 1)
+            if 0 <= index < len(units) and index not in selected
+        ]
+        if not candidates:
+            break
+        candidate = candidates[0]
+        start = min(units[index][0] for index in [*selected, candidate])
+        end = max(units[index][1] for index in [*selected, candidate])
+        if end - start > max_chars:
+            break
+        selected.append(candidate)
+    start = min(units[index][0] for index in selected)
+    end = max(units[index][1] for index in selected)
+    excerpt = text[start:end].strip()
+    if len(excerpt) > max_chars:
+        excerpt = excerpt[:max_chars].rstrip()
+        cut = excerpt.rfind(" ")
+        if cut > 0:
+            excerpt = excerpt[:cut].rstrip()
+    while estimated_token_count(excerpt) > max_tokens:
+        cut = excerpt.rfind(" ")
+        excerpt = excerpt[:cut].rstrip() if cut > 0 else excerpt[:-1]
+    return excerpt
 
 
 def _document_merge_key(document: dict[str, Any]) -> str:
@@ -388,48 +463,106 @@ def _compact_document(
                 }
             )
 
+    original_full_text = document.get("full_text")
+    full_text = (
+        original_full_text
+        if isinstance(original_full_text, str) and original_full_text.strip()
+        else None
+    )
+    full_text_fits = bool(
+        full_text
+        and len(full_text) <= MAX_FULL_TEXT_CHARS
+        and estimated_token_count(full_text) <= MAX_CONTEXT_TOKENS
+    )
+    raw_page_context = document.get("page_context")
+    if not isinstance(raw_page_context, list):
+        raw_page_context = []
+    if full_text and not full_text_fits and not raw_page_context:
+        fallback_page = pages[0] if len(pages) == 1 else None
+        raw_page_context = [
+            {
+                "page_number": page_number or fallback_page,
+                "page_text": text,
+                "direct_match": False,
+            }
+            for page_number, text in _full_text_parts(full_text)
+        ]
+    if not full_text_fits:
+        full_text = None
+
     page_context: list[dict[str, Any]] = []
     context_chars = 0
-    raw_page_context = document.get("page_context")
-    if isinstance(raw_page_context, list):
-        def page_sort_key(item: dict[str, Any]) -> tuple[bool, int]:
-            try:
-                number = int(item.get("page_number", 0) or 0)
-            except (TypeError, ValueError):
-                number = 0
-            return (not bool(item.get("direct_match", False)), number)
+    context_tokens = 0
+    source_chars = 0
+    retained_chars = 0
+    omitted_pages: list[int] = []
 
-        ordered_page_context = sorted(
-            (item for item in raw_page_context if isinstance(item, dict)),
-            key=page_sort_key,
+    def page_sort_key(item: dict[str, Any]) -> tuple[bool, bool, int]:
+        text = str(item.get("page_text") or "")
+        try:
+            number = int(item.get("page_number", 0) or 0)
+        except (TypeError, ValueError):
+            number = 0
+        return (
+            not bool(item.get("direct_match", False)),
+            not bool(_match_spans(text, question)),
+            number,
         )
-        for item in ordered_page_context:
-            try:
-                page_number = int(item.get("page_number"))
-            except (TypeError, ValueError):
-                continue
-            text = str(item.get("page_text") or "").strip()
-            if page_number <= 0 or not text or context_chars >= MAX_CONTEXT_CHARS:
-                continue
-            remaining = MAX_CONTEXT_CHARS - context_chars
-            text = text[: min(MAX_PAGE_TEXT_CHARS, remaining)].strip()
-            if not text:
-                continue
-            page_item = {
-                "page_number": page_number,
-                "direct_match": bool(item.get("direct_match", False)),
-                "page_text": text,
-            }
-            if item.get("section"):
-                page_item["section"] = str(item["section"]).strip()
-            page_context.append(page_item)
-            context_chars += len(text)
 
-    full_text = document.get("full_text")
-    if isinstance(full_text, str) and len(full_text) > MAX_FULL_TEXT_CHARS:
-        full_text = None
-    elif not isinstance(full_text, str):
-        full_text = None
+    ordered_page_context = sorted(
+        (item for item in raw_page_context if isinstance(item, dict)),
+        key=page_sort_key,
+    )
+    for item in ordered_page_context:
+        raw_text = str(item.get("page_text") or "").strip()
+        if not raw_text:
+            continue
+        source_chars += len(raw_text)
+        try:
+            page_number = int(item.get("page_number"))
+        except (TypeError, ValueError):
+            page_number = None
+        if page_number is not None and page_number <= 0:
+            continue
+        remaining_chars = MAX_CONTEXT_CHARS - context_chars
+        remaining_tokens = MAX_CONTEXT_TOKENS - context_tokens
+        if remaining_chars <= 0 or remaining_tokens <= 0:
+            if page_number is not None:
+                omitted_pages.append(page_number)
+            continue
+        text = _semantic_excerpt(
+            raw_text,
+            question,
+            min(MAX_PAGE_TEXT_CHARS, remaining_chars),
+            remaining_tokens,
+        )
+        if not text:
+            if page_number is not None:
+                omitted_pages.append(page_number)
+            continue
+        page_item = {
+            "page_number": page_number,
+            "direct_match": bool(item.get("direct_match", False)),
+            "page_text": text,
+        }
+        if item.get("section"):
+            page_item["section"] = str(item["section"]).strip()
+        page_context.append(page_item)
+        context_chars += len(text)
+        context_tokens += estimated_token_count(text)
+        retained_chars += len(text)
+        if len(text) < len(raw_text) and page_number is not None:
+            omitted_pages.append(page_number)
+
+    if full_text:
+        source_chars = len(full_text)
+        retained_chars = len(full_text)
+
+    omitted_characters = max(source_chars - retained_chars, 0)
+    omitted_content = {
+        "characters": omitted_characters,
+        "pages": sorted(set(omitted_pages)),
+    }
 
     if not full_text and not page_context:
         return None
@@ -511,6 +644,7 @@ def _compact_document(
         "full_text": full_text,
         "page_context": page_context,
         "evidence": evidence,
+        "omitted_content": omitted_content,
         "context_warning": document.get("context_warning"),
     }
     return compact
@@ -573,6 +707,7 @@ def _model_document(document: dict[str, Any]) -> dict[str, Any]:
             "retrieval_queries",
             "pages",
             "matched_pages",
+            "omitted_content",
             "context_warning",
         )
     }

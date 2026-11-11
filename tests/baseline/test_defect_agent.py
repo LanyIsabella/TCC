@@ -78,19 +78,17 @@ def compacted_late_rule(request):
     return _compact_document(document, "Qual a margem direita?")
 
 
-def test_f6_characterization_compaction_discards_late_rule(compacted_late_rule):
+def test_f6_compaction_preserves_late_rule_and_records_omission(compacted_late_rule):
     compact = compacted_late_rule
     assert compact is not None
     assert compact["full_text"] is None
     assert compact["evidence"]
     assert all(len(page["page_text"]) <= 1800 for page in compact["page_context"])
     assert sum(len(page["page_text"]) for page in compact["page_context"]) <= 5000
-    assert LATE_RULE not in json.dumps(compact, ensure_ascii=False)
+    assert LATE_RULE in json.dumps(compact, ensure_ascii=False)
+    assert compact["omitted_content"]["characters"] > 0
 
 
-@pytest.mark.xfail(
-    strict=True, reason="F6: prefix compaction loses a late rule even on matched pages"
-)
 def test_f6_contract_answer_bearing_rule_survives_compaction(compacted_late_rule):
     assert compacted_late_rule is not None
     assert any(

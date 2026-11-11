@@ -260,13 +260,17 @@ def _evidence_record(
         )
         if document.get(key) is not None
     }
-    return {
+    record = {
         **metadata,
         **evidence,
         "evidence_id": identifier.strip(),
         "text": text,
         **execution,
     }
+    omitted_content = document.get("omitted_content")
+    if isinstance(omitted_content, Mapping):
+        record["omitted_content"] = dict(omitted_content)
+    return record
 
 
 def _collect_evidences(result: Mapping[str, Any]) -> dict[str, EvidenceRecord]:

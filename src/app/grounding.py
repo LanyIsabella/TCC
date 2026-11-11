@@ -384,8 +384,29 @@ def _claim_support(
     return support
 
 
+def _support_has_omissions(
+    identifiers: tuple[str, ...], available: Mapping[str, Any]
+) -> bool:
+    for identifier in identifiers:
+        record = available.get(identifier)
+        if not isinstance(record, Mapping):
+            continue
+        omitted = record.get("omitted_content")
+        if not isinstance(omitted, Mapping):
+            continue
+        try:
+            if int(omitted.get("characters", 0) or 0) > 0:
+                return True
+        except (TypeError, ValueError):
+            continue
+    return False
+
+
 def _compose(
-    answer: str, claims: list[str], support: Mapping[int, str | None]
+    answer: str,
+    claims: list[str],
+    support: Mapping[int, str | None],
+    available: Mapping[str, Any],
 ) -> GroundingDecision:
     kept = [
         claim
@@ -398,6 +419,10 @@ def _compose(
     if not identifiers:
         return GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
     if len(kept) == len(claims):
+        if _support_has_omissions(identifiers, available):
+            return GroundingDecision(
+                "\n".join([answer, PARTIAL_LIMITATION]), identifiers, "partial"
+            )
         return GroundingDecision(answer, identifiers, "supported")
     return GroundingDecision(
         "\n".join([*kept, PARTIAL_LIMITATION]), identifiers, "partial"
@@ -421,5 +446,8 @@ def ground_answer(
         return GroundingDecision(answer, (), "conversational")
     claims = _claims(answer)
     return _compose(
-        answer, claims, _claim_support(claims, available, question, verifier)
+        answer,
+        claims,
+        _claim_support(claims, available, question, verifier),
+        available,
     )
