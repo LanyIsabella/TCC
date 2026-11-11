@@ -324,6 +324,49 @@ def test_clarification_contract_rejects_normative_preface() -> None:
         )
 
 
+def test_clarification_contract_rejects_normative_semicolon_clause() -> None:
+    with pytest.raises(ValidationError):
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            clarification_questions=[
+                (
+                    "As citações diretas longas exigem recuo; "
+                    "qual trecho você quer formatar?"
+                )
+            ],
+        )
+
+
+def test_malformed_clarification_cannot_reach_public_agent_output() -> None:
+    malformed = (
+        "As citações diretas longas exigem recuo; "
+        "qual trecho você quer formatar?"
+    )
+    planner = FakePlanner(
+        PlannerDecision.model_construct(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            needs_retrieval=False,
+            clarification_questions=[malformed],
+            reply=None,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como formatar?"}]}
+    )
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+    assert malformed not in result["answer"]
+
+
 def test_normative_answer_misclassified_as_ambiguous_fails_closed() -> None:
     planner = FakePlanner(
         PlannerDecision(

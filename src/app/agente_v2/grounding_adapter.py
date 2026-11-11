@@ -70,7 +70,13 @@ def conversational_result(
         if planner.clarification_questions:
             expected = "\n".join(planner.clarification_questions)
             clarification_source = (
-                "structured" if answer == expected else "untrusted"
+                "structured"
+                if answer == expected
+                and all(
+                    is_structured_clarification(question)
+                    for question in planner.clarification_questions
+                )
+                else "untrusted"
             )
         elif planner.reply and is_structured_clarification(planner.reply):
             clarification_source = (

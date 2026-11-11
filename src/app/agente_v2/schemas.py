@@ -41,7 +41,7 @@ def is_structured_clarification(value: str) -> bool:
 
     text = value.strip()
     return bool(text) and text.endswith("?") and text.count("?") == 1 and not any(
-        marker in text[:-1] for marker in ".!"
+        marker in text[:-1] for marker in ".!;"
     )
 
 
