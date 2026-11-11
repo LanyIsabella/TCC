@@ -221,15 +221,15 @@ Em caso de conflito entre a documentação acadêmica e a implementação, regis
 
 Não presumir que documentação histórica corresponde ao estado atual da solução.
 
-## Code Review Rules — Agente Acadêmico V2
+## Code Review Rules
 
-## Objetivo da revisão
+### Objetivo da revisão
 
 Garantir que cada Pull Request contribua para entregar um agente acadêmico conversacional funcional, capaz de interpretar solicitações, manter contexto, utilizar o RAG e fundamentar orientações normativas em evidências documentais reais.
 
 Priorizar defeitos funcionais, regressões, violações de contratos e incompatibilidades. Não bloquear entregas por preferências estilísticas ou refatorações sem impacto comprovado.
 
-## 1. Preservação da infraestrutura
+### 1. Preservação da infraestrutura
 
 **Regra:** a implementação V2 deve reutilizar a infraestrutura existente, sem alterar silenciosamente sua metodologia.
 
@@ -248,7 +248,7 @@ Verificar especialmente:
 
 **Caminho seguro:** consumir as interfaces existentes por adaptadores e preservar a configuração efetiva.
 
-## 2. Fundamentação normativa
+### 2. Fundamentação normativa
 
 **Regra:** nenhuma afirmação normativa deve ser apresentada como fundamentada sem suporte documental verificável.
 
@@ -265,7 +265,7 @@ Verificar:
 
 **Caminho seguro:** validar a síntese contra as evidências recuperadas e apresentar limitações ou abstenção quando necessário.
 
-## 3. Conversação e contexto
+### 3. Conversação e contexto
 
 **Regra:** o agente deve compreender solicitações em linguagem natural, sem depender exclusivamente de perguntas predefinidas.
 
@@ -282,7 +282,7 @@ Verificar:
 
 **Caminho seguro:** manter histórico conversacional separado da recuperação documental.
 
-## 4. Encerramento e utilidade das respostas
+### 4. Encerramento e utilidade das respostas
 
 **Regra:** consultas normativas devem conseguir produzir respostas utilizáveis quando houver evidências suficientes e uma síntese validada.
 
@@ -299,7 +299,7 @@ Verificar:
 
 **Caminho seguro:** separar recuperação, síntese estruturada, validação e publicação, preservando o grounding.
 
-## 5. Integração funcional
+### 5. Integração funcional
 
 **Regra:** funcionalidades críticas precisam funcionar com os serviços reais, e não somente com mocks.
 
@@ -315,7 +315,7 @@ Uma consulta sobre formatação de citação direta longa deve ser capaz de recu
 
 Se a infraestrutura necessária estiver indisponível, registrar a limitação; não declarar a integração validada.
 
-## 6. Testes e regressões
+### 6. Testes e regressões
 
 Utilizar o ambiente gerenciado pelo projeto.
 
@@ -338,7 +338,7 @@ Não tratar gates incompletos ou indisponíveis como aprovados.
 
 Não exigir a resolução de problemas preexistentes fora do escopo da PR, salvo quando impedirem a validação obrigatória.
 
-## 7. Critérios de severidade
+### 7. Critérios de severidade
 
 **Bloqueante:** defeito funcional reproduzido, regressão essencial, ausência de grounding normativo, exposição de dados, alteração metodológica indevida ou incompatibilidade relevante.
 
@@ -348,7 +348,7 @@ Não exigir a resolução de problemas preexistentes fora do escopo da PR, salvo
 
 Cada apontamento deve indicar o arquivo, a linha, o comportamento incorreto, seu impacto e uma correção viável.
 
-## 8. Limites da revisão
+### 8. Limites da revisão
 
 Não recomendar reingestão, mudanças em embeddings, troca de modelo, substituição de framework ou reconstrução da infraestrutura sem defeito comprovado.
 
