@@ -10,6 +10,7 @@ from src.app.client import Client
 from src.app.conversation import ConversationIntent, ConversationStore
 from src.app.evidence import AgentResult, public_evidence
 from src.app.query_planner import contextualize_query
+from src.app.scope_guard import GREETING_MESSAGE
 
 from .grounding_adapter import (
     conversational_result,
@@ -69,7 +70,11 @@ class AgentV2:
                 "\n".join(plan.clarification_questions)
                 if plan.needs_clarification and plan.clarification_questions
                 else plan.reply
-                or "Por favor, envie uma pergunta acadêmica mais específica."
+                or (
+                    GREETING_MESSAGE
+                    if plan.intent == ConversationIntent.CONVERSATIONAL
+                    else "Por favor, envie uma pergunta acadêmica mais específica."
+                )
             )
             result = conversational_result(
                 conversation_id=conversation_id,

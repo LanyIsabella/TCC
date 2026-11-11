@@ -22,6 +22,8 @@ class _RenderContext:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        if self._kind in {"user", "assistant"}:
+            self._events.append(("chat_message_end", self._kind))
         return False
 
 
@@ -91,7 +93,7 @@ class _MetadataAgent:
         self.events.append(("invoke", payload["messages"][-1]["content"]))
         return {
             "answer": f"Resposta {self.calls}",
-            "limitations": [f"Limitação {self.calls}"],
+            "limitations": [f"Limitação {self.calls}", f"Resposta {self.calls}"],
             "evidences": [
                 {
                     "evidence_id": evidence_id,
@@ -188,6 +190,21 @@ def test_v2_persists_turn_metadata_across_rerun_and_new_question(monkeypatch) ->
         for event in third_run
         if event[0] == "caption"
     )
+    assert not any(
+        "Resposta 1" in event[1] or "Resposta 2" in event[1]
+        for event in third_run
+        if event[0] == "caption"
+    )
+    for index, event in enumerate(third_run):
+        if event[0] == "caption":
+            assert any(
+                prior == ("chat_message", "assistant")
+                for prior in third_run[:index]
+            )
+            assert any(
+                following == ("chat_message_end", "assistant")
+                for following in third_run[index + 1 :]
+            )
     assert any(
         "Trecho 2" in event[1]
         for event in third_run

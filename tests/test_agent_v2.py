@@ -10,6 +10,7 @@ from src.app.agente_v2.schemas import (
 from src.app.agente_v2.synthesis import SynthesisFailure
 from src.app.conversation import ConversationIntent, ConversationStore
 from src.app.grounding import INSUFFICIENT_EVIDENCE, PARTIAL_LIMITATION
+from src.app.scope_guard import GREETING_MESSAGE
 
 SOURCE = "A citação direta longa deve observar a norma aplicável."
 
@@ -162,6 +163,28 @@ def test_conversational_turn_does_not_call_rag() -> None:
     assert tools.calls == []
 
 
+def test_conversational_plan_without_reply_uses_greeting() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            needs_clarification=False,
+            needs_retrieval=False,
+        )
+    )
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=tools,
+    )
+
+    result = agent.invoke({"messages": [{"role": "user", "content": "Olá"}]})
+
+    assert result["answer"] == GREETING_MESSAGE
+    assert result["grounding_status"] == "conversational"
+    assert tools.calls == []
+
+
 def test_normative_turn_retrieves_and_publishes_validated_evidence() -> None:
     planner = FakePlanner(
         PlannerDecision(
@@ -188,6 +211,32 @@ def test_normative_turn_retrieves_and_publishes_validated_evidence() -> None:
     assert result["published_evidence_ids"] == ["e1"]
     assert tools.calls[0][0] == "rag_document_search"
     assert synthesizer.calls
+
+
+def test_normative_turn_without_evidence_fails_closed() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_clarification=False,
+            needs_retrieval=True,
+        )
+    )
+    tools = FakeTools(
+        {"status": "success", "evidence_found": False, "documents": []}
+    )
+    synthesizer = FakeSynthesizer(SynthesisResponse(answer="nunca"))
+    agent = AgentV2(planner=planner, synthesizer=synthesizer, tools=tools)
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como citar?"}]}
+    )
+
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+    assert result["grounding_status"] == "unsupported"
+    assert result["completion_type"] == "unsupported"
+    assert result["available_evidence_ids"] == []
+    assert result["published_evidence_ids"] == []
+    assert synthesizer.calls == []
 
 
 def test_retrieval_flag_routes_unknown_intent_to_rag() -> None:

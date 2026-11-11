@@ -187,7 +187,12 @@ def failed_normative_result(
         execution=execution,
         planner=planner,
     )
-    return replace(result, errors=(error_code.value,))
+    return replace(
+        result,
+        grounding_status="unsupported",
+        completion_type="unsupported",
+        errors=(error_code.value,),
+    )
 
 
 __all__ = [

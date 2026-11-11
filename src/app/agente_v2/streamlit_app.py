@@ -34,8 +34,12 @@ def _presentation_record(result: dict) -> dict:
     }
 
 
-def _render_presentation(record: dict) -> None:
-    limitations = record.get("limitations") or ()
+def _render_presentation(record: dict, answer: str = "") -> None:
+    limitations = [
+        limitation
+        for limitation in record.get("limitations") or ()
+        if str(limitation).strip() != answer.strip()
+    ]
     if limitations:
         st.caption("Limitações: " + " ".join(limitations))
     published_ids = set(record.get("published_evidence_ids") or ())
@@ -72,12 +76,13 @@ def main() -> None:
     for message in st.session_state.messages_v2:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-        if message["role"] == "assistant":
-            if assistant_index < len(st.session_state.presentation_v2):
-                _render_presentation(
-                    st.session_state.presentation_v2[assistant_index]
-                )
-            assistant_index += 1
+            if message["role"] == "assistant":
+                if assistant_index < len(st.session_state.presentation_v2):
+                    _render_presentation(
+                        st.session_state.presentation_v2[assistant_index],
+                        message["content"],
+                    )
+                assistant_index += 1
     question = st.chat_input("Pergunte sobre as normas acadêmicas")
     if not question:
         return
@@ -95,7 +100,7 @@ def main() -> None:
         st.markdown(result["answer"])
         presentation = _presentation_record(result)
         st.session_state.presentation_v2.append(presentation)
-        _render_presentation(presentation)
+        _render_presentation(presentation, result["answer"])
     st.session_state.messages_v2 = result["messages"]
 
 
