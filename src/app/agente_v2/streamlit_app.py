@@ -21,6 +21,39 @@ def _agent() -> AgentV2:
     return st.session_state.agent_v2
 
 
+def _presentation_record(result: dict) -> dict:
+    return {
+        "turn_id": result.get("turn_id"),
+        "limitations": list(result.get("limitations") or ()),
+        "published_evidence_ids": list(result.get("published_evidence_ids") or ()),
+        "evidences": [
+            dict(evidence)
+            for evidence in result.get("evidences") or ()
+            if isinstance(evidence, dict)
+        ],
+    }
+
+
+def _render_presentation(record: dict) -> None:
+    limitations = record.get("limitations") or ()
+    if limitations:
+        st.caption("Limitações: " + " ".join(limitations))
+    published_ids = set(record.get("published_evidence_ids") or ())
+    evidences = [
+        evidence
+        for evidence in record.get("evidences") or ()
+        if evidence.get("evidence_id") in published_ids
+    ]
+    if evidences:
+        with st.expander("Evidências documentais"):
+            for evidence in evidences:
+                st.markdown(
+                    f"**{evidence.get('title', 'Documento')}** — "
+                    f"p. {evidence.get('page_number', '?')}\n\n"
+                    f"> {evidence.get('text', '')}"
+                )
+
+
 def main() -> None:
     st.set_page_config(page_title="Agente Acadêmico V2", page_icon="📚")
     st.title("Agente Acadêmico V2")
@@ -28,13 +61,23 @@ def main() -> None:
         st.session_state.conversation_id_v2 = uuid4().hex
     if "messages_v2" not in st.session_state:
         st.session_state.messages_v2 = []
+    if "presentation_v2" not in st.session_state:
+        st.session_state.presentation_v2 = []
     if st.button("Nova conversa"):
         st.session_state.conversation_id_v2 = uuid4().hex
         st.session_state.messages_v2 = []
+        st.session_state.presentation_v2 = []
         st.rerun()
+    assistant_index = 0
     for message in st.session_state.messages_v2:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+        if message["role"] == "assistant":
+            if assistant_index < len(st.session_state.presentation_v2):
+                _render_presentation(
+                    st.session_state.presentation_v2[assistant_index]
+                )
+            assistant_index += 1
     question = st.chat_input("Pergunte sobre as normas acadêmicas")
     if not question:
         return
@@ -50,17 +93,9 @@ def main() -> None:
                 }
             )
         st.markdown(result["answer"])
-        if result["limitations"]:
-            st.caption("Limitações: " + " ".join(result["limitations"]))
-        evidences = result["evidences"]
-        if evidences:
-            with st.expander("Evidências documentais"):
-                for evidence in evidences:
-                    st.markdown(
-                        f"**{evidence.get('title', 'Documento')}** — "
-                        f"p. {evidence.get('page_number', '?')}\n\n"
-                        f"> {evidence.get('text', '')}"
-                    )
+        presentation = _presentation_record(result)
+        st.session_state.presentation_v2.append(presentation)
+        _render_presentation(presentation)
     st.session_state.messages_v2 = result["messages"]
 
 
