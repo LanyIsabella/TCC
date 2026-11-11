@@ -17,7 +17,7 @@ from .grounding_adapter import (
     grounded_result,
 )
 from .planner import Planner
-from .schemas import PlannerDecision, ToolExecution
+from .schemas import LimitationCode, PlannerDecision, ToolExecution
 from .synthesis import SynthesisFailure, Synthesizer
 from .tools import ToolRegistry
 
@@ -107,9 +107,7 @@ class AgentV2:
                 question=question,
                 execution=execution,
                 planner=plan,
-                error=(
-                    "Não foi possível obter evidência documental suficiente."
-                ),
+                error_code=LimitationCode.EVIDENCE_UNAVAILABLE,
             )
             self._append_turn(conversation_id, question, result.answer)
             return self._public(result, plan, turn_id)
@@ -118,14 +116,14 @@ class AgentV2:
             synthesis = self._synthesizer.synthesize(
                 question, history, execution.raw_result
             )
-        except SynthesisFailure as exc:
+        except SynthesisFailure:
             result = failed_normative_result(
                 conversation_id=conversation_id,
                 turn_id=turn_id,
                 question=question,
                 execution=execution,
                 planner=plan,
-                error=str(exc),
+                error_code=LimitationCode.SYNTHESIS_FAILED,
             )
         else:
             result = grounded_result(

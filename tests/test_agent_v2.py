@@ -1,9 +1,14 @@
 import pytest
 from pydantic import ValidationError
 from src.app.agente_v2.orchestrator import AgentV2
-from src.app.agente_v2.schemas import PlannerDecision, SynthesisResponse
+from src.app.agente_v2.schemas import (
+    LimitationCode,
+    PlannerDecision,
+    SynthesisResponse,
+)
+from src.app.agente_v2.synthesis import SynthesisFailure
 from src.app.conversation import ConversationIntent, ConversationStore
-from src.app.grounding import INSUFFICIENT_EVIDENCE
+from src.app.grounding import INSUFFICIENT_EVIDENCE, PARTIAL_LIMITATION
 
 SOURCE = "A citação direta longa deve observar a norma aplicável."
 
@@ -389,6 +394,95 @@ def test_invalid_selected_evidence_fails_closed() -> None:
 
     assert result["grounding_status"] == "unsupported"
     assert result["evidences"] == []
+
+
+def test_blocked_normative_answer_does_not_leak_through_limitations() -> None:
+    invalid = "A margem deve medir 2 cm."
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_clarification=False,
+            needs_retrieval=True,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse.model_construct(answer=invalid, limitations=[invalid])
+        ),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual é a margem?"}]}
+    )
+
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+    assert invalid not in result["limitations"]
+    assert invalid not in result["errors"]
+
+
+def test_synthesis_limitation_contract_rejects_free_text() -> None:
+    with pytest.raises(ValidationError):
+        SynthesisResponse(
+            answer=SOURCE,
+            limitations=["A margem deve medir 2 cm."],
+        )
+
+
+def test_controlled_limitation_is_preserved_without_free_text() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_clarification=False,
+            needs_retrieval=True,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer=SOURCE,
+                evidence_ids=["e1"],
+                limitations=[LimitationCode.PARTIAL_SUPPORT],
+            )
+        ),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como citar?"}]}
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert PARTIAL_LIMITATION in result["limitations"]
+
+
+def test_synthesis_error_publishes_only_controlled_code() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_clarification=False,
+            needs_retrieval=True,
+        )
+    )
+
+    class FailingSynthesizer:
+        def synthesize(self, question, history, retrieval):
+            raise SynthesisFailure("A margem deve medir 2 cm.")
+
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FailingSynthesizer(),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como citar?"}]}
+    )
+
+    assert result["errors"] == [LimitationCode.SYNTHESIS_FAILED.value]
+    assert all("margem" not in item.lower() for item in result["limitations"])
 
 
 def test_conversation_store_isolates_v2_contexts() -> None:

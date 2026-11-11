@@ -13,14 +13,39 @@ from src.app.evidence import (
     extract_agent_result,
     finalize_grounding,
 )
-from src.app.grounding import INSUFFICIENT_EVIDENCE
+from src.app.grounding import (
+    INSUFFICIENT_EVIDENCE,
+    PARTIAL_LIMITATION,
+)
 
 from .schemas import (
+    LimitationCode,
     PlannerDecision,
     SynthesisResponse,
     ToolExecution,
     is_structured_clarification,
 )
+
+_LIMITATION_MESSAGES = {
+    LimitationCode.EVIDENCE_UNAVAILABLE: INSUFFICIENT_EVIDENCE,
+    LimitationCode.PARTIAL_SUPPORT: PARTIAL_LIMITATION,
+    LimitationCode.SYNTHESIS_FAILED: (
+        "A síntese estruturada não pôde ser validada com segurança."
+    ),
+}
+
+
+def _limitation_messages(values: list[object]) -> tuple[str, ...]:
+    messages = []
+    for value in values:
+        try:
+            code = LimitationCode(value)
+        except (TypeError, ValueError):
+            continue
+        message = _LIMITATION_MESSAGES[code]
+        if message not in messages:
+            messages.append(message)
+    return tuple(messages)
 
 
 def _turn(conversation_id: str, turn_id: str, question: str) -> EvidenceTurn:
@@ -124,7 +149,12 @@ def grounded_result(
         extracted = replace(
             extracted,
             limitations=tuple(
-                dict.fromkeys((*extracted.limitations, *synthesis.limitations))
+                dict.fromkeys(
+                    (
+                        *extracted.limitations,
+                        *_limitation_messages(synthesis.limitations),
+                    )
+                )
             ),
         )
     return extracted
@@ -137,7 +167,7 @@ def failed_normative_result(
     question: str,
     execution: ToolExecution,
     planner: PlannerDecision,
-    error: str,
+    error_code: LimitationCode,
 ) -> AgentResult:
     result = grounded_result(
         conversation_id=conversation_id,
@@ -146,12 +176,12 @@ def failed_normative_result(
         synthesis=SynthesisResponse(
             answer=INSUFFICIENT_EVIDENCE,
             evidence_ids=[],
-            limitations=[error],
+            limitations=[error_code],
         ),
         execution=execution,
         planner=planner,
     )
-    return replace(result, errors=(error,))
+    return replace(result, errors=(error_code.value,))
 
 
 __all__ = [

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -44,6 +45,14 @@ def is_structured_clarification(value: str) -> bool:
     )
 
 
+class LimitationCode(StrEnum):
+    """Categorias publicáveis de limitações controladas pela aplicação."""
+
+    EVIDENCE_UNAVAILABLE = "evidence_unavailable"
+    PARTIAL_SUPPORT = "partial_support"
+    SYNTHESIS_FAILED = "synthesis_failed"
+
+
 class SynthesisResponse(BaseModel):
     """Resposta da síntese sem depender de AgentAnswer como tool call."""
 
@@ -51,7 +60,7 @@ class SynthesisResponse(BaseModel):
 
     answer: str = Field(min_length=1)
     evidence_ids: list[str] = Field(default_factory=list)
-    limitations: list[str] = Field(default_factory=list)
+    limitations: list[LimitationCode] = Field(default_factory=list)
 
 
 class ToolExecution(BaseModel):
@@ -72,4 +81,5 @@ __all__ = [
     "SynthesisResponse",
     "ToolExecution",
     "is_structured_clarification",
+    "LimitationCode",
 ]
