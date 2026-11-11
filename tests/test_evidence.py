@@ -320,6 +320,10 @@ def test_compaction_omission_reaches_grounding_as_a_partial_answer() -> None:
             {"role": "assistant", "content": rule},
         ]
     }
+    result["structured_response"] = AgentAnswer(
+        answer=rule,
+        evidence_ids=[model_document["evidence"][0]["evidence_id"]],
+    )
 
     extracted = extract_agent_result(result)
 
@@ -404,6 +408,74 @@ def test_extract_agent_result_hides_references_without_structured_selection() ->
     extracted = extract_agent_result(result)
 
     assert extracted.answer == "Resposta textual."
+    assert extracted.evidences == []
+
+
+def test_structured_answer_without_selected_evidence_cannot_publish_available_text():
+    result = {
+        "messages": [
+            {
+                "role": "tool",
+                "name": "rag_document_search",
+                "content": json.dumps(
+                    {
+                        "status": "success",
+                        "documents": [
+                            {
+                                "evidence": [
+                                    {
+                                        "evidence_id": "document:42:page:4",
+                                        "text": "Referências devem ser organizadas.",
+                                    }
+                                ]
+                            }
+                        ],
+                    }
+                ),
+            },
+            {"role": "assistant", "content": "Referências devem ser organizadas."},
+        ],
+        "structured_response": AgentAnswer(
+            answer="Referências devem ser organizadas.", evidence_ids=[]
+        ),
+    }
+
+    extracted = extract_agent_result(result)
+
+    assert "Não foi possível fundamentar" in extracted.answer
+    assert extracted.evidences == []
+
+
+def test_free_text_after_retrieval_cannot_be_published_as_normative_support():
+    result = {
+        "messages": [
+            {"role": "user", "content": "Como organizar referências segundo a ABNT?"},
+            {
+                "role": "tool",
+                "name": "rag_document_search",
+                "content": json.dumps(
+                    {
+                        "status": "success",
+                        "documents": [
+                            {
+                                "evidence": [
+                                    {
+                                        "evidence_id": "document:42:page:4",
+                                        "text": "Referências devem ser organizadas.",
+                                    }
+                                ]
+                            }
+                        ],
+                    }
+                ),
+            },
+            {"role": "assistant", "content": "Referências devem ser organizadas."},
+        ]
+    }
+
+    extracted = extract_agent_result(result)
+
+    assert "Não foi possível fundamentar" in extracted.answer
     assert extracted.evidences == []
 
 

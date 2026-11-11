@@ -66,6 +66,38 @@ def observed_document(document: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _public_structured_response(result: dict[str, Any]) -> dict[str, Any] | None:
+    """Preserve only the public AgentAnswer fields in an experimental trace."""
+
+    value = result.get("structured_response")
+    if hasattr(value, "model_dump"):
+        value = value.model_dump()
+    if not isinstance(value, dict):
+        return None
+    evidence_ids = value.get("evidence_ids", [])
+    if not isinstance(evidence_ids, list):
+        evidence_ids = []
+    answer = value.get("answer")
+    return {
+        "answer": answer if isinstance(answer, str) else "",
+        "evidence_ids": [item for item in evidence_ids if isinstance(item, str)],
+    }
+
+
+def _available_evidence_ids(result: dict[str, Any]) -> list[str]:
+    from src.app.evidence import _tool_payloads
+
+    identifiers = {
+        evidence.get("evidence_id")
+        for payload in _tool_payloads(result)
+        for document in payload.get("documents", [])
+        if isinstance(document, dict)
+        for evidence in document.get("evidence", [])
+        if isinstance(evidence, dict) and isinstance(evidence.get("evidence_id"), str)
+    }
+    return sorted(identifiers)
+
+
 def execute_production(case: dict[str, Any], stage: str, root: Path) -> dict[str, Any]:
     from data import rag_pipeline
     from src.app.tools import rag_search
@@ -131,9 +163,24 @@ def execute_stage(case: dict[str, Any], stage: str) -> dict[str, Any]:
         }
     )
     extracted = extract_agent_result(result)
+    structured_response = _public_structured_response(result)
+    selected_evidence_ids = (
+        structured_response.get("evidence_ids", []) if structured_response else []
+    )
     return {
         "answer": extracted.answer,
         "evidences": extracted.evidences,
+        "grounding_status": extracted.grounding_status,
+        "limitations": list(extracted.limitations),
+        "structured_response": structured_response,
+        "orchestration": result.get("_orchestration"),
+        "available_evidence_ids": _available_evidence_ids(result),
+        "selected_evidence_ids": selected_evidence_ids,
+        "published_evidence_ids": [
+            evidence["evidence_id"]
+            for evidence in extracted.evidences
+            if isinstance(evidence.get("evidence_id"), str)
+        ],
         "tool_payload": {
             "documents": [
                 doc

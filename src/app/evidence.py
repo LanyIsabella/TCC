@@ -222,6 +222,22 @@ def _structured_data(result: Mapping[str, Any]) -> Mapping[str, Any] | None:
     return None
 
 
+def _selected_evidence_ids(result: Mapping[str, Any]) -> tuple[str, ...] | None:
+    """Retorna a seleção explícita; ausência de estrutura não é uma seleção."""
+
+    structured = _structured_data(result)
+    if structured is None:
+        return None
+    identifiers = structured.get("evidence_ids", [])
+    if not isinstance(identifiers, list):
+        return ()
+    return tuple(
+        dict.fromkeys(
+            identifier for identifier in identifiers if isinstance(identifier, str)
+        )
+    )
+
+
 def _parse_tool_content(content: Any) -> Mapping[str, Any] | None:
     if isinstance(content, Mapping):
         return content
@@ -394,6 +410,7 @@ def _fingerprint(
         "question": last_user_question(result.get("messages", [])),
         "answer": answer,
         "evidences": available,
+        "selected_evidence_ids": _selected_evidence_ids(result),
         "normative_context": _normative_context(result),
     }
     return hashlib.sha256(
@@ -412,6 +429,7 @@ def _decision(
 ) -> GroundingDecision:
     answer = _extract_answer(result)
     available = _collect_evidences(result)
+    selected = _selected_evidence_ids(result)
     original_question = last_user_question(result.get("messages", []))
     question = original_question if question is None else question
     seal = result.get("_grounding")
@@ -421,9 +439,26 @@ def _decision(
         and seal.fingerprint == _fingerprint(result, answer, available)
     ):
         return seal.decision
+    support_available = (
+        available
+        if selected is None
+        else {
+            identifier: available[identifier]
+            for identifier in selected
+            if identifier in available
+        }
+    )
+    if (
+        selected is None
+        and available
+        and _normative_context(result)
+        and not result.get("_textual_synthesis")
+    ):
+        # Texto livre após a tool não é uma seleção verificável do agente.
+        support_available = {}
     decision = ground_answer(
         answer,
-        available,
+        support_available,
         question,
         verifier,
         normative_context=_normative_context(result),

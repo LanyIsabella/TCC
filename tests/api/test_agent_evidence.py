@@ -112,6 +112,19 @@ def test_api_exposes_unsupported_without_evidence() -> None:
     assert response.limitations
 
 
+def test_api_rejects_free_text_after_retrieval_without_structured_selection() -> None:
+    result = _result()
+    result.pop("structured_response")
+
+    response = AgentService(Executor(result)).chat(
+        AgentChatRequest(message=QUESTION)
+    )
+
+    assert response.grounding_status == "unsupported"
+    assert response.evidences == []
+    assert response.answer.startswith("Não foi possível fundamentar")
+
+
 def test_api_preserves_multiple_page_evidences_without_internal_fields() -> None:
     result = _result()
     question = "Quais são as margens segundo a ABNT?"

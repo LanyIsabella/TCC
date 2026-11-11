@@ -83,9 +83,47 @@ def test_current_supported_answer_needs_no_hint_retrieval_or_synthesis(
     )
     agent = ScopedAgent(inner, model)
     value = agent.invoke({"messages": [{"role": "user", "content": QUESTION}]})
-    assert extract_agent_result(value).answer == SOURCE
+    expected = INSUFFICIENT_EVIDENCE if structured is None else SOURCE
+    assert extract_agent_result(value).answer == expected
     assert model.calls == []
     assert [m["role"] for m in inner.payload["messages"]] == ["user"]
+
+
+def test_orchestration_records_textual_completion_after_retrieval():
+    value = ScopedAgent(Inner(SOURCE, rag_payload()), Model()).invoke(
+        {"messages": [{"role": "user", "content": QUESTION}]}
+    )
+
+    assert value["_orchestration"] == {
+        "completion_contract": "textual_after_retrieval",
+        "completion_reason": "missing_structured_response_after_retrieval",
+        "retrieval_recovery": "not_needed",
+        "synthesis": "not_needed",
+    }
+    assert value["structured_response"].answer == INSUFFICIENT_EVIDENCE
+    assert value["structured_response"].evidence_ids == []
+
+
+def test_orchestration_records_scope_guard_without_retrieval():
+    value = ScopedAgent(Inner()).invoke(
+        {"messages": [{"role": "user", "content": "Qual a receita de bolo?"}]}
+    )
+
+    assert value["_orchestration"]["completion_contract"] == "scope_guard"
+    assert value["_orchestration"]["retrieval_recovery"] == "not_needed"
+
+
+def test_orchestration_records_invalid_structured_completion():
+    value = ScopedAgent(
+        Inner(
+            SOURCE,
+            rag_payload(),
+            structured={"answer": SOURCE, "evidence_ids": "e1"},
+        ),
+        Model(),
+    ).invoke({"messages": [{"role": "user", "content": QUESTION}]})
+
+    assert value["_orchestration"]["completion_contract"] == "structured_invalid"
 
 
 @pytest.mark.parametrize(
@@ -161,6 +199,11 @@ def test_missing_final_answer_after_current_tool_can_be_synthesized():
         }
     )
     assert extract_agent_result(value).answer == SOURCE
+    assert value["_orchestration"]["completion_contract"] == "textual_synthesis"
+    assert (
+        value["_orchestration"]["completion_reason"]
+        == "controlled_textual_synthesis"
+    )
     assert len(model.calls) == 1
 
 

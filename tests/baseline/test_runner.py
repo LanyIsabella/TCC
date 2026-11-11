@@ -167,6 +167,45 @@ def test_agent_stage_uses_real_structured_response_adapter(monkeypatch):
     assert result["evidences"] == []
 
 
+def test_agent_stage_preserves_grounding_contract_metadata(monkeypatch):
+    from src.app import agente
+    from src.app.evidence import AgentAnswer, AgentResult
+
+    class Executor:
+        def invoke(self, payload):
+            return {
+                "messages": [
+                    *payload["messages"],
+                    {"role": "assistant", "content": "Resposta estruturada real."},
+                ],
+                "structured_response": AgentAnswer(
+                    answer="Resposta estruturada real.", evidence_ids=["e1"]
+                ),
+            }
+
+    monkeypatch.setattr(agente, "build_agent", lambda: Executor())
+    monkeypatch.setattr(
+        "src.app.evidence.extract_agent_result",
+        lambda _result: AgentResult(
+            answer="Resposta publicada pelo grounding.",
+            evidences=[{"evidence_id": "e1", "text": "Trecho."}],
+            grounding_status="partial",
+            limitations=("Há conteúdo omitido.",),
+        ),
+    )
+
+    result = runtime.execute_stage({"question": "Pergunta"}, "agent")
+
+    assert result["grounding_status"] == "partial"
+    assert result["limitations"] == ["Há conteúdo omitido."]
+    assert result["structured_response"] == {
+        "answer": "Resposta estruturada real.",
+        "evidence_ids": ["e1"],
+    }
+    assert result["structured_response"]["answer"] == result["messages"][-1]["content"]
+    assert result["answer"] == "Resposta publicada pelo grounding."
+
+
 def test_cli_writes_blocked_report_with_provenance_and_nonzero_exit(
     tmp_path, monkeypatch
 ):

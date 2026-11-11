@@ -59,24 +59,87 @@ class ScopedAgent:
             len(messages),
         )
         if decision in {ScopeDecision.GREETING, ScopeDecision.OUT_OF_SCOPE}:
-            return guarded_response(messages, decision)
+            guarded = guarded_response(messages, decision)
+            guarded["_orchestration"] = {
+                "completion_contract": "scope_guard",
+                "completion_reason": "scope_guard_decision",
+                "retrieval_recovery": "not_needed",
+                "synthesis": "not_needed",
+            }
+            return guarded
 
         turn_payload, turn = begin_turn(payload)
         agent_payload = self._with_retrieval_hint(
             turn_payload, turn_payload["messages"]
         )
         result = bind_turn(self._agent.invoke(agent_payload), turn_payload, turn)
+        recovery_attempted = False
+        synthesis_attempted = False
         if self._needs_retrieval_recovery(result, decision):
+            recovery_attempted = True
             result = self._recover_retrieval(
                 payload,
                 result,
                 self._retrieval_query(messages),
             )
         if self._needs_synthesis(result):
+            synthesis_attempted = True
             result = self._synthesize_from_retrieval(payload, result)
-        return finalize_grounding(
+        finalized = finalize_grounding(
             result, self._verify_claims if self._fallback_model is not None else None
         )
+        finalized["_orchestration"] = self._orchestration_metadata(
+            result,
+            recovery_attempted=recovery_attempted,
+            synthesis_attempted=synthesis_attempted,
+        )
+        return finalized
+
+    def _orchestration_metadata(
+        self,
+        result: Mapping[str, Any],
+        *,
+        recovery_attempted: bool,
+        synthesis_attempted: bool,
+    ) -> dict[str, str]:
+        """Registra a origem do encerramento sem substituir o contrato público."""
+
+        value = result.get("structured_response")
+        if hasattr(value, "model_dump"):
+            value = value.model_dump()
+        if isinstance(value, Mapping):
+            answer = value.get("answer")
+            evidence_ids = value.get("evidence_ids")
+            if isinstance(answer, str) and answer.strip() and isinstance(
+                evidence_ids, list
+            ) and all(isinstance(identifier, str) for identifier in evidence_ids):
+                completion = "structured"
+                reason = "valid_structured_response"
+            else:
+                completion = "structured_invalid"
+                reason = "invalid_structured_response_fields"
+        elif value is None:
+            after_retrieval = bool(current_rag_payloads(result))
+            synthesized = bool(result.get("_textual_synthesis"))
+            completion = "textual_synthesis" if synthesized else (
+                "textual_after_retrieval"
+                if after_retrieval
+                else "textual_without_retrieval"
+            )
+            reason = "controlled_textual_synthesis" if synthesized else (
+                "missing_structured_response_after_retrieval"
+                if after_retrieval
+                else "missing_structured_response"
+            )
+        else:
+            completion = "structured_invalid"
+            reason = "unreadable_structured_response"
+        return {
+            "completion_contract": completion,
+            "completion_reason": reason,
+            "retrieval_recovery": "performed" if recovery_attempted else "not_needed",
+            "synthesis": "performed" if synthesis_attempted else "not_needed",
+        }
 
     def _verify_claims(
         self, question: str, claims: list[str], evidences: Mapping[str, Any]
@@ -322,6 +385,7 @@ class ScopedAgent:
             *result.get("messages", []),
             {"role": "assistant", "content": answer},
         ]
+        recovered["_textual_synthesis"] = True
         recovered.pop("structured_response", None)
         recovered.pop("_force_synthesis", None)
         return recovered
