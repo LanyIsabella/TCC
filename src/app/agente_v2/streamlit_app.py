@@ -39,6 +39,8 @@ def main() -> None:
     if not question:
         return
     st.session_state.messages_v2.append({"role": "user", "content": question})
+    with st.chat_message("user"):
+        st.markdown(question)
     with st.chat_message("assistant"):
         with st.spinner("Consultando as evidências..."):
             result = _agent().invoke(
