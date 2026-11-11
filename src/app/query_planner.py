@@ -116,7 +116,10 @@ def contextualize_query(
 
     current = question.strip()
     previous_messages = _user_history(history)
-    if not current or not previous_messages or not is_contextual_follow_up(current):
+    if not current or not previous_messages or not (
+        is_contextual_follow_up(current)
+        or _is_clarification_follow_up(current, previous_messages)
+    ):
         return current
 
     previous = next(
@@ -140,6 +143,16 @@ def contextualize_query(
         len(previous),
     )
     return contextual
+
+
+def _is_clarification_follow_up(current: str, previous_messages: list[str]) -> bool:
+    """Reconhece complemento curto após uma pergunta de esclarecimento."""
+
+    current_terms = normalize_text(current).rstrip("?.!").split()
+    if not current_terms or len(current_terms) > 6:
+        return False
+    previous = normalize_text(previous_messages[-1]).rstrip("?.!")
+    return previous in {"como formatar", "como formatar isso", "como formatar isto"}
 
 
 def plan_queries(

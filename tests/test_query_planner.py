@@ -37,6 +37,18 @@ def test_contextual_follow_up_keeps_original_intent_and_previous_topic() -> None
     assert plan_queries("Qual o tamanho do recuo necessário?", history) == [query]
 
 
+def test_clarification_completion_is_contextualized_for_retrieval() -> None:
+    query = contextualize_query(
+        "As referências.",
+        [
+            {"role": "user", "content": "Como formatar?"},
+            {"role": "assistant", "content": "Qual elemento?"},
+        ],
+    )
+
+    assert query == "As referências. Contexto da pergunta anterior: Como formatar?"
+
+
 def test_broad_rag_search_merges_adaptive_results(monkeypatch) -> None:
     from src.app.tools import rag_search
 

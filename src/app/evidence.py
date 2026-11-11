@@ -12,7 +12,20 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from .grounding import INSUFFICIENT_EVIDENCE, GroundingDecision, Verifier, ground_answer
+from .conversation import (
+    ConversationIntent,
+    ConversationTrace,
+    completion_for,
+    new_conversation_id,
+    validate_conversation_id,
+)
+from .grounding import (
+    INSUFFICIENT_EVIDENCE,
+    PARTIAL_LIMITATION,
+    GroundingDecision,
+    Verifier,
+    ground_answer,
+)
 from .scope_guard import ScopeDecision, classify_messages, normalize_text
 
 logger = logging.getLogger(__name__)
@@ -46,6 +59,68 @@ class AgentResult:
 
     answer: str
     evidences: list[EvidenceRecord]
+    grounding_status: str = "unsupported"
+    limitations: tuple[str, ...] = ()
+    conversation_id: str | None = None
+    turn_id: str | None = None
+    intent: str = ConversationIntent.UNKNOWN
+    completion_type: str | None = None
+    available_evidence_ids: tuple[str, ...] = ()
+    selected_evidence_ids: tuple[str, ...] = ()
+    published_evidence_ids: tuple[str, ...] = ()
+    tool_provenance: tuple[dict[str, Any], ...] = ()
+    errors: tuple[str, ...] = ()
+
+
+PUBLIC_EVIDENCE_FIELDS = (
+    "evidence_id",
+    "conversation_id",
+    "document_id",
+    "title",
+    "standard_id",
+    "version",
+    "issuer",
+    "page_number",
+    "section",
+    "text",
+    "matched_text",
+    "turn_id",
+    "tool_call_id",
+    "execution_id",
+    "query",
+)
+
+
+def public_evidence(record: Mapping[str, Any]) -> EvidenceRecord:
+    """Remove IDs internos, ranking e caminhos antes da publicação externa."""
+
+    public = {
+        key: record[key]
+        for key in PUBLIC_EVIDENCE_FIELDS
+        if record.get(key) is not None
+    }
+    omitted = record.get("omitted_content")
+    if isinstance(omitted, Mapping):
+        safe_omitted = {
+            key: omitted[key]
+            for key in ("characters", "pages")
+            if key in omitted
+        }
+        if safe_omitted:
+            public["omitted_content"] = safe_omitted
+    return public
+
+
+def _public_grounding_status(status: str) -> str:
+    return "unsupported" if status == "insufficient" else status
+
+
+def _grounding_limitations(status: str) -> tuple[str, ...]:
+    if status == "partial":
+        return (PARTIAL_LIMITATION,)
+    if status == "insufficient":
+        return (INSUFFICIENT_EVIDENCE,)
+    return ()
 
 
 @dataclass(frozen=True)
@@ -53,6 +128,7 @@ class EvidenceTurn:
     id: str
     question: str
     question_sha256: str
+    conversation_id: str | None = None
 
 
 def _message_value(message: Any, key: str) -> Any:
@@ -93,8 +169,17 @@ def begin_turn(payload: Mapping[str, Any]) -> tuple[dict[str, Any], EvidenceTurn
     )
     message = messages[index]
     question = _normalize_content(_message_value(message, "content"))
+    raw_conversation_id = payload.get("conversation_id")
+    conversation_id = (
+        validate_conversation_id(raw_conversation_id)
+        if raw_conversation_id is not None
+        else new_conversation_id()
+    )
     turn = EvidenceTurn(
-        uuid4().hex, question, hashlib.sha256(question.encode()).hexdigest()
+        uuid4().hex,
+        question,
+        hashlib.sha256(question.encode()).hexdigest(),
+        conversation_id,
     )
     if isinstance(message, Mapping):
         messages[index] = {**message, "id": turn.id}
@@ -164,6 +249,22 @@ def _structured_data(result: Mapping[str, Any]) -> Mapping[str, Any] | None:
     return None
 
 
+def _selected_evidence_ids(result: Mapping[str, Any]) -> tuple[str, ...] | None:
+    """Retorna a seleção explícita; ausência de estrutura não é uma seleção."""
+
+    structured = _structured_data(result)
+    if structured is None:
+        return None
+    identifiers = structured.get("evidence_ids", [])
+    if not isinstance(identifiers, list):
+        return ()
+    return tuple(
+        dict.fromkeys(
+            identifier for identifier in identifiers if isinstance(identifier, str)
+        )
+    )
+
+
 def _parse_tool_content(content: Any) -> Mapping[str, Any] | None:
     if isinstance(content, Mapping):
         return content
@@ -194,13 +295,31 @@ def _execution(
     args = call.get("args")
     if not isinstance(args, Mapping):
         args = {}
+    turn_id = turn.id if isinstance(turn, EvidenceTurn) else None
+    query = args.get("question", payload.get("query"))
+    execution_seed = json.dumps(
+        {
+            "conversation_id": turn.conversation_id
+            if isinstance(turn, EvidenceTurn)
+            else None,
+            "turn_id": turn_id,
+            "tool_call_id": call_id,
+            "query": query,
+        },
+        sort_keys=True,
+        ensure_ascii=False,
+    )
     return {
-        "turn_id": turn.id if isinstance(turn, EvidenceTurn) else None,
+        "execution_id": hashlib.sha256(execution_seed.encode()).hexdigest(),
+        "conversation_id": turn.conversation_id
+        if isinstance(turn, EvidenceTurn)
+        else None,
+        "turn_id": turn_id,
         "question_sha256": turn.question_sha256
         if isinstance(turn, EvidenceTurn)
         else None,
         "tool_call_id": call_id,
-        "query": args.get("question", payload.get("query")),
+        "query": query,
     }
 
 
@@ -260,13 +379,17 @@ def _evidence_record(
         )
         if document.get(key) is not None
     }
-    return {
+    record = {
         **metadata,
         **evidence,
         "evidence_id": identifier.strip(),
         "text": text,
         **execution,
     }
+    omitted_content = document.get("omitted_content")
+    if isinstance(omitted_content, Mapping):
+        record["omitted_content"] = dict(omitted_content)
+    return record
 
 
 def _collect_evidences(result: Mapping[str, Any]) -> dict[str, EvidenceRecord]:
@@ -332,6 +455,7 @@ def _fingerprint(
         "question": last_user_question(result.get("messages", [])),
         "answer": answer,
         "evidences": available,
+        "selected_evidence_ids": _selected_evidence_ids(result),
         "normative_context": _normative_context(result),
     }
     return hashlib.sha256(
@@ -340,7 +464,61 @@ def _fingerprint(
 
 
 def _normative_context(result: Mapping[str, Any]) -> bool:
+    conversation = result.get("_conversation")
+    if isinstance(conversation, Mapping) and conversation.get("intent") in {
+        ConversationIntent.CONVERSATIONAL,
+        ConversationIntent.AMBIGUOUS,
+        ConversationIntent.ACTION_REQUEST,
+        ConversationIntent.OUT_OF_SCOPE,
+    }:
+        return False
+    if (
+        isinstance(conversation, Mapping)
+        and conversation.get("intent") == ConversationIntent.NORMATIVE_QUERY
+    ):
+        return True
     return classify_messages(result.get("messages", [])) == ScopeDecision.IN_SCOPE
+
+
+def _trace_metadata(
+    result: Mapping[str, Any],
+    decision: GroundingDecision,
+    available: Mapping[str, EvidenceRecord],
+) -> ConversationTrace:
+    conversation = result.get("_conversation")
+    conversation = conversation if isinstance(conversation, Mapping) else {}
+    turn = result.get("_turn")
+    selected = _selected_evidence_ids(result)
+    published = tuple(decision.evidence_ids)
+    status = _public_grounding_status(decision.status)
+    intent = str(conversation.get("intent") or ConversationIntent.UNKNOWN)
+    return ConversationTrace(
+        conversation_id=str(
+            conversation.get("conversation_id")
+            or (turn.conversation_id if isinstance(turn, EvidenceTurn) else "")
+            or ""
+        ),
+        turn_id=(
+            turn.id
+            if isinstance(turn, EvidenceTurn)
+            else str(conversation.get("turn_id") or "") or None
+        ),
+        intent=intent,
+        completion_type=str(
+            conversation.get("completion_type") or completion_for(intent, status)
+        ),
+        grounding_state=status,
+        available_evidence_ids=tuple(available),
+        selected_evidence_ids=tuple(selected or ()),
+        published_evidence_ids=published,
+        limitations=_grounding_limitations(decision.status),
+        errors=tuple(conversation.get("errors") or ()),
+        tool_provenance=tuple(
+            execution
+            for payload in _tool_payloads(result)
+            if isinstance((execution := payload.get("_execution")), Mapping)
+        ),
+    )
 
 
 def _decision(
@@ -350,6 +528,7 @@ def _decision(
 ) -> GroundingDecision:
     answer = _extract_answer(result)
     available = _collect_evidences(result)
+    selected = _selected_evidence_ids(result)
     original_question = last_user_question(result.get("messages", []))
     question = original_question if question is None else question
     seal = result.get("_grounding")
@@ -359,13 +538,45 @@ def _decision(
         and seal.fingerprint == _fingerprint(result, answer, available)
     ):
         return seal.decision
-    decision = ground_answer(
-        answer,
-        available,
-        question,
-        verifier,
-        normative_context=_normative_context(result),
+    support_available = (
+        available
+        if selected is None
+        else {
+            identifier: available[identifier]
+            for identifier in selected
+            if identifier in available
+        }
     )
+    conversation = result.get("_conversation")
+    v2_normative_turn = (
+        isinstance(conversation, Mapping)
+        and conversation.get("intent") == ConversationIntent.NORMATIVE_QUERY
+    )
+    if (
+        selected is None
+        and available
+        and _normative_context(result)
+        and v2_normative_turn
+        and not result.get("_textual_synthesis")
+    ):
+        # Texto livre após a tool não é uma seleção verificável do agente.
+        support_available = {}
+    intent = conversation.get("intent") if isinstance(conversation, Mapping) else None
+    if intent in {
+        ConversationIntent.CONVERSATIONAL,
+        ConversationIntent.AMBIGUOUS,
+        ConversationIntent.ACTION_REQUEST,
+        ConversationIntent.OUT_OF_SCOPE,
+    }:
+        decision = GroundingDecision(answer, (), "conversational")
+    else:
+        decision = ground_answer(
+            answer,
+            support_available,
+            question,
+            verifier,
+            normative_context=_normative_context(result),
+        )
     logger.info(
         "grounding status=%s available=%d supported=%d",
         decision.status,
@@ -417,8 +628,21 @@ def extract_agent_result(result: Any, *, question: str | None = None) -> AgentRe
         raise RuntimeError("O agente retornou um formato de resposta invalido.")
     decision = _decision(result, question=question)
     available = _collect_evidences(result)
+    trace = _trace_metadata(result, decision, available)
     return AgentResult(
-        decision.answer, [available[key] for key in decision.evidence_ids]
+        decision.answer,
+        [available[key] for key in decision.evidence_ids],
+        grounding_status=_public_grounding_status(decision.status),
+        limitations=_grounding_limitations(decision.status),
+        conversation_id=trace.conversation_id or None,
+        turn_id=trace.turn_id,
+        intent=trace.intent,
+        completion_type=trace.completion_type,
+        available_evidence_ids=trace.available_evidence_ids,
+        selected_evidence_ids=trace.selected_evidence_ids,
+        published_evidence_ids=trace.published_evidence_ids,
+        tool_provenance=tuple(dict(item) for item in trace.tool_provenance),
+        errors=trace.errors,
     )
 
 
@@ -428,4 +652,5 @@ __all__ = [
     "EvidenceRecord",
     "extract_agent_result",
     "looks_like_guarded_answer",
+    "public_evidence",
 ]
