@@ -25,6 +25,7 @@ from .grounding import (
     GroundingDecision,
     Verifier,
     ground_answer,
+    needs_support,
 )
 from .scope_guard import ScopeDecision, classify_messages, normalize_text
 
@@ -413,6 +414,7 @@ def looks_like_guarded_answer(answer: str) -> bool:
         or "fora do escopo" in normalized
         or "nao consigo orientar" in normalized
         or "estou pronto para ajudar" in normalized
+        or "posso ajudar" in normalized
         or "sou seu assistente" in normalized
         or "como posso te auxiliar" in normalized
     )
@@ -568,7 +570,18 @@ def _decision(
         ConversationIntent.ACTION_REQUEST,
         ConversationIntent.OUT_OF_SCOPE,
     }:
-        decision = GroundingDecision(answer, (), "conversational")
+        explicitly_non_normative = intent != ConversationIntent.CONVERSATIONAL or (
+            conversation.get("completion_type")
+            in {"clarification_requested", "action_unavailable", "out_of_scope"}
+        )
+        if (
+            explicitly_non_normative
+            or looks_like_guarded_answer(answer)
+            or not needs_support(answer, question)
+        ):
+            decision = GroundingDecision(answer, (), "conversational")
+        else:
+            decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
     else:
         decision = ground_answer(
             answer,

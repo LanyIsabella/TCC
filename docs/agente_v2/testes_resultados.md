@@ -13,7 +13,18 @@ Execução: `4 passed`.
 
 ## Regressão
 
-Execução com `uv run --locked pytest -q`: `446 passed, 1 skipped`.
+Execução nesta branch, baseada no `master` atualizado (`6dd05ba`):
+`299 passed, 1 skipped, 9 xfailed`.
+
+Uma validação anterior no histórico funcional `c22962a` registrou `446 passed,
+1 skipped`. A diferença é esperada: `master` ainda não contém os commits
+Fase 4.1–Fase 5.1 e os respectivos testes; esses commits divergem do baseline
+atual. Não foi feito merge indiscriminado. A V2 traz apenas as adaptações de
+conversa, evidência e grounding necessárias ao seu contrato.
+
+Os testes de proveniência, Gold, metadados normativos e integrações PostgreSQL
+das fases anteriores permanecem associados ao histórico `c22962a` e devem ser
+validados quando essa infraestrutura for integrada separadamente.
 
 `uv run --locked ruff check .` e `git diff --check`: aprovados.
 

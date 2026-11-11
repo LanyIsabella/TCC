@@ -56,11 +56,15 @@ class AgentV2:
         turn_id = uuid4().hex
         history = self._store.context(conversation_id)
         plan = self._planner.plan(question, history)
-
         if (
-            not plan.needs_retrieval
-            or plan.intent != ConversationIntent.NORMATIVE_QUERY
+            plan.needs_retrieval
+            and plan.intent != ConversationIntent.NORMATIVE_QUERY
         ):
+            plan = plan.model_copy(
+                update={"intent": ConversationIntent.NORMATIVE_QUERY}
+            )
+
+        if not plan.needs_retrieval:
             answer = plan.reply or (
                 "Por favor, envie uma pergunta acadêmica mais específica."
             )

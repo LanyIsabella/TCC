@@ -101,6 +101,11 @@ class Planner:
     def _safe_decision(
         self, decision: PlannerDecision, fallback: PlannerDecision
     ) -> PlannerDecision:
+        if (
+            decision.needs_retrieval
+            and decision.intent == ConversationIntent.UNKNOWN
+        ):
+            decision.intent = ConversationIntent.NORMATIVE_QUERY
         if decision.intent in {
             ConversationIntent.CONVERSATIONAL,
             ConversationIntent.AMBIGUOUS,

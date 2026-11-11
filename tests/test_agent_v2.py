@@ -1,6 +1,7 @@
 from src.app.agente_v2.orchestrator import AgentV2
 from src.app.agente_v2.schemas import PlannerDecision, SynthesisResponse
 from src.app.conversation import ConversationIntent, ConversationStore
+from src.app.grounding import INSUFFICIENT_EVIDENCE
 
 SOURCE = "A citação direta longa deve observar a norma aplicável."
 
@@ -99,6 +100,77 @@ def test_normative_turn_retrieves_and_publishes_validated_evidence() -> None:
     assert result["published_evidence_ids"] == ["e1"]
     assert tools.calls[0][0] == "rag_document_search"
     assert synthesizer.calls
+
+
+def test_retrieval_flag_routes_unknown_intent_to_rag() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.UNKNOWN,
+            needs_clarification=False,
+            needs_retrieval=True,
+        )
+    )
+    tools = FakeTools(rag_payload())
+    synthesizer = FakeSynthesizer(
+        SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+    )
+    agent = AgentV2(planner=planner, synthesizer=synthesizer, tools=tools)
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual é a regra?"}]}
+    )
+
+    assert tools.calls
+    assert result["intent"] == ConversationIntent.NORMATIVE_QUERY
+    assert result["grounding_status"] == "supported"
+
+
+def test_normative_answer_misclassified_as_conversational_fails_closed() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            needs_clarification=False,
+            needs_retrieval=False,
+            reply="A margem deve medir 2 cm.",
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Olá"}]}
+    )
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+    assert result["evidences"] == []
+
+
+def test_legitimate_clarification_remains_conversational() -> None:
+    reply = "Qual elemento você deseja formatar?"
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            needs_retrieval=False,
+            reply=reply,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como formatar?"}]}
+    )
+
+    assert result["grounding_status"] == "conversational"
+    assert result["answer"] == reply
 
 
 def test_invalid_selected_evidence_fails_closed() -> None:
