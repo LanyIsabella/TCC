@@ -470,6 +470,16 @@ def _is_safe_non_normative_response(
         normalized,
     ):
         return True
+    if intent == ConversationIntent.CONVERSATIONAL and re.fullmatch(
+        r"(?:ola|oi|bom dia|boa tarde|boa noite)[!.]?\s*"
+        r"posso ajudar com "
+        r"(?:normas abnt|citacoes|referencias|formatacao|"
+        r"estrutura de trabalhos academicos)"
+        r"(?:\s*(?:,|e)\s*(?:normas abnt|citacoes|referencias|formatacao|"
+        r"estrutura de trabalhos academicos))*[!.]?",
+        normalized,
+    ):
+        return True
     return False
 
 

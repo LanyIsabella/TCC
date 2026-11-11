@@ -206,6 +206,28 @@ def test_conversational_prefix_with_unlisted_normative_claim_fails_closed() -> N
     assert result["evidences"] == []
 
 
+def test_greeting_with_academic_capabilities_remains_conversational() -> None:
+    reply = "Olá! Posso ajudar com citações e referências."
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            needs_clarification=False,
+            needs_retrieval=False,
+            reply=reply,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke({"messages": [{"role": "user", "content": "Olá"}]})
+
+    assert result["grounding_status"] == "conversational"
+    assert result["answer"] == reply
+
+
 def test_normative_answer_misclassified_as_ambiguous_fails_closed() -> None:
     planner = FakePlanner(
         PlannerDecision(
