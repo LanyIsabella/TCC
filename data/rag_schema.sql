@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS silver.silver_documents (
     glm_ocr_evaluation JSONB NOT NULL DEFAULT '{}'::jsonb,
     glm_ocr_extractor_version TEXT,
     glm_ocr_processed_at TIMESTAMPTZ,
+    normative_metadata JSONB,
     selected_extractor TEXT,
     selected_at TIMESTAMPTZ,
     selection_reason TEXT,
@@ -131,6 +132,7 @@ CREATE TABLE IF NOT EXISTS gold.gold_rag_documents (
     content_hash CHAR(64) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT false,
     metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    normative_metadata JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (document_id, extraction_id)

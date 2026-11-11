@@ -32,6 +32,7 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
+    "integration: testes que usam um cluster PostgreSQL isolado",
     "gedweb_playwright: teste de integração do acesso ao GEDWeb via Playwright",
 ]
 

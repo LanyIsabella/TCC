@@ -24,6 +24,13 @@ from typing import Any
 import yaml
 from dotenv import load_dotenv
 
+try:
+    from data.normative_metadata import build_normative_metadata
+except ModuleNotFoundError as error:
+    if error.name != "data":
+        raise
+    from normative_metadata import build_normative_metadata
+
 RAW_DIR = Path("data/raw")
 DEFAULT_MANIFEST = Path("data/corpus_manifest.yaml")
 DEFAULT_GLMOCR_CONFIG = Path("config/glmocr.yaml")
@@ -237,6 +244,9 @@ def collect_file(
         "content_text_glmocr": glmocr_text,
         "pdf_metadata": pdf_metadata,
         "manifest_metadata": manifest_data,
+        "normative_metadata": build_normative_metadata(
+            manifest_data, source_layer="bronze"
+        ),
         "raw_metadata": {
             "filesystem": {
                 "mode": stat.st_mode,
@@ -359,6 +369,7 @@ def load_database(records: list[dict[str, Any]], args: argparse.Namespace) -> in
         "content_text_glmocr",
         "pdf_metadata",
         "manifest_metadata",
+        "normative_metadata",
         "raw_metadata",
         "collector_version",
         "inventory_generated_at",
@@ -393,13 +404,14 @@ def load_database(records: list[dict[str, Any]], args: argparse.Namespace) -> in
                     content_text TEXT NOT NULL, pdf_metadata JSONB NOT NULL DEFAULT '{{}}',
                     content_text_docling TEXT NOT NULL DEFAULT '',
                     content_text_glmocr TEXT NOT NULL DEFAULT '',
-                    manifest_metadata JSONB NOT NULL DEFAULT '{{}}', raw_metadata JSONB NOT NULL DEFAULT '{{}}',
+                    manifest_metadata JSONB NOT NULL DEFAULT '{{}}', normative_metadata JSONB, raw_metadata JSONB NOT NULL DEFAULT '{{}}',
                     collector_version TEXT NOT NULL, inventory_generated_at TIMESTAMPTZ NOT NULL,
                     loaded_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 )
             """)
             cursor.execute(
                 f"ALTER TABLE {qualified} "
+                "ADD COLUMN IF NOT EXISTS normative_metadata JSONB, "
                 "ADD COLUMN IF NOT EXISTS content_text_docling TEXT NOT NULL DEFAULT '', "
                 "ADD COLUMN IF NOT EXISTS content_text_glmocr TEXT NOT NULL DEFAULT ''"
             )

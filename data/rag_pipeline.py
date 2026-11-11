@@ -29,9 +29,11 @@ from dotenv import load_dotenv
 if __package__:
     from . import extraction_provenance as provenance
     from .gold_policy import assess_promotion
+    from .normative_metadata import build_normative_metadata
 else:
     import extraction_provenance as provenance
     from gold_policy import assess_promotion
+    from normative_metadata import build_normative_metadata
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
@@ -1281,7 +1283,7 @@ def _select_gold_execution(
                    d.weighted_quality_score,
                    d.average_quality_score
                ) AS selection_quality_score,
-               b.manifest_metadata
+               b.manifest_metadata, b.normative_metadata
         FROM silver.silver_document_extractions d
         JOIN bronze.documents b ON b.record_id = d.document_id
         WHERE d.document_id = %s AND d.processing_status = 'success'
@@ -1459,8 +1461,16 @@ def activate_gold(
             total_pages,
             quality,
             metadata,
+            stored_normative_metadata,
         ) = row
         metadata = metadata or {}
+        normative_metadata = (
+            stored_normative_metadata
+            if isinstance(stored_normative_metadata, dict)
+            and stored_normative_metadata.get("schema_version")
+            == "normative-metadata-v1"
+            else build_normative_metadata(metadata, source_layer="bronze")
+        )
         comparison_rows = _comparison_rows(
             cursor, doc_id, extraction_id, source_extractor, evaluation_identity
         )
@@ -1500,7 +1510,8 @@ def activate_gold(
             """
             UPDATE silver.silver_documents
             SET selected_extractor = %s, selected_at = now(),
-                selection_reason = %s, ready_for_gold = true, updated_at = now()
+                selection_reason = %s, ready_for_gold = true,
+                normative_metadata = %s, updated_at = now()
             WHERE id = %s
             """,
             (
@@ -1511,6 +1522,7 @@ def activate_gold(
                     if not allow_unvalidated
                     else "Promoção explicitamente autorizada sem avaliação completa."
                 ),
+                Jsonb(normative_metadata),
                 silver_document_id,
             ),
         )
@@ -1527,9 +1539,9 @@ def activate_gold(
                 full_text, full_markdown,
                  total_pages, token_count, context_token_limit,
                  context_window_exceeded, context_warning, quality_score,
-                 content_hash, is_active, metadata)
+                 content_hash, is_active, metadata, normative_metadata)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, true, %s)
+                    %s, %s, %s, %s, true, %s, %s)
             ON CONFLICT (document_id, extraction_id) DO UPDATE SET
                 full_text = EXCLUDED.full_text,
                 full_markdown = EXCLUDED.full_markdown,
@@ -1544,6 +1556,7 @@ def activate_gold(
                 silver_document_id = EXCLUDED.silver_document_id,
                 is_active = true,
                 metadata = EXCLUDED.metadata,
+                normative_metadata = EXCLUDED.normative_metadata,
                 updated_at = now()
             RETURNING id
             """,
@@ -1567,6 +1580,7 @@ def activate_gold(
                 quality,
                 content_hash,
                 Jsonb(metadata),
+                Jsonb(normative_metadata),
             ),
         )
         rag_document_id = cursor.fetchone()[0]
