@@ -12,7 +12,13 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from .grounding import INSUFFICIENT_EVIDENCE, GroundingDecision, Verifier, ground_answer
+from .grounding import (
+    INSUFFICIENT_EVIDENCE,
+    PARTIAL_LIMITATION,
+    GroundingDecision,
+    Verifier,
+    ground_answer,
+)
 from .scope_guard import ScopeDecision, classify_messages, normalize_text
 
 logger = logging.getLogger(__name__)
@@ -46,6 +52,58 @@ class AgentResult:
 
     answer: str
     evidences: list[EvidenceRecord]
+    grounding_status: str = "unsupported"
+    limitations: tuple[str, ...] = ()
+
+
+PUBLIC_EVIDENCE_FIELDS = (
+    "evidence_id",
+    "document_id",
+    "title",
+    "standard_id",
+    "version",
+    "issuer",
+    "page_number",
+    "section",
+    "text",
+    "matched_text",
+    "turn_id",
+    "tool_call_id",
+    "execution_id",
+    "query",
+)
+
+
+def public_evidence(record: Mapping[str, Any]) -> EvidenceRecord:
+    """Remove IDs internos, ranking e caminhos antes da publicação externa."""
+
+    public = {
+        key: record[key]
+        for key in PUBLIC_EVIDENCE_FIELDS
+        if record.get(key) is not None
+    }
+    omitted = record.get("omitted_content")
+    if isinstance(omitted, Mapping):
+        safe_omitted = {
+            key: omitted[key]
+            for key in ("characters", "pages")
+            if key in omitted
+        }
+        if safe_omitted:
+            public["omitted_content"] = safe_omitted
+    return public
+
+
+def _public_grounding_status(status: str) -> str:
+    return "unsupported" if status == "insufficient" else status
+
+
+def _grounding_limitations(status: str) -> tuple[str, ...]:
+    if status == "partial":
+        return (PARTIAL_LIMITATION,)
+    if status == "insufficient":
+        return (INSUFFICIENT_EVIDENCE,)
+    return ()
 
 
 @dataclass(frozen=True)
@@ -422,7 +480,10 @@ def extract_agent_result(result: Any, *, question: str | None = None) -> AgentRe
     decision = _decision(result, question=question)
     available = _collect_evidences(result)
     return AgentResult(
-        decision.answer, [available[key] for key in decision.evidence_ids]
+        decision.answer,
+        [available[key] for key in decision.evidence_ids],
+        grounding_status=_public_grounding_status(decision.status),
+        limitations=_grounding_limitations(decision.status),
     )
 
 
@@ -432,4 +493,5 @@ __all__ = [
     "EvidenceRecord",
     "extract_agent_result",
     "looks_like_guarded_answer",
+    "public_evidence",
 ]

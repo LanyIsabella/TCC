@@ -11,8 +11,9 @@ from src.api.schemas.agent import (
     AgentChatRequest,
     AgentChatResponse,
     ConversationMessage,
+    PublicEvidence,
 )
-from src.app.evidence import extract_agent_result
+from src.app.evidence import extract_agent_result, public_evidence
 
 
 class AgentExecutor(Protocol):
@@ -65,7 +66,16 @@ class AgentService:
             ConversationMessage(role="user", content=request.message),
             ConversationMessage(role="assistant", content=extracted.answer),
         ]
-        return AgentChatResponse(answer=extracted.answer, messages=public_messages)
+        return AgentChatResponse(
+            answer=extracted.answer,
+            messages=public_messages,
+            evidences=[
+                PublicEvidence.model_validate(public_evidence(evidence))
+                for evidence in extracted.evidences
+            ],
+            grounding_status=extracted.grounding_status,
+            limitations=list(extracted.limitations),
+        )
 
     def _extract_messages(self, result: Any) -> list[Any]:
         """Extrai a lista de mensagens do retorno bruto do agente."""

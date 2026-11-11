@@ -145,11 +145,61 @@ def print_answer(answer: str) -> None:
     )
 
 
+def format_grounding_result(result: Any) -> str:
+    """Renderiza apenas a proveniência pública e o estado de fundamentação."""
+
+    labels = {
+        "supported": "Fundamentação: apoiada",
+        "partial": "Fundamentação: parcial",
+        "unsupported": "Fundamentação: não fundamentada",
+        "conversational": "Fundamentação: conversacional",
+    }
+    lines = [labels.get(result.grounding_status, "Fundamentação: não fundamentada")]
+    for limitation in result.limitations:
+        lines.append(f"Limitação: {limitation}")
+
+    from src.app.evidence import public_evidence
+
+    for evidence in result.evidences:
+        public = public_evidence(evidence)
+        location = ", ".join(
+            str(value)
+            for value in (
+                public.get("title"),
+                public.get("standard_id"),
+                public.get("version"),
+                f"p. {public['page_number']}" if public.get("page_number") else None,
+            )
+            if value
+        )
+        lines.append(f"Evidência {public.get('evidence_id', 'sem id')}: {location}")
+        lines.append(f"  {public.get('text', '')}")
+        for field in ("turn_id", "tool_call_id", "execution_id"):
+            if public.get(field):
+                lines.append(f"  {field}: {public[field]}")
+        if public.get("omitted_content"):
+            lines.append(f"  Conteúdo omitido: {public['omitted_content']}")
+    return "\n".join(lines)
+
+
+def print_grounding_result(result: Any) -> None:
+    status = getattr(result, "grounding_status", "unsupported")
+    style = "success" if status == "supported" else "warning"
+    console.print(
+        render_message_panel(
+            "[info]Fundamentação[/info]",
+            Text(format_grounding_result(result)),
+            style=style,
+        )
+    )
+
+
 class ChatSession:
     def __init__(self, agent: Any) -> None:
         self.agent = agent
         self.messages: list[Any] = []
         self.history: list[dict[str, Any]] = []
+        self.last_result: Any | None = None
 
     def _timestamp(self) -> str:
         return datetime.now().astimezone().isoformat()
@@ -166,6 +216,7 @@ class ChatSession:
         self.messages.clear()
 
     def ask(self, question: str) -> str:
+        self.last_result = None
         self.history.append(
             {
                 "entry_type": "message",
@@ -188,7 +239,7 @@ class ChatSession:
             )
             raise
 
-        from src.app.evidence import extract_agent_result
+        from src.app.evidence import extract_agent_result, public_evidence
 
         try:
             if not isinstance(result, dict):
@@ -196,7 +247,9 @@ class ChatSession:
             messages = result.get("messages")
             if not isinstance(messages, list) or not messages:
                 raise RuntimeError("O agente retornou uma resposta sem mensagens.")
-            reply = extract_agent_result(result, question=question).answer
+            extracted = extract_agent_result(result, question=question)
+            self.last_result = extracted
+            reply = extracted.answer
         except RuntimeError as exc:
             self.history.append(
                 {
@@ -209,14 +262,18 @@ class ChatSession:
             raise
         self.messages = messages
 
-        self.history.append(
-            {
-                "entry_type": "message",
-                "role": "assistant",
-                "timestamp": self._timestamp(),
-                "content": reply,
-            }
-        )
+        assistant_entry = {
+            "entry_type": "message",
+            "role": "assistant",
+            "timestamp": self._timestamp(),
+            "content": reply,
+            "grounding_status": extracted.grounding_status,
+            "limitations": list(extracted.limitations),
+            "evidences": [
+                public_evidence(evidence) for evidence in extracted.evidences
+            ],
+        }
+        self.history.append(assistant_entry)
         return reply
 
     def export_history(self, output_path: str | Path | None = None) -> Path:
@@ -298,6 +355,8 @@ def run_interactive(session: ChatSession) -> None:
             continue
 
         print_answer(answer)
+        if session.last_result is not None:
+            print_grounding_result(session.last_result)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -330,6 +389,8 @@ def main(argv: list[str] | None = None) -> int:
             with console.status("[info]Consultando agente...[/info]", spinner="dots"):
                 answer = session.ask(args.prompt)
             print_answer(answer)
+            if session.last_result is not None:
+                print_grounding_result(session.last_result)
             if args.export_history is not None:
                 export_path = session.export_history(args.export_history or None)
                 print_success(f"Historico exportado para: {export_path}")

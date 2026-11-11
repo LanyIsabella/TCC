@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 AllowedRole = Literal["user", "assistant", "system", "tool"]
+GroundingStatus = Literal["supported", "partial", "unsupported", "conversational"]
 
 
 def _nonempty_text(value: str, field: str) -> str:
@@ -60,6 +61,28 @@ class AgentChatRequest(BaseModel):
         return _nonempty_text(value, "message")
 
 
+class PublicEvidence(BaseModel):
+    """Proveniência segura da evidência selecionada para a resposta."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_id: str
+    document_id: int | str | None = None
+    title: str | None = None
+    standard_id: str | None = None
+    version: str | None = None
+    issuer: str | None = None
+    page_number: int | None = None
+    section: str | None = None
+    text: str
+    matched_text: str | None = None
+    turn_id: str | None = None
+    tool_call_id: str | None = None
+    execution_id: str | None = None
+    query: str | None = None
+    omitted_content: dict[str, int | list[int]] | None = None
+
+
 class AgentChatResponse(BaseModel):
     """Estrutura devolvida pela rota apos a execucao do agente."""
 
@@ -67,3 +90,7 @@ class AgentChatResponse(BaseModel):
 
     answer: str = Field(min_length=1)
     messages: list[ConversationMessage]
+    # Campos aditivos: clientes antigos continuam lendo answer/messages.
+    evidences: list[PublicEvidence] | None = None
+    grounding_status: GroundingStatus | None = None
+    limitations: list[str] | None = None

@@ -15,6 +15,7 @@ router = APIRouter(prefix="/agent", tags=["Agent"])
 @router.post(
     "/chat",
     response_model=AgentChatResponse,
+    response_model_exclude_none=True,
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_502_BAD_GATEWAY: {"model": ErrorResponse},
@@ -33,8 +34,8 @@ def chat_agent(
         service: Servico injetado responsavel pela chamada ao agente.
 
     Returns:
-        AgentChatResponse: Resposta final do assistente e mensagens
-        normalizadas da conversa.
+        AgentChatResponse: Resposta final, mensagens normalizadas e, quando
+        disponíveis, evidências públicas e a classificação de grounding.
     """
 
     return service.chat(payload)
