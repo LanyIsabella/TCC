@@ -11,11 +11,13 @@ from src.app.conversation import (
     ConversationIntent,
     interpret_intent,
 )
+from src.app.query_planner import is_contextual_follow_up
 from src.app.scope_guard import (
     ACTION_UNAVAILABLE_MESSAGE,
     CLARIFICATION_MESSAGE,
     GREETING_MESSAGE,
     OUT_OF_SCOPE_MESSAGE,
+    has_academic_term,
 )
 
 from .schemas import PlannerDecision, is_structured_clarification
@@ -41,7 +43,27 @@ class Planner:
 
     def plan(self, question: str, history: list[Any]) -> PlannerDecision:
         fallback = self._fallback(question, history)
-        if fallback.intent == ConversationIntent.AMBIGUOUS:
+        if fallback.intent == ConversationIntent.AMBIGUOUS and not (
+            is_contextual_follow_up(question)
+            and any(
+                has_academic_term(
+                    str(
+                        message.get("content", "")
+                        if isinstance(message, Mapping)
+                        else getattr(message, "content", "")
+                    )
+                )
+                for message in history
+                if (
+                    str(
+                        message.get("role", "")
+                        if isinstance(message, Mapping)
+                        else getattr(message, "role", getattr(message, "type", ""))
+                    )
+                    in {"user", "human"}
+                )
+            )
+        ):
             return fallback
         if self._structured is None:
             return fallback

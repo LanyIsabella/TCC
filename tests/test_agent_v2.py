@@ -1,6 +1,7 @@
 import pytest
 from pydantic import ValidationError
 from src.app.agente_v2.orchestrator import AgentV2
+from src.app.agente_v2.planner import Planner
 from src.app.agente_v2.schemas import (
     LimitationCode,
     PlannerDecision,
@@ -43,6 +44,19 @@ class FakeTools:
         return self.payload
 
 
+class FakeStructuredModel:
+    def __init__(self, decision: PlannerDecision):
+        self.decision = decision
+        self.calls = []
+
+    def with_structured_output(self, *_args, **_kwargs):
+        return self
+
+    def invoke(self, messages):
+        self.calls.append(messages)
+        return {"parsed": self.decision}
+
+
 def rag_payload():
     return {
         "status": "success",
@@ -56,6 +70,73 @@ def rag_payload():
             }
         ],
     }
+
+
+def test_planner_uses_context_for_ambiguous_follow_up() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    planner = Planner(model)
+
+    decision = planner.plan(
+        "Como formatar isso?",
+        [{"role": "user", "content": "Tenho uma citação direta longa."}],
+    )
+
+    assert decision.intent == ConversationIntent.NORMATIVE_QUERY
+    assert decision.needs_retrieval is True
+    assert model.calls
+
+
+def test_planner_keeps_ambiguous_without_relevant_history() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    planner = Planner(model)
+
+    decision = planner.plan("Como formatar isso?", [])
+
+    assert decision.intent == ConversationIntent.AMBIGUOUS
+    assert decision.needs_clarification is True
+    assert decision.clarification_questions
+    assert model.calls == []
+
+
+def test_contextual_follow_up_reaches_normative_retrieval() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=Planner(model),
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+
+    result = agent.invoke(
+        {
+            "messages": [
+                {"role": "user", "content": "Tenho uma citação direta longa."},
+                {"role": "assistant", "content": "Entendi."},
+                {"role": "user", "content": "Como formatar isso?"},
+            ]
+        }
+    )
+
+    assert tools.calls
+    assert result["intent"] == ConversationIntent.NORMATIVE_QUERY
+    assert result["grounding_status"] == "supported"
 
 
 def test_conversational_turn_does_not_call_rag() -> None:
