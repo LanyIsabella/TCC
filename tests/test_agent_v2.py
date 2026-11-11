@@ -228,6 +228,58 @@ def test_greeting_with_academic_capabilities_remains_conversational() -> None:
     assert result["answer"] == reply
 
 
+def test_clarification_with_normative_preface_fails_closed() -> None:
+    reply = "As citações diretas longas exigem recuo. Qual trecho você quer formatar?"
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            needs_retrieval=False,
+            reply=reply,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como formatar?"}]}
+    )
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+    assert result["evidences"] == []
+
+
+def test_clarification_with_safe_greeting_preface_remains_conversational() -> None:
+    reply = (
+        "Olá! Posso ajudar com citações e referências. "
+        "Qual trecho você quer formatar?"
+    )
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            needs_retrieval=False,
+            reply=reply,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como formatar?"}]}
+    )
+
+    assert result["grounding_status"] == "conversational"
+    assert result["answer"] == reply
+
+
 def test_normative_answer_misclassified_as_ambiguous_fails_closed() -> None:
     planner = FakePlanner(
         PlannerDecision(

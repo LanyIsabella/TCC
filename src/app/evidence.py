@@ -462,6 +462,7 @@ def _is_safe_non_normative_response(
         intent == ConversationIntent.AMBIGUOUS
         and completion_type == "clarification_requested"
         and answer.rstrip().endswith("?")
+        and not _has_unsafe_clarification_preface(answer)
     ):
         return True
     if intent == ConversationIntent.CONVERSATIONAL and re.fullmatch(
@@ -481,6 +482,21 @@ def _is_safe_non_normative_response(
     ):
         return True
     return False
+
+
+def _has_unsafe_clarification_preface(answer: str) -> bool:
+    prefix = answer.rstrip()[:-1].strip()
+    clauses = [
+        clause.strip()
+        for clause in re.split(r"(?<=[.!?])\s+", prefix)
+        if clause.strip()
+    ]
+    preface = " ".join(clauses[:-1]).strip()
+    if not preface:
+        return False
+    return not _is_safe_non_normative_response(
+        preface, ConversationIntent.CONVERSATIONAL, None
+    )
 
 
 def _extract_answer(result: Mapping[str, Any]) -> str:
