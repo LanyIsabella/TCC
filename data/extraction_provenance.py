@@ -397,3 +397,89 @@ def save_evaluation(
         (page_id, result_fingerprint, evaluation_id, Jsonb(snapshot)),
     )
     return False
+
+
+def record_human_review(
+    connection,
+    page_extraction_id: int,
+    result_fingerprint: str,
+    evaluation_id: str,
+    evaluation_config_fingerprint: str,
+    reviewer: str,
+    decision: str,
+    criteria: dict,
+    provenance: dict,
+) -> str:
+    """Append an auditable decision tied to the exact evaluated result."""
+    from psycopg.types.json import Jsonb
+
+    if decision not in {"approved", "rejected"}:
+        raise ValueError("A decisão humana deve ser approved ou rejected.")
+    if not reviewer.strip():
+        raise ValueError("O revisor humano é obrigatório.")
+    if not isinstance(criteria, dict) or not criteria:
+        raise ValueError("Os critérios da revisão humana são obrigatórios.")
+    if not isinstance(provenance, dict) or not provenance:
+        raise ValueError("A proveniência da revisão humana é obrigatória.")
+    review_id = str(uuid4())
+    row = connection.execute(
+        """
+        INSERT INTO silver.gold_promotion_reviews
+            (review_id,page_extraction_id,result_fingerprint,evaluation_id,
+             evaluation_config_fingerprint,reviewer,decision,criteria,provenance)
+        SELECT %s,%s,p.result_fingerprint,p.evaluation_id,
+               p.evaluation_config_fingerprint,%s,%s,%s,%s
+        FROM silver.silver_page_extractions p
+        WHERE p.id=%s AND p.result_fingerprint=%s AND p.evaluation_id=%s
+          AND p.evaluation_config_fingerprint=%s
+        RETURNING review_id
+        """,
+        (
+            review_id,
+            page_extraction_id,
+            reviewer,
+            decision,
+            Jsonb(criteria),
+            Jsonb(provenance),
+            page_extraction_id,
+            result_fingerprint,
+            evaluation_id,
+            evaluation_config_fingerprint,
+        ),
+    ).fetchone()
+    if not row:
+        raise ValueError("A revisão não corresponde à avaliação atual da página.")
+    return str(row[0])
+
+
+def current_human_reviews(connection, page_ids: list[int]) -> dict[int, list[dict]]:
+    if not page_ids:
+        return {}
+    rows = connection.execute(
+        """
+        SELECT page_extraction_id,review_id,result_fingerprint,evaluation_id,
+               evaluation_config_fingerprint,reviewer,decision,criteria,provenance,
+               reviewed_at
+        FROM silver.gold_promotion_reviews
+        WHERE page_extraction_id=ANY(%s)
+        ORDER BY reviewed_at DESC
+        """,
+        (page_ids,),
+    ).fetchall()
+    reviews: dict[int, list[dict]] = {}
+    for row in rows:
+        reviews.setdefault(row[0], []).append(
+            {
+                "page_extraction_id": row[0],
+                "review_id": str(row[1]),
+                "result_fingerprint": row[2],
+                "evaluation_id": str(row[3]),
+                "evaluation_config_fingerprint": row[4],
+                "reviewer": row[5],
+                "decision": row[6],
+                "criteria": row[7],
+                "provenance": row[8],
+                "reviewed_at": row[9].isoformat(),
+            }
+        )
+    return reviews

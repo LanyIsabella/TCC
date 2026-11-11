@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="14" time="12.545" timestamp="2026-11-10T20:38:35.934846-03:00" hostname="Lany"><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_characterization_gate_accepts_legacy_success[review]" time="0.078" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_characterization_gate_accepts_legacy_success[no-score]" time="0.001" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_characterization_gate_accepts_legacy_success[legacy-fallback]" time="0.000" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_contract_legacy_untrusted_evaluation_blocks_gold[review]" time="0.001"><failure message="AssertionError: assert not True&#10; +  where True = &lt;function is_gold_ready at 0x0000020C1BE572E0&gt;('success', 1, 1, ['success'])&#10; +    where &lt;function is_gold_ready at 0x0000020C1BE572E0&gt; = pipeline.is_gold_ready">legacy_evaluation = {'quality_score': 90, 'requires_manual_review': True, 'status': 'success'}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F1: Gold gate ignores review, score and evaluation method"
+    )
+    @pytest.mark.parametrize("legacy_evaluation", LEGACY_EVALUATIONS, indirect=True)
+    def test_f1_contract_legacy_untrusted_evaluation_blocks_gold(legacy_evaluation):
+&gt;       assert not pipeline.is_gold_ready("success", 1, 1, [legacy_evaluation["status"]])
+E       AssertionError: assert not True
+E        +  where True = &lt;function is_gold_ready at 0x0000020C1BE572E0&gt;('success', 1, 1, ['success'])
+E        +    where &lt;function is_gold_ready at 0x0000020C1BE572E0&gt; = pipeline.is_gold_ready
+
+tests\baseline\test_defect_pipeline.py:48: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_contract_legacy_untrusted_evaluation_blocks_gold[no-score]" time="0.001"><failure message="AssertionError: assert not True&#10; +  where True = &lt;function is_gold_ready at 0x0000020C1BE572E0&gt;('success', 1, 1, ['success'])&#10; +    where &lt;function is_gold_ready at 0x0000020C1BE572E0&gt; = pipeline.is_gold_ready">legacy_evaluation = {'quality_score': None, 'requires_manual_review': False, 'status': 'success'}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F1: Gold gate ignores review, score and evaluation method"
+    )
+    @pytest.mark.parametrize("legacy_evaluation", LEGACY_EVALUATIONS, indirect=True)
+    def test_f1_contract_legacy_untrusted_evaluation_blocks_gold(legacy_evaluation):
+&gt;       assert not pipeline.is_gold_ready("success", 1, 1, [legacy_evaluation["status"]])
+E       AssertionError: assert not True
+E        +  where True = &lt;function is_gold_ready at 0x0000020C1BE572E0&gt;('success', 1, 1, ['success'])
+E        +    where &lt;function is_gold_ready at 0x0000020C1BE572E0&gt; = pipeline.is_gold_ready
+
+tests\baseline\test_defect_pipeline.py:48: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f1_contract_legacy_untrusted_evaluation_blocks_gold[legacy-fallback]" time="0.000"><failure message="AssertionError: assert not True&#10; +  where True = &lt;function is_gold_ready at 0x0000020C1BE572E0&gt;('success', 1, 1, ['success'])&#10; +    where &lt;function is_gold_ready at 0x0000020C1BE572E0&gt; = pipeline.is_gold_ready">legacy_evaluation = {'evaluation_method': 'deterministic_fallback', 'quality_score': 50, 'requires_manual_review': True, 'status': 'success'}
+
+    @pytest.mark.xfail(
+        strict=True, reason="F1: Gold gate ignores review, score and evaluation method"
+    )
+    @pytest.mark.parametrize("legacy_evaluation", LEGACY_EVALUATIONS, indirect=True)
+    def test_f1_contract_legacy_untrusted_evaluation_blocks_gold(legacy_evaluation):
+&gt;       assert not pipeline.is_gold_ready("success", 1, 1, [legacy_evaluation["status"]])
+E       AssertionError: assert not True
+E        +  where True = &lt;function is_gold_ready at 0x0000020C1BE572E0&gt;('success', 1, 1, ['success'])
+E        +    where &lt;function is_gold_ready at 0x0000020C1BE572E0&gt; = pipeline.is_gold_ready
+
+tests\baseline\test_defect_pipeline.py:48: AssertionError</failure></testcase><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_regression_force_preserves_prior_evaluation" time="5.602" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_content_invalidates_score" time="0.850" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_regression_evaluator_updates_only_current_text" time="1.112" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_force_content_is_evaluated_again" time="1.505" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_regression_changed_identity_is_not_reused[source-bytes]" time="0.679" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_regression_changed_identity_is_not_reused[extractor-config]" time="0.835" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_provenance_creates_new_extraction[source-bytes]" time="0.928" /><testcase classname="tests.baseline.test_defect_pipeline" name="test_f2_contract_changed_provenance_creates_new_extraction[extractor-config]" time="0.757" /></testsuite></testsuites>

@@ -1,0 +1,16 @@
+{
+  "schema_version": "tcc-fase4-2-preservation-v1",
+  "branch": "fix/fase4-2-politica-gold-20261110",
+  "base_commit_fase4_1": "bf4c5514180d17105c7bd0e9398cdd35c110f0b4",
+  "human_review_snapshot_sha256": "ba555e70267df221683c429d7ab6c965d03b73e64e7d1d2e52dbe0d1ace9ba99",
+  "preserved_files": {
+    "rag_eval/baseline/human_review/lote_2026-11-10/manifest.json": "cf0ead912a74372cce6c544ef77342fe5718219d13139c0d388d5af22f9d21a6",
+    "rag_eval/baseline/human_review/lote_2026-11-10/VERIFICACAO.json": "f1c89883673750d5da848a57df194230ffa35ef2760d0c3b8d7df6aac6f16e45",
+    "docs/fase4_2/artifacts/f1_baseline_red.xml": "f3f3e9b4b377670cb5db7363a658d48a9ac7c0803979d2bbd5c18d98210ad1ae",
+    "docs/fase4_2/artifacts/f1_green.xml": "f3d71f5746c4d7a9ea9819359e3a7474d7ed0ae43afb34e88dfcd1f4609181c1",
+    "docs/fase4_2/artifacts/regression.xml": "06e31b3d796fcc3babf3e7ef9c44247b1334faef988c3119f84a61967c6b95e5"
+  },
+  "production_database_modified": false,
+  "original_documents_modified": false,
+  "embeddings_or_ingestion_rerun": false
+}

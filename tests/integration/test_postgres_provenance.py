@@ -146,6 +146,21 @@ def configure_stubs(monkeypatch):
         return {"overall_score": 81, "requires_manual_review": False}, "page_image"
 
     monkeypatch.setattr(pipeline, "evaluate_page", evaluate)
+
+    original_metrics = pipeline.deterministic_metrics
+
+    def validated_metrics(reference, extracted):
+        # Synthetic fixture: model an external attestation, not native text as truth.
+        metrics = original_metrics(reference, extracted)
+        metrics["deterministic_validation"] = {
+            "status": "passed",
+            "reference_type": "independent_reference",
+            "reference_fingerprint": pipeline.text_hash(reference),
+            "reference_status": "trusted",
+        }
+        return metrics
+
+    monkeypatch.setattr(pipeline, "deterministic_metrics", validated_metrics)
     return calls
 
 

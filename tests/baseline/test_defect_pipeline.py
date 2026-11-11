@@ -36,14 +36,6 @@ LEGACY_EVALUATIONS = [
 
 
 @pytest.mark.parametrize("legacy_evaluation", LEGACY_EVALUATIONS, indirect=True)
-def test_f1_characterization_gate_accepts_legacy_success(legacy_evaluation):
-    assert pipeline.is_gold_ready("success", 1, 1, [legacy_evaluation["status"]])
-
-
-@pytest.mark.xfail(
-    strict=True, reason="F1: Gold gate ignores review, score and evaluation method"
-)
-@pytest.mark.parametrize("legacy_evaluation", LEGACY_EVALUATIONS, indirect=True)
 def test_f1_contract_legacy_untrusted_evaluation_blocks_gold(legacy_evaluation):
     assert not pipeline.is_gold_ready("success", 1, 1, [legacy_evaluation["status"]])
 

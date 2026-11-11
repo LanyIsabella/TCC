@@ -375,7 +375,41 @@ def test_rag_tool_returns_structured_error_for_invalid_result(
 
 def test_gold_gate_requires_successful_evaluation() -> None:
     assert not is_gold_ready("success", 0, 0, [])
-    assert is_gold_ready("success", 2, 2, ["success", "success"])
+    records = [
+        {
+            "page_number": page,
+            "evaluation_status": "success",
+            "evaluation_id": f"eval-{page}",
+            "evaluation_method": "page_image",
+            "quality_score": 90,
+            "quality_metrics": {
+                "cer": 0.01,
+                "wer": 0.02,
+                "normalized_similarity": 0.98,
+                "deterministic_validation": {
+                    "status": "passed",
+                    "reference_type": "independent_reference",
+                    "reference_fingerprint": f"reference-{page}",
+                    "reference_status": "trusted",
+                    "result_fingerprint": f"result-{page}",
+                },
+                "evaluation": {"requires_manual_review": False},
+            },
+            "result_fingerprint": f"result-{page}",
+            "evaluation_input_fingerprint": f"result-{page}",
+            "evaluation_config_fingerprint": "config",
+            "evaluation_config": {"engine_version": "v1"},
+        }
+        for page in (1, 2)
+    ]
+    assert is_gold_ready(
+        "success",
+        2,
+        2,
+        ["success", "success"],
+        evaluation_records=records,
+        expected_config_fingerprint="config",
+    )
     assert not is_gold_ready("success", 2, 2, ["success", "pending"])
     assert is_gold_ready("success", 2, 2, ["pending", "error"], True)
     assert not is_gold_ready("error", 2, 1, ["success"], True)

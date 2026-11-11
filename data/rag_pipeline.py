@@ -28,8 +28,10 @@ from dotenv import load_dotenv
 
 if __package__:
     from . import extraction_provenance as provenance
+    from .gold_policy import assess_promotion
 else:
     import extraction_provenance as provenance
+    from gold_policy import assess_promotion
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
@@ -934,6 +936,7 @@ def levenshtein(left: list[str], right: list[str]) -> int:
 
 
 def deterministic_metrics(reference: str, extracted: str) -> dict[str, Any]:
+    """Compare text deterministically; ``reference`` is diagnostic, not truth."""
     ref_chars = list(reference)
     ext_chars = list(extracted)
     ref_words = reference.split()
@@ -1224,18 +1227,32 @@ def is_gold_ready(
     successful_pages: int,
     evaluation_statuses: list[str],
     allow_unvalidated: bool = False,
+    *,
+    evaluation_records: list[dict[str, Any]] | None = None,
+    expected_config_fingerprint: str | None = None,
+    human_reviews: dict[Any, list[dict[str, Any]]] | None = None,
+    alternatives_available: bool = True,
 ) -> bool:
-    """Define o gate de promoção para uma variante completa e validada."""
+    """Define o gate de promoção; status ``success`` isolado não é evidência."""
     if (
         processing_status != "success"
         or total_pages <= 0
         or successful_pages != total_pages
     ):
         return False
-    return allow_unvalidated or (
-        len(evaluation_statuses) == total_pages
-        and all(status == "success" for status in evaluation_statuses)
-    )
+    if allow_unvalidated:
+        return len(evaluation_statuses) == total_pages
+    if evaluation_records is None:
+        return False
+    return assess_promotion(
+        processing_status=processing_status,
+        total_pages=total_pages,
+        successful_pages=successful_pages,
+        pages=evaluation_records,
+        expected_config_fingerprint=expected_config_fingerprint,
+        human_reviews=human_reviews,
+        alternatives_available=alternatives_available,
+    ).eligible
 
 
 def comparison_is_ready(rows: list[tuple[Any, ...]]) -> bool:
@@ -1285,13 +1302,140 @@ def _select_gold_execution(
         params.append(extractor)
     query += (
         " ORDER BY d.weighted_quality_score DESC NULLS LAST, "
-        "d.average_quality_score DESC NULLS LAST, d.id DESC LIMIT 1"
+        "d.average_quality_score DESC NULLS LAST, d.id DESC LIMIT 1 FOR SHARE"
     )
     cursor.execute(query, params)
     row = cursor.fetchone()
     if not row:
         raise ValueError("Nenhuma extração completa disponível para ativação.")
     return row
+
+
+def _promotion_evidence(
+    cursor: Any,
+    extraction_id: int,
+    evaluation_identity: str | None,
+    allow_unvalidated: bool,
+) -> tuple[list[tuple], list[str], list[dict[str, Any]], dict[Any, list[dict]]]:
+    cursor.execute(
+        """
+        SELECT id,page_number,processing_status,evaluation_status,
+               evaluation_method,quality_score,quality_metrics,
+               result_fingerprint,evaluation_input_fingerprint,
+               evaluation_config_fingerprint,evaluation_config,evaluation_error,
+               evaluation_id
+        FROM silver.silver_page_extractions
+        WHERE extraction_id = %s ORDER BY page_number FOR SHARE
+        """,
+        (extraction_id,),
+    )
+    page_rows = cursor.fetchall()
+    def current(row: tuple) -> bool:
+        return row[8] == row[7] and row[9] == evaluation_identity
+    evaluation_statuses = [row[3] if current(row) else "pending" for row in page_rows]
+    records = [
+        {
+            "page_extraction_id": row[0],
+            "page_number": row[1],
+            "processing_status": row[2],
+            "evaluation_status": row[3] if current(row) else "pending",
+            "evaluation_method": row[4],
+            "quality_score": row[5],
+            "quality_metrics": row[6],
+            "result_fingerprint": row[7],
+            "evaluation_input_fingerprint": row[8],
+            "evaluation_config_fingerprint": row[9],
+            "evaluation_config": row[10],
+            "evaluation_error": row[11],
+            "evaluation_id": str(row[12]) if row[12] else None,
+        }
+        for row in page_rows
+    ]
+    reviews = (
+        {}
+        if allow_unvalidated
+        else provenance.current_human_reviews(
+            cursor.connection, [row[0] for row in page_rows]
+        )
+    )
+    return page_rows, evaluation_statuses, records, reviews
+
+
+def _require_promotion_evidence(
+    cursor: Any,
+    extraction_id: int,
+    evaluation_identity: str | None,
+    allow_unvalidated: bool,
+    alternatives_available: bool,
+) -> None:
+    page_rows, statuses, records, reviews = _promotion_evidence(
+        cursor, extraction_id, evaluation_identity, allow_unvalidated
+    )
+    successful_pages = sum(row[2] == "success" for row in page_rows)
+    if not is_gold_ready(
+        "success",
+        len(page_rows),
+        successful_pages,
+        statuses,
+        allow_unvalidated,
+        evaluation_records=records,
+        expected_config_fingerprint=evaluation_identity,
+        human_reviews=reviews,
+        alternatives_available=alternatives_available,
+    ):
+        raise ValueError(
+            "Extração não validada: avalie todas as páginas antes de promover "
+            "para a Gold ou use --allow-unvalidated explicitamente."
+        )
+
+
+def _comparison_rows(
+    cursor: Any,
+    doc_id: int,
+    extraction_id: int,
+    source_extractor: str,
+    evaluation_identity: str | None,
+) -> list[tuple]:
+    cursor.execute(
+        """
+        SELECT e.extractor, e.processing_status, e.total_pages,
+               COUNT(p.id) AS page_rows,
+               COUNT(p.id) FILTER (WHERE p.processing_status = 'success')
+                   AS successful_pages,
+               COUNT(p.id) FILTER (WHERE p.evaluation_status = 'success'
+                   AND p.evaluation_input_fingerprint = p.result_fingerprint
+                   AND p.evaluation_config_fingerprint = %s)
+                   AS evaluated_pages
+        FROM silver.silver_document_extractions e
+        LEFT JOIN silver.silver_page_extractions p ON p.extraction_id = e.id
+        WHERE e.document_id = %s AND e.extractor = ANY(%s)
+          AND (e.id = %s OR (e.extractor <> %s AND e.id IN (
+              SELECT DISTINCT ON (extractor) id
+              FROM silver.silver_document_extractions WHERE document_id = %s
+              ORDER BY extractor,id DESC
+          )))
+        GROUP BY e.extractor, e.processing_status, e.total_pages
+        """,
+        (
+            evaluation_identity,
+            doc_id,
+            ["docling", "glm_ocr"],
+            extraction_id,
+            source_extractor,
+            doc_id,
+        ),
+    )
+    return cursor.fetchall()
+
+
+def _require_comparison(
+    rows: list[tuple], allow_unvalidated: bool
+) -> None:
+    if not comparison_is_ready(rows) and not allow_unvalidated:
+        raise ValueError(
+            "Docling e GLM-OCR precisam estar completos e avaliados antes "
+            "da promoção normal para a Gold."
+        )
 
 
 def activate_gold(
@@ -1317,71 +1461,18 @@ def activate_gold(
             metadata,
         ) = row
         metadata = metadata or {}
-        cursor.execute(
-            """
-            SELECT COUNT(*) AS total_pages,
-                   COUNT(*) FILTER (WHERE processing_status = 'success')
-                       AS successful_pages,
-                   array_agg(CASE
-                       WHEN evaluation_input_fingerprint = result_fingerprint
-                         AND evaluation_config_fingerprint = %s
-                       THEN evaluation_status ELSE 'pending' END ORDER BY page_number)
-                       AS evaluation_statuses
-            FROM silver.silver_page_extractions
-            WHERE extraction_id = %s
-            """,
-            (evaluation_identity, extraction_id),
+        comparison_rows = _comparison_rows(
+            cursor, doc_id, extraction_id, source_extractor, evaluation_identity
         )
-        evaluated_total, successful_pages, evaluation_statuses = cursor.fetchone()
-        evaluation_statuses = evaluation_statuses or []
-        if not is_gold_ready(
-            "success",
-            evaluated_total,
-            successful_pages,
-            evaluation_statuses,
-            allow_unvalidated,
-        ):
-            raise ValueError(
-                "Extração não validada: avalie todas as páginas antes de promover "
-                "para a Gold ou use --allow-unvalidated explicitamente."
-            )
-        cursor.execute(
-            """
-            SELECT e.extractor, e.processing_status, e.total_pages,
-                   COUNT(p.id) AS page_rows,
-                   COUNT(p.id) FILTER (WHERE p.processing_status = 'success')
-                       AS successful_pages,
-                   COUNT(p.id) FILTER (WHERE p.evaluation_status = 'success'
-                       AND p.evaluation_input_fingerprint = p.result_fingerprint
-                       AND p.evaluation_config_fingerprint = %s)
-                       AS evaluated_pages
-            FROM silver.silver_document_extractions e
-            LEFT JOIN silver.silver_page_extractions p
-                ON p.extraction_id = e.id
-            WHERE e.document_id = %s AND e.extractor = ANY(%s)
-              AND (e.id = %s OR (e.extractor <> %s AND e.id IN (
-                  SELECT DISTINCT ON (extractor) id
-                  FROM silver.silver_document_extractions WHERE document_id = %s
-                  ORDER BY extractor,id DESC
-              )))
-            GROUP BY e.extractor, e.processing_status, e.total_pages
-            """,
-            (
-                evaluation_identity,
-                doc_id,
-                ["docling", "glm_ocr"],
-                extraction_id,
-                source_extractor,
-                doc_id,
-            ),
-        )
-        comparison_rows = cursor.fetchall()
         comparison_ready = comparison_is_ready(comparison_rows)
-        if not comparison_ready and not allow_unvalidated:
-            raise ValueError(
-                "Docling e GLM-OCR precisam estar completos e avaliados antes "
-                "da promoção normal para a Gold."
-            )
+        _require_promotion_evidence(
+            cursor,
+            extraction_id,
+            evaluation_identity,
+            allow_unvalidated,
+            comparison_ready,
+        )
+        _require_comparison(comparison_rows, allow_unvalidated)
         content_hash = text_hash(full_text)
         token_count = estimated_token_count(full_text)
         token_limit = context_token_limit()

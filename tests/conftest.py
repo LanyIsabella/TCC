@@ -170,9 +170,11 @@ def isolated_pg(postgres_cluster, monkeypatch, tmp_path, request):
             "sha256 CHAR(64))"
         )
         connection.execute((ROOT / "data/rag_schema.sql").read_text(encoding="utf-8"))
-        migration = ROOT / "data/migrations/0001_extraction_provenance.up.sql"
-        if migration.exists() and getattr(request, "param", True):
-            connection.execute(migration.read_text(encoding="utf-8"))
+        if getattr(request, "param", True):
+            for migration in sorted(
+                (ROOT / "data/migrations").glob("*.up.sql")
+            ):
+                connection.execute(migration.read_text(encoding="utf-8"))
     source = tmp_path / "synthetic.pdf"
     monkeypatch.setattr(pipeline, "PAGE_CACHE", tmp_path / "page_cache")
     source.write_bytes(b"synthetic source A")
