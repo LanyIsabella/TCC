@@ -570,9 +570,23 @@ def _decision(
         ConversationIntent.ACTION_REQUEST,
         ConversationIntent.OUT_OF_SCOPE,
     }:
-        explicitly_non_normative = intent != ConversationIntent.CONVERSATIONAL or (
-            conversation.get("completion_type")
-            in {"clarification_requested", "action_unavailable", "out_of_scope"}
+        completion_type = conversation.get("completion_type")
+        clarification_question = (
+            intent == ConversationIntent.AMBIGUOUS
+            and answer.rstrip().endswith("?")
+        )
+        explicitly_non_normative = (
+            intent in {
+                ConversationIntent.ACTION_REQUEST,
+                ConversationIntent.OUT_OF_SCOPE,
+            }
+            or completion_type
+            in {"action_unavailable", "out_of_scope"}
+            or (
+                completion_type == "clarification_requested"
+                and answer.rstrip().endswith("?")
+            )
+            or clarification_question
         )
         if (
             explicitly_non_normative

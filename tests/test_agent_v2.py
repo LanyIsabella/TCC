@@ -149,8 +149,32 @@ def test_normative_answer_misclassified_as_conversational_fails_closed() -> None
     assert result["evidences"] == []
 
 
+def test_normative_answer_misclassified_as_ambiguous_fails_closed() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            needs_retrieval=False,
+            reply="A margem deve medir 2 cm.",
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como formatar?"}]}
+    )
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+    assert result["evidences"] == []
+
+
 def test_legitimate_clarification_remains_conversational() -> None:
-    reply = "Qual elemento você deseja formatar?"
+    reply = "Qual elemento acadêmico você deseja formatar: citações ou referências?"
     planner = FakePlanner(
         PlannerDecision(
             intent=ConversationIntent.AMBIGUOUS,
