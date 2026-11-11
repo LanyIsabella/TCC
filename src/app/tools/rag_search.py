@@ -13,7 +13,7 @@ from data.rag_pipeline import search_documents
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
-from src.app.query_planner import is_broad_question, plan_queries
+from src.app.query_planner import focused_query, is_broad_question, plan_queries
 
 logger = logging.getLogger(__name__)
 MAX_FULL_TEXT_CHARS = 6_000
@@ -676,6 +676,43 @@ def rag_document_search(
             question,
             retrieval_queries=queries,
         )
+        if not result.get("evidence_found") and not broad:
+            alternative_query = focused_query(question)
+            if alternative_query and alternative_query != question.casefold().strip():
+                logger.info(
+                    "rag_search_fallback_start question=%r documents_limit=%d "
+                    "pages_limit=%d",
+                    alternative_query[:240],
+                    5,
+                    1,
+                )
+                try:
+                    fallback_documents = search_documents(
+                        question=alternative_query,
+                        pages_limit=1,
+                        documents_limit=5,
+                        full_documents_limit=0,
+                        neighbor_radius=0,
+                    )
+                    usable_documents = [
+                        document
+                        for document in fallback_documents
+                        if _compact_document(document, question) is not None
+                    ]
+                    result = _validated_result(
+                        usable_documents[:1],
+                        question,
+                        retrieval_queries=[*queries, alternative_query],
+                    )
+                    logger.info(
+                        "rag_search_fallback_complete status=%s documents=%d",
+                        result.get("status"),
+                        result.get("documents_found", 0),
+                    )
+                except (TypeError, ValueError) as error:
+                    logger.warning("Resultado do fallback RAG inválido: %s", error)
+                except Exception:
+                    logger.exception("Fallback da busca RAG indisponível.")
         result["adaptive_retrieval"] = broad
         logger.info(
             "rag_search_complete status=%s documents=%d adaptive=%s",

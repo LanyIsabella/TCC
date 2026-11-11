@@ -47,6 +47,59 @@ FOLLOW_UP_TERMS = {
     "tambem",
     "entao",
 }
+FOCUSED_QUERY_STOPWORDS = {
+    "a",
+    "as",
+    "ao",
+    "aos",
+    "como",
+    "da",
+    "das",
+    "de",
+    "do",
+    "dos",
+    "e",
+    "em",
+    "entre",
+    "essa",
+    "esse",
+    "esta",
+    "este",
+    "ficar",
+    "fica",
+    "ficam",
+    "mais",
+    "na",
+    "nas",
+    "no",
+    "nos",
+    "o",
+    "os",
+    "para",
+    "por",
+    "qual",
+    "quais",
+    "que",
+    "segundo",
+    "ser",
+    "sao",
+    "uma",
+    "um",
+    "deve",
+    "devem",
+    "escrita",
+    "escritas",
+    "escrito",
+    "escritos",
+}
+REDUNDANT_FOCUSED_TERMS = {
+    "bibliografica",
+    "bibliograficas",
+    "nome",
+    "nomes",
+    "referencia",
+    "referencias",
+}
 MAX_CONTEXT_MESSAGE_CHARS = 500
 
 
@@ -60,6 +113,30 @@ def normalize_text(value: str) -> str:
         if unicodedata.category(character) != "Mn"
     )
     return " ".join(normalized.split())
+
+
+def focused_query(question: str) -> str:
+    """Reduz uma pergunta a termos normativos para uma única recuperação."""
+
+    terms: list[str] = []
+    seen: set[str] = set()
+    for raw_term in re.findall(r"[\wÀ-ÿ]+", question.casefold()):
+        normalized_term = normalize_text(raw_term)
+        if (
+            len(normalized_term) < 3
+            or normalized_term in FOCUSED_QUERY_STOPWORDS
+            or normalized_term in seen
+        ):
+            continue
+        terms.append(raw_term)
+        seen.add(normalized_term)
+    if len(terms) >= 5:
+        terms = [
+            term
+            for term in terms
+            if normalize_text(term) not in REDUNDANT_FOCUSED_TERMS
+        ]
+    return " ".join(terms)
 
 
 def _message_value(message: Any, key: str) -> Any:
@@ -185,6 +262,7 @@ def plan_queries(
 
 __all__ = [
     "contextualize_query",
+    "focused_query",
     "is_broad_question",
     "is_contextual_follow_up",
     "normalize_text",

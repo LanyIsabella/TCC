@@ -2,6 +2,7 @@ import json
 
 from src.app.query_planner import (
     contextualize_query,
+    focused_query,
     is_broad_question,
     plan_queries,
 )
@@ -22,6 +23,15 @@ def test_specific_question_is_not_expanded() -> None:
     queries = plan_queries("Qual é o item 7.1 da ABNT NBR 10520?")
 
     assert queries == ["Qual é o item 7.1 da ABNT NBR 10520?"]
+
+
+def test_focused_query_preserves_normative_terms_without_question_scaffolding() -> None:
+    question = (
+        "Segundo a ABNT, como devem ser escritos os nomes dos autores "
+        "nas referências bibliográficas? Devem ficar em letras maiúsculas?"
+    )
+
+    assert focused_query(question) == "abnt autores letras maiúsculas"
 
 
 def test_contextual_follow_up_keeps_original_intent_and_previous_topic() -> None:
