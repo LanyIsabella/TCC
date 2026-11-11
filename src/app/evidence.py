@@ -671,7 +671,23 @@ def _decision(
         safe_non_normative = _is_safe_non_normative_response(
             answer, intent, completion_type
         )
-        if normative_assertion or (
+        clarification_source = (
+            conversation.get("clarification_source")
+            if isinstance(conversation, Mapping)
+            else None
+        )
+        trusted_clarification = clarification_source in {
+            "structured",
+            "legacy_structured",
+        }
+        untrusted_clarification = (
+            intent == ConversationIntent.AMBIGUOUS
+            and completion_type == "clarification_requested"
+            and not trusted_clarification
+        )
+        if trusted_clarification:
+            safe_non_normative = not normative_assertion
+        if untrusted_clarification or normative_assertion or (
             not safe_non_normative and needs_support(answer, question)
         ):
             decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")

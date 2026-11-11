@@ -1,4 +1,5 @@
 import pytest
+from pydantic import ValidationError
 from src.app.agente_v2.orchestrator import AgentV2
 from src.app.agente_v2.schemas import PlannerDecision, SynthesisResponse
 from src.app.conversation import ConversationIntent, ConversationStore
@@ -253,17 +254,14 @@ def test_clarification_with_normative_preface_fails_closed() -> None:
     assert result["evidences"] == []
 
 
-def test_clarification_with_safe_greeting_preface_remains_conversational() -> None:
-    reply = (
-        "Olá! Posso ajudar com citações e referências. "
-        "Qual trecho você quer formatar?"
-    )
+def test_structured_clarification_with_academic_terms_remains_conversational() -> None:
+    reply = "Qual trecho de citações ou referências você quer formatar?"
     planner = FakePlanner(
         PlannerDecision(
             intent=ConversationIntent.AMBIGUOUS,
             needs_clarification=True,
             needs_retrieval=False,
-            reply=reply,
+            clarification_questions=[reply],
         )
     )
     agent = AgentV2(
@@ -278,6 +276,47 @@ def test_clarification_with_safe_greeting_preface_remains_conversational() -> No
 
     assert result["grounding_status"] == "conversational"
     assert result["answer"] == reply
+
+
+def test_multiple_structured_clarification_questions_remain_conversational() -> None:
+    questions = [
+        "Você quer formatar citações ou referências?",
+        "Qual trecho do trabalho deseja analisar?",
+    ]
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            needs_retrieval=False,
+            clarification_questions=questions,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como formatar?"}]}
+    )
+
+    assert result["grounding_status"] == "conversational"
+    assert result["answer"] == "\n".join(questions)
+
+
+def test_clarification_contract_rejects_normative_preface() -> None:
+    with pytest.raises(ValidationError):
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            clarification_questions=[
+                (
+                    "As citações diretas longas exigem recuo. "
+                    "Qual trecho você quer formatar?"
+                )
+            ],
+        )
 
 
 def test_normative_answer_misclassified_as_ambiguous_fails_closed() -> None:

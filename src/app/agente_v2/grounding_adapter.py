@@ -15,7 +15,12 @@ from src.app.evidence import (
 )
 from src.app.grounding import INSUFFICIENT_EVIDENCE
 
-from .schemas import PlannerDecision, SynthesisResponse, ToolExecution
+from .schemas import (
+    PlannerDecision,
+    SynthesisResponse,
+    ToolExecution,
+    is_structured_clarification,
+)
 
 
 def _turn(conversation_id: str, turn_id: str, question: str) -> EvidenceTurn:
@@ -36,6 +41,20 @@ def conversational_result(
     planner: PlannerDecision,
 ) -> AgentResult:
     turn = _turn(conversation_id, turn_id, question)
+    if planner.needs_clarification:
+        if planner.clarification_questions:
+            expected = "\n".join(planner.clarification_questions)
+            clarification_source = (
+                "structured" if answer == expected else "untrusted"
+            )
+        elif planner.reply and is_structured_clarification(planner.reply):
+            clarification_source = (
+                "legacy_structured" if answer == planner.reply else "untrusted"
+            )
+        else:
+            clarification_source = "untrusted"
+    else:
+        clarification_source = None
     result = {
         "messages": [
             {"role": "user", "content": question, "id": turn.id},
@@ -49,6 +68,7 @@ def conversational_result(
             "completion_type": "clarification_requested"
             if planner.needs_clarification
             else "conversational",
+            "clarification_source": clarification_source,
         },
     }
     return extract_agent_result(result, question=question)

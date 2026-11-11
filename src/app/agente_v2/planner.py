@@ -18,7 +18,7 @@ from src.app.scope_guard import (
     OUT_OF_SCOPE_MESSAGE,
 )
 
-from .schemas import PlannerDecision
+from .schemas import PlannerDecision, is_structured_clarification
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,8 @@ class Planner:
             "Escolha uma intenção entre conversational, ambiguous, normative_query, "
             "action_request, out_of_scope e unknown. Use needs_retrieval=true apenas "
             "quando a resposta exigir documento normativo. Para ambiguous, escreva "
-            "uma pergunta de esclarecimento em reply. Para action_request, não simule "
+            "uma ou mais perguntas isoladas em clarification_questions, sem prefácios "
+            "ou afirmações. Para action_request, não simule "
             "a ferramenta. Retorne somente o objeto estruturado.\n\n"
             f"Histórico: {json.dumps(context, ensure_ascii=False)}\n"
             f"Pergunta atual: {question}"
@@ -117,6 +118,14 @@ class Planner:
             decision.needs_retrieval = True
         if decision.intent == ConversationIntent.AMBIGUOUS:
             decision.needs_clarification = True
+            if not decision.clarification_questions:
+                if decision.reply and is_structured_clarification(decision.reply):
+                    decision.clarification_questions = [decision.reply.strip()]
+                else:
+                    decision.clarification_questions = (
+                        fallback.clarification_questions or [CLARIFICATION_MESSAGE]
+                    )
+            decision.reply = None
         if decision.intent == ConversationIntent.UNKNOWN and fallback.intent == (
             ConversationIntent.NORMATIVE_QUERY
         ):
@@ -129,8 +138,10 @@ class Planner:
         decision = interpret_intent([*history, {"role": "user", "content": question}])
         reply = None
         if decision.intent == ConversationIntent.AMBIGUOUS:
-            reply = CLARIFICATION_MESSAGE
-        elif decision.intent == ConversationIntent.ACTION_REQUEST:
+            clarification_questions = [CLARIFICATION_MESSAGE]
+        else:
+            clarification_questions = []
+        if decision.intent == ConversationIntent.ACTION_REQUEST:
             reply = ACTION_UNAVAILABLE_MESSAGE
         elif decision.intent == ConversationIntent.OUT_OF_SCOPE:
             reply = OUT_OF_SCOPE_MESSAGE
@@ -141,6 +152,7 @@ class Planner:
             needs_clarification=decision.needs_clarification,
             needs_retrieval=decision.intent == ConversationIntent.NORMATIVE_QUERY,
             reply=reply,
+            clarification_questions=clarification_questions,
         )
 
 

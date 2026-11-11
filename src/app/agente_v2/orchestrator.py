@@ -65,8 +65,11 @@ class AgentV2:
             )
 
         if not plan.needs_retrieval:
-            answer = plan.reply or (
-                "Por favor, envie uma pergunta acadêmica mais específica."
+            answer = (
+                "\n".join(plan.clarification_questions)
+                if plan.needs_clarification and plan.clarification_questions
+                else plan.reply
+                or "Por favor, envie uma pergunta acadêmica mais específica."
             )
             result = conversational_result(
                 conversation_id=conversation_id,
