@@ -45,11 +45,15 @@ def original_snapshot(source: Path, directory: Path) -> tuple[Path, str]:
         digest = file_digest(temporary)
         target = directory / (digest + ".pdf")
         assert target.parent.resolve() == directory
+        published = False
         try:
             if not target.exists():
                 temporary.rename(target)
+                published = True
         except FileExistsError:
             pass
+        if published:
+            return target, digest
         if file_digest(target) != digest:
             raise ValueError(
                 "Snapshot original corrompido; a versão existente foi preservada."
@@ -179,10 +183,21 @@ def record_gold_derivation(connection, rag_document_id: int) -> None:
         """
         SELECT jsonb_build_object('execution',e.execution_id,
             'input',e.input_fingerprint,
-            'content',g.content_hash,'pages',(
-                SELECT jsonb_object_agg(p.page_number::text,p.result_fingerprint)
-                FROM silver.silver_page_extractions p WHERE p.extraction_id=e.id
-            ))
+            'content',g.content_hash,'pages',CASE
+                WHEN g.selection_run_id IS NOT NULL THEN (
+                    SELECT jsonb_object_agg(p.page_number::text,p.result_fingerprint)
+                    FROM silver.page_extraction_selections s
+                    JOIN silver.silver_page_extractions p
+                      ON p.id=s.selected_page_extraction_id
+                    WHERE s.selection_run_id=g.selection_run_id
+                      AND s.status='selected'
+                )
+                ELSE (
+                    SELECT jsonb_object_agg(p.page_number::text,p.result_fingerprint)
+                    FROM silver.silver_page_extractions p
+                    WHERE p.extraction_id=e.id
+                )
+            END)
         FROM gold.gold_rag_documents g JOIN silver.silver_document_extractions e
           ON e.id=g.extraction_id WHERE g.id=%s
         """,
@@ -213,7 +228,15 @@ def record_gold_derivation(connection, rag_document_id: int) -> None:
                 'id',g.id,'fingerprint',lineage.fingerprint,'quality_score',g.quality_score))
         FROM gold.gold_rag_documents g
         JOIN gold.document_derivations lineage ON lineage.rag_document_id=g.id
-        JOIN silver.silver_page_extractions p ON p.extraction_id=g.extraction_id
+        JOIN silver.silver_page_extractions p ON (
+            (g.selection_run_id IS NULL AND p.extraction_id=g.extraction_id)
+            OR (g.selection_run_id IS NOT NULL AND p.id IN (
+                SELECT s.selected_page_extraction_id
+                FROM silver.page_extraction_selections s
+                WHERE s.selection_run_id=g.selection_run_id
+                  AND s.status='selected'
+            ))
+        )
         WHERE g.id=%s AND NOT EXISTS (
             SELECT 1 FROM silver.page_extraction_history h
             WHERE h.page_extraction_id=p.id AND h.event_kind='gold_derivation'

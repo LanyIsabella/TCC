@@ -107,6 +107,18 @@ CREATE TABLE IF NOT EXISTS silver.silver_page_extractions (
     UNIQUE (extraction_id, page_number)
 );
 
+CREATE TABLE IF NOT EXISTS silver.page_extraction_selections (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    selection_run_id UUID NOT NULL DEFAULT gen_random_uuid(),
+    document_id BIGINT NOT NULL REFERENCES bronze.documents(record_id),
+    page_number INTEGER NOT NULL CHECK (page_number > 0),
+    selected_page_extraction_id BIGINT REFERENCES silver.silver_page_extractions(id),
+    status TEXT NOT NULL CHECK (status IN ('selected', 'retry_required', 'quarantined')),
+    decision JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (selection_run_id, page_number)
+);
+
 CREATE TABLE IF NOT EXISTS gold.gold_rag_documents (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     document_id BIGINT NOT NULL REFERENCES bronze.documents(record_id),
@@ -133,6 +145,7 @@ CREATE TABLE IF NOT EXISTS gold.gold_rag_documents (
     is_active BOOLEAN NOT NULL DEFAULT false,
     metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
     normative_metadata JSONB,
+    selection_run_id UUID,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (document_id, extraction_id)

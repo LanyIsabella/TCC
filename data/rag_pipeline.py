@@ -22,16 +22,19 @@ from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import requests
 from dotenv import load_dotenv
 
 if __package__:
     from . import extraction_provenance as provenance
+    from .extraction_quality import assess_candidate, select_page_candidate
     from .gold_policy import assess_promotion
     from .normative_metadata import build_normative_metadata
 else:
     import extraction_provenance as provenance
+    from extraction_quality import assess_candidate, select_page_candidate
     from gold_policy import assess_promotion
     from normative_metadata import build_normative_metadata
 
@@ -464,6 +467,20 @@ def page_is_eligible(status: str, retry_errors: bool, force: bool) -> bool:
     return retry_errors and status in {"error", "processing"}
 
 
+def _extraction_error_message(error: Exception) -> str:
+    if isinstance(error, requests.HTTPError) and error.response is not None:
+        try:
+            payload = error.response.json()
+        except (ValueError, AttributeError):
+            payload = None
+        if isinstance(payload, dict) and payload.get("error"):
+            return str(payload["error"])[:1000]
+        response_text = getattr(error.response, "text", "")
+        if response_text:
+            return str(response_text)[:1000]
+    return str(error)[:1000]
+
+
 def extract_page(
     extractor: str,
     page_pdf: Path,
@@ -487,14 +504,14 @@ def extract_page(
                 if markdown.strip():
                     return markdown, markdown, {
                         "fallback": "docling",
-                        "error": str(error)[:1000],
+                        "error": _extraction_error_message(error),
                         "error_type": type(error).__name__,
                     }
             native = native_page_text(page_pdf)
             if native:
                 return native, native, {
                     "fallback": "pdf_reader",
-                    "error": str(error)[:1000],
+                    "error": _extraction_error_message(error),
                     "error_type": type(error).__name__,
                 }
             raise
@@ -1080,8 +1097,50 @@ def _evaluation_failure(native: str, error: Exception) -> tuple[str, str, str]:
     return "page_image", "error", message
 
 
+def _evaluation_row(row: tuple) -> tuple:
+    if len(row) == 8:
+        page_id, execution, source, text, markdown, document, status, target = row
+        return (
+            page_id,
+            execution,
+            source,
+            text,
+            markdown,
+            None,
+            document,
+            status,
+            target,
+        )
+    return row
+
+
+def _evaluation_outcome(
+    evaluation: dict[str, Any],
+    metrics: dict[str, Any],
+    automatic_quality: dict[str, Any],
+) -> tuple[str, str | None]:
+    metrics["requires_manual_review"] = bool(
+        evaluation.get("requires_manual_review", False)
+    ) or not automatic_quality["eligible"]
+    if not metrics["requires_manual_review"]:
+        return "success", None
+    return "error", str(
+        evaluation.get("fallback_error", "A avaliação requer revisão manual.")
+    )[:4000]
+
+
 def _evaluate_page_result(row: tuple, configuration: dict) -> None:
-    page_id, _execution, source, text, markdown, _document, status, target = row
+    (
+        page_id,
+        _execution,
+        source,
+        text,
+        markdown,
+        structured_output,
+        _document,
+        status,
+        target,
+    ) = _evaluation_row(row)
     with connect() as connection:
         request_id = provenance.reserve_evaluation(
             connection, page_id, target, status, configuration
@@ -1092,24 +1151,28 @@ def _evaluate_page_result(row: tuple, configuration: dict) -> None:
     native = native_page_text(path)
     started = utc_now()
     extracted = text or markdown or ""
+    automatic_quality = assess_candidate(
+        {
+            "extractor": None,
+            "text": extracted,
+            "structured_output": structured_output or {},
+            "processing_status": "success",
+        }
+    )
     try:
         evaluation, method = evaluate_page(
             path.with_suffix(".png"), native, extracted, configuration["model"]
         )
         metrics = deterministic_metrics(native, extracted)
-        review = bool(evaluation.get("requires_manual_review", False))
-        metrics["requires_manual_review"] = review
-        status = "error" if review else "success"
-        error = (
-            str(evaluation.get("fallback_error", "A avaliação requer revisão manual."))[
-                :4000
-            ]
-            if review
-            else None
-        )
+        metrics["reference_type"] = "native_diagnostic"
+        metrics["reference_is_ground_truth"] = False
+        metrics["automatic_quality"] = automatic_quality
+        status, error = _evaluation_outcome(evaluation, metrics, automatic_quality)
     except Exception as exc:
         evaluation, metrics = {}, None
         method, status, error = _evaluation_failure(native, exc)
+        if metrics is None:
+            metrics = {"automatic_quality": automatic_quality}
     with connect() as connection:
         provenance.save_evaluation(
             connection,
@@ -1152,7 +1215,8 @@ def evaluate_extractions(
         rows = connection.execute(
             """
             SELECT p.id,p.extraction_id,p.source_page_path,p.extracted_text,
-                   p.extracted_markdown,p.document_id,p.evaluation_status,p.result_fingerprint
+                   p.extracted_markdown,p.structured_output,p.document_id,
+                   p.evaluation_status,p.result_fingerprint
             FROM silver.silver_page_extractions p
             WHERE p.processing_status='success' AND p.extractor=ANY(%s)
               AND (%s::bigint IS NULL OR p.document_id=%s)
@@ -1181,6 +1245,70 @@ def evaluate_extractions(
         ).fetchall()
     for doc_id, extractor in refreshed:
         refresh_silver_document(doc_id, extractor)
+    for doc_id in sorted({row[5] for row in rows}):
+        select_extractions_for_document(doc_id)
+
+
+def select_extractions_for_document(document_id: int) -> str:
+    """Persist one auditable page-selection decision without rewriting history."""
+    from psycopg.types.json import Jsonb
+
+    with connect() as connection:
+        rows = connection.execute(
+            """
+            SELECT p.id,p.page_number,p.extractor,p.extracted_text,
+                   p.extracted_markdown,p.processing_status,p.structured_output,
+                   p.error_message,e.execution_id
+            FROM silver.silver_page_extractions p
+            JOIN silver.silver_document_extractions e ON e.id=p.extraction_id
+            WHERE p.document_id=%s
+              AND e.id IN (
+                  SELECT DISTINCT ON (extractor) id
+                  FROM silver.silver_document_extractions
+                  WHERE document_id=%s ORDER BY extractor,id DESC
+              )
+            ORDER BY p.page_number,p.id
+            """,
+            (document_id, document_id),
+        ).fetchall()
+        run_id = str(uuid4())
+        grouped: dict[int, list[dict[str, Any]]] = {}
+        for row in rows:
+            grouped.setdefault(row[1], []).append(
+                {
+                    "page_extraction_id": row[0],
+                    "page_number": row[1],
+                    "extractor": row[2],
+                    "text": row[3],
+                    "markdown": row[4],
+                    "processing_status": row[5],
+                    "structured_output": row[6] or {},
+                    "error_message": row[7],
+                    "execution_id": str(row[8]),
+                }
+            )
+        for page_number, candidates in grouped.items():
+            decision = select_page_candidate(page_number, candidates)
+            selected_id = decision.get("selected_page_extraction_id")
+            status = decision["status"]
+            connection.execute(
+                """
+                INSERT INTO silver.page_extraction_selections
+                    (selection_run_id,document_id,page_number,
+                     selected_page_extraction_id,status,decision)
+                VALUES (%s,%s,%s,%s,%s,%s)
+                """,
+                (
+                    run_id,
+                    document_id,
+                    page_number,
+                    selected_id,
+                    status,
+                    Jsonb(decision),
+                ),
+            )
+        connection.commit()
+    return run_id
 
 
 
@@ -1313,6 +1441,35 @@ def _select_gold_execution(
     return row
 
 
+def _latest_page_selection(
+    cursor: Any, document_id: int
+) -> tuple[str, list[tuple]] | None:
+    cursor.execute(
+        """
+        SELECT selection_run_id
+        FROM silver.page_extraction_selections
+        WHERE document_id=%s ORDER BY created_at DESC, id DESC LIMIT 1
+        """,
+        (document_id,),
+    )
+    run = cursor.fetchone()
+    if not run:
+        return None
+    cursor.execute(
+        """
+        SELECT s.page_number,s.status,s.selected_page_extraction_id,
+               p.extraction_id,p.extractor,p.extracted_text,p.extracted_markdown,
+               p.content_hash,p.result_fingerprint
+        FROM silver.page_extraction_selections s
+        LEFT JOIN silver.silver_page_extractions p
+          ON p.id=s.selected_page_extraction_id
+        WHERE s.selection_run_id=%s ORDER BY s.page_number
+        """,
+        (run[0],),
+    )
+    return str(run[0]), cursor.fetchall()
+
+
 def _promotion_evidence(
     cursor: Any,
     extraction_id: int,
@@ -1440,6 +1597,169 @@ def _require_comparison(
         )
 
 
+def _apply_page_selection(
+    cursor: Any,
+    doc_id: int,
+    extraction_id: int,
+    source_extractor: str,
+    full_text: str,
+    full_markdown: str,
+    total_pages: int,
+    allow_unvalidated: bool,
+    evaluation_identity: str | None,
+) -> tuple[str, str, str, int, str | None]:
+    page_selection = _latest_page_selection(cursor, doc_id)
+    if page_selection is None:
+        return (
+            source_extractor,
+            full_text,
+            full_markdown,
+            total_pages,
+            None,
+        )
+    selection_run_id, selected_page_rows = page_selection
+    if any(
+        row[1] != "selected" or row[2] is None for row in selected_page_rows
+    ):
+        raise ValueError(
+            "A seleção automática deixou páginas em quarentena; "
+            "a Gold não pode promover uma seleção incompleta."
+        )
+    if len(selected_page_rows) != total_pages:
+        raise ValueError("A seleção automática não cobre todas as páginas.")
+    if not allow_unvalidated:
+        for selected_extraction_id in {
+            row[3] for row in selected_page_rows if row[3] is not None
+        }:
+            _require_promotion_evidence(
+                cursor,
+                selected_extraction_id,
+                evaluation_identity,
+                allow_unvalidated,
+                True,
+            )
+    if any(row[3] != extraction_id for row in selected_page_rows):
+        full_text = reconstruct_page_content(
+            [
+                {"page_number": row[0], "status": "success", "text": row[5]}
+                for row in selected_page_rows
+            ]
+        )
+        full_markdown = reconstruct_page_content(
+            [
+                {"page_number": row[0], "status": "success", "text": row[6]}
+                for row in selected_page_rows
+            ]
+        )
+        source_extractor = "mixed"
+        total_pages = len(selected_page_rows)
+    return source_extractor, full_text, full_markdown, total_pages, selection_run_id
+
+
+def _require_gold_evidence(
+    cursor: Any,
+    doc_id: int,
+    extraction_id: int,
+    source_extractor: str,
+    evaluation_identity: str | None,
+    allow_unvalidated: bool,
+) -> None:
+    comparison_rows = _comparison_rows(
+        cursor, doc_id, extraction_id, source_extractor, evaluation_identity
+    )
+    comparison_ready = comparison_is_ready(comparison_rows)
+    _require_promotion_evidence(
+        cursor,
+        extraction_id,
+        evaluation_identity,
+        allow_unvalidated,
+        comparison_ready,
+    )
+    _require_comparison(comparison_rows, allow_unvalidated)
+
+
+def _insert_gold_pages(
+    cursor: Any,
+    rag_document_id: int,
+    doc_id: int,
+    extraction_id: int,
+    source_extractor: str,
+    anchor_source_extractor: str,
+    selection_run_id: str | None,
+) -> None:
+    page_source = """
+        INSERT INTO gold.gold_rag_page_index
+            (rag_document_id, document_id, page_number, page_text,
+             source_extractor, page_content_hash, embedding_model,
+             embedding_dimension, content_hash, search_vector)
+    """ + (
+        """
+        SELECT %s, %s, p.page_number, p.extracted_text, p.extractor,
+               p.content_hash, %s, %s, p.content_hash,
+               to_tsvector('portuguese', coalesce(p.extracted_text, ''))
+        FROM silver.page_extraction_selections s
+        JOIN silver.silver_page_extractions p
+          ON p.id = s.selected_page_extraction_id
+        WHERE s.selection_run_id = %s AND s.status = 'selected'
+        """
+        if source_extractor == "mixed" and selection_run_id
+        else """
+        SELECT %s, %s, page_number, extracted_text, %s, content_hash,
+               %s, %s, content_hash,
+               to_tsvector('portuguese', coalesce(extracted_text, ''))
+        FROM silver.silver_page_extractions
+        WHERE extraction_id = %s AND processing_status = 'success'
+        """
+    )
+    page_params = (
+        (
+            rag_document_id,
+            doc_id,
+            EMBEDDING_MODEL,
+            EMBEDDING_DIMENSION,
+            selection_run_id,
+        )
+        if source_extractor == "mixed" and selection_run_id
+        else (
+            rag_document_id,
+            doc_id,
+            anchor_source_extractor,
+            EMBEDDING_MODEL,
+            EMBEDDING_DIMENSION,
+            extraction_id,
+        )
+    )
+    cursor.execute(
+        page_source
+        + """
+        ON CONFLICT (rag_document_id, page_number) DO UPDATE SET
+            page_text = EXCLUDED.page_text,
+            document_id = EXCLUDED.document_id,
+            source_extractor = EXCLUDED.source_extractor,
+            page_content_hash = EXCLUDED.page_content_hash,
+            search_vector = EXCLUDED.search_vector,
+            content_hash = EXCLUDED.content_hash,
+            embedding = CASE
+                WHEN gold.gold_rag_page_index.content_hash = EXCLUDED.content_hash
+                THEN gold.gold_rag_page_index.embedding
+                ELSE NULL
+            END,
+            embedding_content_hash = CASE
+                WHEN gold.gold_rag_page_index.content_hash = EXCLUDED.content_hash
+                THEN gold.gold_rag_page_index.embedding_content_hash
+                ELSE NULL
+            END,
+            embedding_status = CASE
+                WHEN gold.gold_rag_page_index.content_hash = EXCLUDED.content_hash
+                THEN gold.gold_rag_page_index.embedding_status
+                ELSE 'pending'
+            END,
+            updated_at = now()
+        """,
+        page_params,
+    )
+
+
 def activate_gold(
     document_id: int,
     extractor: str | None = None,
@@ -1463,6 +1783,7 @@ def activate_gold(
             metadata,
             stored_normative_metadata,
         ) = row
+        anchor_source_extractor = source_extractor
         metadata = metadata or {}
         normative_metadata = (
             stored_normative_metadata
@@ -1471,18 +1792,31 @@ def activate_gold(
             == "normative-metadata-v1"
             else build_normative_metadata(metadata, source_layer="bronze")
         )
-        comparison_rows = _comparison_rows(
-            cursor, doc_id, extraction_id, source_extractor, evaluation_identity
-        )
-        comparison_ready = comparison_is_ready(comparison_rows)
-        _require_promotion_evidence(
+        (
+            source_extractor,
+            full_text,
+            full_markdown,
+            total_pages,
+            selection_run_id,
+        ) = _apply_page_selection(
             cursor,
+            doc_id,
             extraction_id,
+            source_extractor,
+            full_text,
+            full_markdown,
+            total_pages,
+            allow_unvalidated,
+            evaluation_identity,
+        )
+        _require_gold_evidence(
+            cursor,
+            doc_id,
+            extraction_id,
+            anchor_source_extractor,
             evaluation_identity,
             allow_unvalidated,
-            comparison_ready,
         )
-        _require_comparison(comparison_rows, allow_unvalidated)
         content_hash = text_hash(full_text)
         token_count = estimated_token_count(full_text)
         token_limit = context_token_limit()
@@ -1539,9 +1873,10 @@ def activate_gold(
                 full_text, full_markdown,
                  total_pages, token_count, context_token_limit,
                  context_window_exceeded, context_warning, quality_score,
-                 content_hash, is_active, metadata, normative_metadata)
+                 content_hash, is_active, metadata, normative_metadata,
+                 selection_run_id)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, true, %s, %s)
+                    %s, %s, %s, %s, true, %s, %s, %s)
             ON CONFLICT (document_id, extraction_id) DO UPDATE SET
                 full_text = EXCLUDED.full_text,
                 full_markdown = EXCLUDED.full_markdown,
@@ -1557,6 +1892,7 @@ def activate_gold(
                 is_active = true,
                 metadata = EXCLUDED.metadata,
                 normative_metadata = EXCLUDED.normative_metadata,
+                selection_run_id = EXCLUDED.selection_run_id,
                 updated_at = now()
             RETURNING id
             """,
@@ -1581,6 +1917,7 @@ def activate_gold(
                 content_hash,
                 Jsonb(metadata),
                 Jsonb(normative_metadata),
+                selection_run_id,
             ),
         )
         rag_document_id = cursor.fetchone()[0]
@@ -1597,49 +1934,14 @@ def activate_gold(
             """,
             (rag_document_id,),
         )
-        cursor.execute(
-            """
-            INSERT INTO gold.gold_rag_page_index
-                (rag_document_id, document_id, page_number, page_text,
-                 source_extractor, page_content_hash, embedding_model,
-                 embedding_dimension, content_hash, search_vector)
-            SELECT %s, %s, page_number, extracted_text, %s, content_hash,
-                   %s, %s, content_hash,
-                   to_tsvector('portuguese', coalesce(extracted_text, ''))
-            FROM silver.silver_page_extractions
-            WHERE extraction_id = %s AND processing_status = 'success'
-            ON CONFLICT (rag_document_id, page_number) DO UPDATE SET
-                page_text = EXCLUDED.page_text,
-                document_id = EXCLUDED.document_id,
-                source_extractor = EXCLUDED.source_extractor,
-                page_content_hash = EXCLUDED.page_content_hash,
-                search_vector = EXCLUDED.search_vector,
-                content_hash = EXCLUDED.content_hash,
-                embedding = CASE
-                    WHEN gold.gold_rag_page_index.content_hash = EXCLUDED.content_hash
-                    THEN gold.gold_rag_page_index.embedding
-                    ELSE NULL
-                END,
-                embedding_content_hash = CASE
-                    WHEN gold.gold_rag_page_index.content_hash = EXCLUDED.content_hash
-                    THEN gold.gold_rag_page_index.embedding_content_hash
-                    ELSE NULL
-                END,
-                embedding_status = CASE
-                    WHEN gold.gold_rag_page_index.content_hash = EXCLUDED.content_hash
-                    THEN gold.gold_rag_page_index.embedding_status
-                    ELSE 'pending'
-                END,
-                updated_at = now()
-            """,
-            (
-                rag_document_id,
-                doc_id,
-                source_extractor,
-                EMBEDDING_MODEL,
-                EMBEDDING_DIMENSION,
-                extraction_id,
-            ),
+        _insert_gold_pages(
+            cursor,
+            rag_document_id,
+            doc_id,
+            extraction_id,
+            source_extractor,
+            anchor_source_extractor,
+            selection_run_id,
         )
         provenance.record_gold_derivation(connection, rag_document_id)
         connection.commit()
@@ -2278,6 +2580,7 @@ def validate_pipeline(document_id: int | None = None) -> dict[str, Any]:
         "silver.silver_documents",
         "silver.silver_document_extractions",
         "silver.silver_page_extractions",
+        "silver.page_extraction_selections",
         "gold.gold_rag_documents",
         "gold.gold_rag_page_index",
     }
@@ -2285,6 +2588,7 @@ def validate_pipeline(document_id: int | None = None) -> dict[str, Any]:
         "idx_gold_rag_page_embedding_hnsw",
         "idx_gold_rag_page_search_vector",
         "idx_gold_rag_documents_search_vector",
+        "page_extraction_selections_document",
     }
     document_filter = ""
     params: list[Any] = []

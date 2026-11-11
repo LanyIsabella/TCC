@@ -53,6 +53,34 @@ def test_success_alone_is_not_promotion_evidence():
     assert blank.status == "approved"
 
 
+def test_technical_eligibility_without_independent_validation_cannot_promote():
+    decision = assess_promotion(
+        processing_status="success",
+        total_pages=1,
+        successful_pages=1,
+        pages=[
+            page(
+                quality_metrics={
+                    "cer": 0.01,
+                    "wer": 0.02,
+                    "normalized_similarity": 0.98,
+                    "automatic_quality": {
+                        "eligible": True,
+                        "critical_failures": [],
+                        "reference_status": "unavailable",
+                        "reference_is_ground_truth": False,
+                    },
+                }
+            )
+        ],
+        expected_config_fingerprint="config-1",
+        alternatives_available=False,
+    )
+
+    assert decision.status == "quarantined"
+    assert not decision.eligible
+
+
 def test_review_signal_requests_automatic_retry_not_human_operation():
     pending = page(
         quality_metrics={"evaluation": {"requires_manual_review": True}}

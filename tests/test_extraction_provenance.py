@@ -170,6 +170,29 @@ def test_snapshot_keeps_copied_bytes_when_raw_changes_after_copy(tmp_path, monke
     assert digest == provenance.file_digest(snapshot)
 
 
+def test_snapshot_does_not_reopen_target_after_its_own_atomic_publish(
+    tmp_path, monkeypatch
+):
+    original = tmp_path / "original.pdf"
+    original.write_bytes(b"source A")
+    real_digest = provenance.file_digest
+    digest_calls = []
+
+    def digest(path):
+        digest_calls.append(Path(path))
+        if Path(path).suffix == ".pdf":
+            raise AssertionError("the publishing process already owns these bytes")
+        return real_digest(path)
+
+    monkeypatch.setattr(provenance, "file_digest", digest)
+    snapshot, expected = provenance.original_snapshot(
+        original, tmp_path / "snapshots"
+    )
+
+    assert snapshot.name == f"{expected}.pdf"
+    assert digest_calls and all(path.suffix == ".tmp" for path in digest_calls)
+
+
 def test_independent_processes_publish_one_valid_snapshot(tmp_path):
     original = tmp_path / "original.pdf"
     cache = tmp_path / "snapshots"

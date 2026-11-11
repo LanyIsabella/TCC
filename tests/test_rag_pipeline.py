@@ -4,6 +4,7 @@ import json
 from base64 import b64decode
 from pathlib import Path
 
+import data.rag_pipeline as pipeline
 import pytest
 import requests
 import yaml
@@ -34,6 +35,68 @@ def test_vector_literal_preserves_dimension() -> None:
     assert literal.startswith("[")
     assert literal.endswith("]")
     assert len(literal[1:-1].split(",")) == 768
+
+
+def test_page_selection_without_run_keeps_anchor() -> None:
+    original = pipeline._latest_page_selection
+    try:
+        pipeline._latest_page_selection = lambda *_args: None
+        result = pipeline._apply_page_selection(
+            object(), 1, 10, "docling", "a", "b", 1, True, None
+        )
+    finally:
+        pipeline._latest_page_selection = original
+    assert result == ("docling", "a", "b", 1, None)
+
+
+def test_page_selection_rejects_quarantine() -> None:
+    original = pipeline._latest_page_selection
+    try:
+        pipeline._latest_page_selection = lambda *_args: (
+            "run",
+            [(1, "quarantined", None, 10, "docling", "", "", None, None)],
+        )
+        with pytest.raises(ValueError, match="quarentena"):
+            pipeline._apply_page_selection(
+                object(), 1, 10, "docling", "a", "b", 1, True, None
+            )
+    finally:
+        pipeline._latest_page_selection = original
+
+
+def test_page_selection_reconstructs_mixed_pages() -> None:
+    original = pipeline._latest_page_selection
+    try:
+        pipeline._latest_page_selection = lambda *_args: (
+            "run",
+            [
+                (1, "selected", 10, 10, "docling", "one", "ONE", None, None),
+                (2, "selected", 20, 20, "glm_ocr", "two", "TWO", None, None),
+            ],
+        )
+        result = pipeline._apply_page_selection(
+            object(), 1, 10, "docling", "old", "old", 2, True, None
+        )
+    finally:
+        pipeline._latest_page_selection = original
+    assert result[0] == "mixed"
+    assert result[3] == 2
+    assert "one" in result[1] and "two" in result[1]
+
+
+def test_page_selection_keeps_single_extraction() -> None:
+    original = pipeline._latest_page_selection
+    try:
+        pipeline._latest_page_selection = lambda *_args: (
+            "run",
+            [(1, "selected", 10, 10, "docling", "one", "ONE", None, None)],
+        )
+        result = pipeline._apply_page_selection(
+            object(), 1, 10, "docling", "old", "old", 1, True, None
+        )
+    finally:
+        pipeline._latest_page_selection = original
+    assert result == ("docling", "old", "old", 1, "run")
 
 
 def test_deterministic_metrics_are_separate_from_agent_score() -> None:
@@ -543,6 +606,51 @@ def test_extract_page_falls_back_to_docling_on_ollama_timeout(
         "error": "timeout",
         "error_type": "ReadTimeout",
     }
+
+
+def test_extract_page_records_detailed_http_error_without_changing_extractor(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    page = tmp_path / "page-0001.pdf"
+    page.write_bytes(b"page one")
+
+    class Document:
+        def export_to_markdown(self) -> str:
+            return "texto Docling"
+
+    class Result:
+        document = Document()
+
+    class Converter:
+        def convert(self, _page: Path) -> Result:
+            return Result()
+
+    class Response:
+        def json(self) -> dict[str, str]:
+            return {
+                "error": (
+                    "request (2592 tokens) exceeds the available context size "
+                    "(2048 tokens), try increasing it"
+                )
+            }
+
+    error = requests.HTTPError("400 Client Error", response=Response())
+    monkeypatch.setenv("RAG_GLM_OCR_MODE", "direct_ollama")
+    monkeypatch.setattr(
+        "data.rag_pipeline.direct_ollama_glm_ocr",
+        lambda _page: (_ for _ in ()).throw(error),
+    )
+
+    text, markdown, diagnostics = extract_page(
+        "glm_ocr", page, Converter(), None
+    )
+
+    assert text == markdown == "texto Docling"
+    assert diagnostics["fallback"] == "docling"
+    assert diagnostics["error"] == (
+        "request (2592 tokens) exceeds the available context size "
+        "(2048 tokens), try increasing it"
+    )
 
 
 def test_direct_glm_ocr_mode_is_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
