@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -420,6 +421,20 @@ def looks_like_guarded_answer(answer: str) -> bool:
     )
 
 
+def _has_normative_assertion(answer: str) -> bool:
+    normalized = normalize_text(answer)
+    return bool(
+        re.search(
+            r"\b(?:deve\w*|obrigatori\w*|permitid\w*|proibid\w*|"
+            r"vedad\w*|necessari\w*|mede|medir)\b"
+            r"|\b(?:\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|três|"
+            r"quatro|cinco|seis|sete|oito|nove|dez)\s*"
+            r"(?:cm|mm|pt|pontos?|centimetros?|milimetros?)\b",
+            normalized,
+        )
+    )
+
+
 def _extract_answer(result: Mapping[str, Any]) -> str:
     structured = _structured_data(result)
     if structured is not None:
@@ -588,7 +603,10 @@ def _decision(
             )
             or clarification_question
         )
-        if (
+        normative_assertion = _has_normative_assertion(answer)
+        if normative_assertion:
+            decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
+        elif (
             explicitly_non_normative
             or looks_like_guarded_answer(answer)
             or not needs_support(answer, question)

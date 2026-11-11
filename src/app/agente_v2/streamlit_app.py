@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 from uuid import uuid4
 
 import streamlit as st
 
-from .orchestrator import AgentV2
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.app.agente_v2.orchestrator import AgentV2  # noqa: E402
 
 
 def _agent() -> AgentV2:

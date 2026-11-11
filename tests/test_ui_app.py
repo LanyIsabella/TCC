@@ -1,8 +1,34 @@
 """Testes headless da apresentação documental no chat."""
 
+import subprocess
+import sys
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
+
+
+def test_v2_streamlit_entrypoint_bootstraps_when_run_as_file(tmp_path: Path) -> None:
+    app_path = (
+        Path(__file__).parents[1]
+        / "src"
+        / "app"
+        / "agente_v2"
+        / "streamlit_app.py"
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import runpy, sys; runpy.run_path(sys.argv[1], run_name='streamlit_test')",
+            str(app_path),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_assistant_history_renders_reference_and_collapsed_evidence() -> None:

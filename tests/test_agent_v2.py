@@ -1,3 +1,4 @@
+import pytest
 from src.app.agente_v2.orchestrator import AgentV2
 from src.app.agente_v2.schemas import PlannerDecision, SynthesisResponse
 from src.app.conversation import ConversationIntent, ConversationStore
@@ -143,6 +144,38 @@ def test_normative_answer_misclassified_as_conversational_fails_closed() -> None
     result = agent.invoke(
         {"messages": [{"role": "user", "content": "Olá"}]}
     )
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+    assert result["evidences"] == []
+
+
+@pytest.mark.parametrize(
+    "intent, question",
+    [
+        (ConversationIntent.CONVERSATIONAL, "Olá"),
+        (ConversationIntent.AMBIGUOUS, "Como formatar?"),
+        (ConversationIntent.ACTION_REQUEST, "Formate minha margem"),
+    ],
+)
+def test_conversational_prefix_cannot_bypass_normative_grounding(
+    intent: ConversationIntent, question: str
+) -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=intent,
+            needs_clarification=intent == ConversationIntent.AMBIGUOUS,
+            needs_retrieval=False,
+            reply="Posso ajudar. A margem deve medir 9 cm.",
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke({"messages": [{"role": "user", "content": question}]})
 
     assert result["grounding_status"] == "unsupported"
     assert result["answer"] == INSUFFICIENT_EVIDENCE
