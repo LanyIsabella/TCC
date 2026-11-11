@@ -28,7 +28,15 @@ from .grounding import (
     ground_answer,
     needs_support,
 )
-from .scope_guard import ScopeDecision, classify_messages, normalize_text
+from .scope_guard import (
+    ACTION_UNAVAILABLE_MESSAGE,
+    CLARIFICATION_MESSAGE,
+    GREETING_MESSAGE,
+    OUT_OF_SCOPE_MESSAGE,
+    ScopeDecision,
+    classify_messages,
+    normalize_text,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -435,6 +443,36 @@ def _has_normative_assertion(answer: str) -> bool:
     )
 
 
+def _is_safe_non_normative_response(
+    answer: str, intent: ConversationIntent, completion_type: str | None
+) -> bool:
+    normalized = " ".join(normalize_text(answer).split())
+    known_safe = {
+        " ".join(normalize_text(message).split())
+        for message in (
+            ACTION_UNAVAILABLE_MESSAGE,
+            CLARIFICATION_MESSAGE,
+            GREETING_MESSAGE,
+            OUT_OF_SCOPE_MESSAGE,
+        )
+    }
+    if normalized in known_safe:
+        return True
+    if (
+        intent == ConversationIntent.AMBIGUOUS
+        and completion_type == "clarification_requested"
+        and answer.rstrip().endswith("?")
+    ):
+        return True
+    if intent == ConversationIntent.CONVERSATIONAL and re.fullmatch(
+        r"(?:ola|oi|bom dia|boa tarde|boa noite)[!.]?\s*"
+        r"(?:posso ajudar(?: com seu tcc)?[!.]?)?",
+        normalized,
+    ):
+        return True
+    return False
+
+
 def _extract_answer(result: Mapping[str, Any]) -> str:
     structured = _structured_data(result)
     if structured is not None:
@@ -604,11 +642,16 @@ def _decision(
             or clarification_question
         )
         normative_assertion = _has_normative_assertion(answer)
-        if normative_assertion:
+        safe_non_normative = _is_safe_non_normative_response(
+            answer, intent, completion_type
+        )
+        if normative_assertion or (
+            not safe_non_normative and needs_support(answer, question)
+        ):
             decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
         elif (
             explicitly_non_normative
-            or looks_like_guarded_answer(answer)
+            or safe_non_normative
             or not needs_support(answer, question)
         ):
             decision = GroundingDecision(answer, (), "conversational")

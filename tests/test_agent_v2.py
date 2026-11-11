@@ -182,6 +182,30 @@ def test_conversational_prefix_cannot_bypass_normative_grounding(
     assert result["evidences"] == []
 
 
+def test_conversational_prefix_with_unlisted_normative_claim_fails_closed() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            needs_clarification=False,
+            needs_retrieval=False,
+            reply="Posso ajudar. As citações diretas longas exigem recuo.",
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Olá"}]}
+    )
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+    assert result["evidences"] == []
+
+
 def test_normative_answer_misclassified_as_ambiguous_fails_closed() -> None:
     planner = FakePlanner(
         PlannerDecision(
