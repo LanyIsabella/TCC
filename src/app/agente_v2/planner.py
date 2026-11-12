@@ -270,9 +270,9 @@ class Planner:
         decision: PlannerDecision,
         fallback: PlannerDecision,
     ) -> bool:
-        if is_contextual_follow_up(question) and self._history_has_academic_term(
-            history
-        ):
+        if is_contextual_follow_up(
+            question, history
+        ) and self._history_has_academic_term(history):
             return True
         if (
             _is_underspecified_question(question)

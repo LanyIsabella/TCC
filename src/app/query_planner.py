@@ -204,7 +204,9 @@ def is_broad_question(question: str) -> bool:
     )
 
 
-def is_contextual_follow_up(question: str) -> bool:
+def is_contextual_follow_up(
+    question: str, history: list[Any] | None = None
+) -> bool:
     """Detecta perguntas curtas que dependem da mensagem anterior."""
 
     normalized = normalize_text(question)
@@ -218,6 +220,8 @@ def is_contextual_follow_up(question: str) -> bool:
     if normalized.startswith("como formatar ") and len(terms) >= 8:
         return True
     if _is_underspecified_contextual_question(question):
+        return True
+    if history and _is_short_clarification_answer(question, history):
         return True
     return normalized.startswith(
         ("qual o tamanho", "qual a medida", "quanto mede")
@@ -240,7 +244,7 @@ def contextualize_query(
     ):
         return current
     if not current or not previous_messages or not (
-        is_contextual_follow_up(current)
+        is_contextual_follow_up(current, history)
         or _is_clarification_follow_up(current, previous_messages)
     ):
         return current
@@ -277,6 +281,57 @@ def _is_underspecified_contextual_question(question: str) -> bool:
             normalized,
         )
     )
+
+
+def _is_short_clarification_answer(
+    question: str, history: list[Any]
+) -> bool:
+    normalized = normalize_text(question).rstrip("?.!")
+    terms = normalized.split()
+    if not terms or len(terms) > 4:
+        return False
+    if normalized in {
+        "oi",
+        "ola",
+        "obrigado",
+        "obrigada",
+        "outro assunto",
+        "outra coisa",
+        "novo assunto",
+    }:
+        return False
+    if set(terms) & QUESTION_WORDS:
+        return False
+    clarification_prompt = any(
+        str(_message_value(message, "role") or _message_value(message, "type") or "")
+        in {"assistant", "ai"}
+        and "?" in str(_message_value(message, "content") or "")
+        and any(
+            marker in normalize_text(str(_message_value(message, "content") or ""))
+            for marker in ("qual", "aspecto", "elemento", "orientacao", "tipo")
+        )
+        for message in history
+    )
+    prior_academic_context = any(
+        str(_message_value(message, "role") or _message_value(message, "type") or "")
+        in {"user", "human"}
+        and any(
+            marker in normalize_text(str(_message_value(message, "content") or ""))
+            for marker in (
+                "abnt",
+                "nbr",
+                "referenc",
+                "citac",
+                "format",
+                "margem",
+                "recuo",
+                "fonte",
+                "espacamento",
+            )
+        )
+        for message in history
+    )
+    return clarification_prompt and prior_academic_context
 
 
 def _has_specific_academic_element(value: str) -> bool:

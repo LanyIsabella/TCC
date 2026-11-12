@@ -145,6 +145,22 @@ def test_equivalent_underspecified_follow_ups_keep_previous_topic(
     assert "Como formatar citação direta longa?" in query
 
 
+def test_short_clarification_answer_keeps_previous_normative_topic() -> None:
+    history = [
+        {"role": "user", "content": "Como formatar referências?"},
+        {
+            "role": "assistant",
+            "content": "Você deseja orientação sobre autoria, elementos ou formatação?",
+        },
+        {"role": "user", "content": "Autoria"},
+        {"role": "assistant", "content": "Resposta fundamentada sobre autoria."},
+    ]
+
+    query = contextualize_query("Elementos", history)
+
+    assert "Como formatar referências?" in query
+
+
 @pytest.mark.parametrize(
     "question",
     ["Como formatar referências?", "Qual é o recuo?"],

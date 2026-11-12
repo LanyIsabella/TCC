@@ -217,6 +217,28 @@ def test_safe_decision_uses_default_clarification_when_no_question_exists():
 
 
 @pytest.mark.parametrize("answer", ["Autoria", "Elementos", "Formatação"])
+def test_planner_routes_short_clarification_answer_to_normative_retrieval(answer):
+    model = FakeStructuredModel(
+        PlannerDecision(intent=ConversationIntent.ACTION_REQUEST)
+    )
+    planner = Planner(model)
+    history = [
+        {"role": "user", "content": "Como formatar referências?"},
+        {
+            "role": "assistant",
+            "content": "Você deseja orientação sobre autoria, elementos ou formatação?",
+        },
+        {"role": "user", "content": "Autoria"},
+        {"role": "assistant", "content": "Resposta fundamentada sobre autoria."},
+    ]
+
+    decision = planner.plan(answer, history)
+
+    assert decision.intent == ConversationIntent.NORMATIVE_QUERY
+    assert decision.needs_retrieval is True
+
+
+@pytest.mark.parametrize("answer", ["Autoria", "Elementos", "Formatação"])
 def test_clarification_answer_resolves_reference_context(answer):
     planner = ClarificationSequencePlanner()
     tools = FakeTools(references_payload()[0])
