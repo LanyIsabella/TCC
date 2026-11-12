@@ -32,6 +32,31 @@ def test_literal_complete_rule_is_supported_even_without_model_ids():
     assert result.evidence_ids == ("e1",)
 
 
+def test_literal_rule_from_reference_only_document_is_not_relevant_support():
+    source = (
+        "Os Documentos Técnicos ABNT podem ser objeto de citação em "
+        "Regulamentos Técnicos."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Trabalhos acadêmicos",
+            "standard_id": "abnt_nbr_14724",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Como fazer citações?",
+        normative_context=True,
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
 def test_literal_rule_survives_page_header_and_section_paragraphs():
     source = (
         "ABNT NBR 6023:2025\n\n"
@@ -45,6 +70,26 @@ def test_literal_rule_survives_page_header_and_section_paragraphs():
         "seguido do prenome e outros sobrenomes, abreviados ou não, conforme "
         "consta no documento."
     )
+
+    result = ground_answer(
+        answer,
+        evidence(source),
+        "Como devem ser indicados os autores nas referências?",
+        normative_context=True,
+    )
+
+    assert result.answer == answer
+    assert result.evidence_ids == ("e1",)
+
+
+def test_literal_rule_survives_truncated_page_sentence_punctuation():
+    source = (
+        "ABNT NBR 6023:2025\n\n"
+        "8.1.1 Pessoa física\n\n"
+        "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "
+        "seguido do prenome e outros sobrenome"
+    )
+    answer = source.rsplit("\n\n", 1)[-1] + "."
 
     result = ground_answer(
         answer,

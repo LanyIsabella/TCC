@@ -109,6 +109,40 @@ def test_planner_keeps_ambiguous_without_relevant_history() -> None:
     assert model.calls == []
 
 
+@pytest.mark.parametrize(
+    "question",
+    ["Como fazer citações?", "Como formatar referências?"],
+)
+def test_planner_does_not_route_broad_academic_questions_to_actions(
+    question: str,
+) -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(intent=ConversationIntent.ACTION_REQUEST)
+    )
+    planner = Planner(model)
+
+    decision = planner.plan(question, [])
+
+    assert decision.intent == ConversationIntent.NORMATIVE_QUERY
+    assert decision.needs_retrieval is True
+
+
+def test_planner_requests_clarification_for_underspecified_margin_question() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    planner = Planner(model)
+
+    decision = planner.plan("Qual é o recuo?", [])
+
+    assert decision.intent == ConversationIntent.AMBIGUOUS
+    assert decision.needs_clarification is True
+    assert decision.clarification_questions
+
+
 def test_contextual_follow_up_reaches_normative_retrieval() -> None:
     model = FakeStructuredModel(
         PlannerDecision(
@@ -294,6 +328,7 @@ def test_normative_turn_without_evidence_fails_closed() -> None:
     assert result["completion_type"] == "unsupported"
     assert result["available_evidence_ids"] == []
     assert result["published_evidence_ids"] == []
+    assert result["errors"] == [LimitationCode.EVIDENCE_UNAVAILABLE.value]
     assert synthesizer.calls == []
 
 
@@ -891,6 +926,97 @@ def test_synthesis_error_publishes_only_controlled_code() -> None:
 
     assert result["errors"] == [LimitationCode.SYNTHESIS_FAILED.value]
     assert all("margem" not in item.lower() for item in result["limitations"])
+
+
+def test_grounding_rejection_is_distinguished_from_missing_evidence() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer="A margem direita deve medir 7 cm.", evidence_ids=["e1"]
+            )
+        ),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual é a margem?"}]}
+    )
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["errors"] == ["grounding_rejected"]
+
+
+def test_unsupported_broad_citation_question_requests_clarification() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer="A citação deve observar regras não recuperadas.",
+                evidence_ids=["e1"],
+            )
+        ),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como fazer citações?"}]}
+    )
+
+    assert result["completion_type"] == "clarification_requested"
+    assert result["grounding_status"] == "conversational"
+    assert result["answer"].endswith("fontes?")
+    assert result["published_evidence_ids"] == []
+    assert result["errors"] == ["grounding_rejected"]
+
+
+@pytest.mark.parametrize(
+    ("error_type", "expected"),
+    [
+        ("ConnectionError", "retrieval_connection_error"),
+        ("RuntimeError", "retrieval_tool_error"),
+    ],
+)
+def test_retrieval_failures_have_distinct_internal_diagnostics(
+    error_type: str, expected: str
+) -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer=SOURCE)),
+        tools=FakeTools(
+            {
+                "status": "error",
+                "evidence_found": False,
+                "error_type": error_type,
+                "documents": [],
+            }
+        ),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como citar?"}]}
+    )
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["errors"] == [expected]
 
 
 def test_conversation_store_isolates_v2_contexts() -> None:

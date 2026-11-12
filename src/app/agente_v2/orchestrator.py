@@ -3,19 +3,21 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any
 from uuid import uuid4
 
 from src.app.client import Client
 from src.app.conversation import ConversationIntent, ConversationStore
 from src.app.evidence import AgentResult, public_evidence
-from src.app.query_planner import contextualize_query
+from src.app.query_planner import contextualize_query, is_broad_question, normalize_text
 from src.app.scope_guard import GREETING_MESSAGE
 
 from .grounding_adapter import (
     conversational_result,
     failed_normative_result,
     grounded_result,
+    retrieval_error_code,
 )
 from .planner import Planner
 from .schemas import LimitationCode, PlannerDecision, ToolExecution
@@ -113,6 +115,7 @@ class AgentV2:
                 execution=execution,
                 planner=plan,
                 error_code=LimitationCode.EVIDENCE_UNAVAILABLE,
+                error_detail=retrieval_error_code(execution),
             )
             self._append_turn(conversation_id, question, result.answer)
             return self._public(result, plan, turn_id)
@@ -139,8 +142,46 @@ class AgentV2:
                 execution=execution,
                 planner=plan,
             )
+            if (
+                result.grounding_status == "unsupported"
+                and is_broad_question(question)
+                and any(
+                    topic in normalize_text(question)
+                    for topic in ("citacoes", "referencias")
+                )
+            ):
+                result = self._clarification_after_unsupported_broad_query(
+                    result, question
+                )
         self._append_turn(conversation_id, question, result.answer)
         return self._public(result, plan, turn_id)
+
+    @staticmethod
+    def _clarification_after_unsupported_broad_query(
+        result: AgentResult, question: str
+    ) -> AgentResult:
+        normalized = normalize_text(question)
+        if "citacoes" in normalized:
+            answer = (
+                "Você se refere a citações diretas, indiretas ou citações de "
+                "fontes?"
+            )
+        elif "referencias" in normalized:
+            answer = (
+                "Você deseja orientação sobre autoria, elementos ou formatação "
+                "das referências?"
+            )
+        else:
+            answer = "Qual aspecto da formatação acadêmica você deseja consultar?"
+        return replace(
+            result,
+            answer=answer,
+            grounding_status="conversational",
+            completion_type="clarification_requested",
+            limitations=(),
+            selected_evidence_ids=(),
+            published_evidence_ids=(),
+        )
 
     def _append_turn(self, conversation_id: str, question: str, answer: str) -> None:
         self._store.append(

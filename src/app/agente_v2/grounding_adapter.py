@@ -34,6 +34,10 @@ _LIMITATION_MESSAGES = {
     ),
 }
 
+_GROUNDING_REJECTED = "grounding_rejected"
+_RETRIEVAL_CONNECTION_ERROR = "retrieval_connection_error"
+_RETRIEVAL_TOOL_ERROR = "retrieval_tool_error"
+
 
 def _limitation_messages(values: list[object]) -> tuple[str, ...]:
     messages = []
@@ -152,6 +156,14 @@ def grounded_result(
     }
     finalized = finalize_grounding(result)
     extracted = extract_agent_result(finalized, question=question)
+    if (
+        extracted.grounding_status == "unsupported"
+        and synthesis.answer.strip() != INSUFFICIENT_EVIDENCE
+    ):
+        extracted = replace(
+            extracted,
+            errors=(*extracted.errors, _GROUNDING_REJECTED),
+        )
     if synthesis.limitations:
         extracted = replace(
             extracted,
@@ -175,6 +187,7 @@ def failed_normative_result(
     execution: ToolExecution,
     planner: PlannerDecision,
     error_code: LimitationCode,
+    error_detail: str | None = None,
 ) -> AgentResult:
     result = grounded_result(
         conversation_id=conversation_id,
@@ -192,12 +205,28 @@ def failed_normative_result(
         result,
         grounding_status="unsupported",
         completion_type="unsupported",
-        errors=(error_code.value,),
+        errors=(error_detail or error_code.value,),
     )
+
+
+def retrieval_error_code(execution: ToolExecution) -> str:
+    """Classifica falhas internas sem expor detalhes da infraestrutura."""
+
+    error_type = str(execution.raw_result.get("error_type") or "").casefold()
+    if execution.status != "success":
+        if any(marker in error_type for marker in ("connection", "timeout", "connect")):
+            return _RETRIEVAL_CONNECTION_ERROR
+        return _RETRIEVAL_TOOL_ERROR
+    if execution.raw_result.get("evidence_found") is False:
+        return LimitationCode.EVIDENCE_UNAVAILABLE.value
+    if any(marker in error_type for marker in ("connection", "timeout", "connect")):
+        return _RETRIEVAL_CONNECTION_ERROR
+    return _RETRIEVAL_TOOL_ERROR
 
 
 __all__ = [
     "conversational_result",
     "failed_normative_result",
     "grounded_result",
+    "retrieval_error_code",
 ]

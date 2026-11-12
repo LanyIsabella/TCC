@@ -11,7 +11,13 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 BROAD_QUERY_TERMS = {
+    "citacoes",
+    "formatar",
     "principais",
+    "referencias",
+    "recuo",
+    "margem",
+    "margens",
     "regras",
     "regra",
     "orientacoes",
@@ -181,10 +187,20 @@ def _user_history(history: list[Any] | None) -> list[str]:
 def is_broad_question(question: str) -> bool:
     """Identifica perguntas que precisam de maior cobertura de recuperação."""
 
-    terms = set(re.findall(r"[\wÀ-ÿ]+", normalize_text(question)))
+    normalized = normalize_text(question)
+    terms = set(re.findall(r"[\wÀ-ÿ]+", normalized))
+    specific_measure = bool(
+        re.match(r"^(?:qual [oa] (?:tamanho|medida)|quanto (?:mede|e))\b", normalized)
+    )
     return (
-        len(terms & BROAD_QUERY_TERMS) >= 2
+        (len(terms) <= 8 and len(terms & BROAD_QUERY_TERMS) >= 2)
         or ("quais" in terms and len(terms) >= 6)
+        or bool(
+            len(terms) <= 8
+            and not specific_measure
+            and terms & BROAD_QUERY_TERMS
+            and terms & QUESTION_WORDS
+        )
     )
 
 
@@ -192,13 +208,17 @@ def is_contextual_follow_up(question: str) -> bool:
     """Detecta perguntas curtas que dependem da mensagem anterior."""
 
     normalized = normalize_text(question)
-    terms = normalized.split()
+    terms = normalized.rstrip("?.!").split()
     if not terms or len(terms) > 12:
         return False
-    return (
-        bool(set(terms) & QUESTION_WORDS)
-        or bool(set(terms) & FOLLOW_UP_TERMS)
-        or normalized.startswith(("e ", "qual o ", "qual a ", "como fica"))
+    if bool(set(terms) & FOLLOW_UP_TERMS) or normalized.startswith(
+        ("e ", "como fica")
+    ):
+        return True
+    if normalized.startswith("como formatar ") and len(terms) >= 8:
+        return True
+    return normalized.startswith(
+        ("qual o tamanho", "qual a medida", "quanto mede")
     )
 
 
@@ -264,7 +284,17 @@ def plan_queries(
         return [retrieval_question]
 
     normalized = normalize_text(question)
-    if "formatacao" in normalized:
+    if "citacoes" in normalized:
+        expansion = (
+            "citações diretas indiretas chamadas recuo "
+            "ABNT NBR 10520"
+        )
+    elif "referencias" in normalized:
+        expansion = (
+            "referências elaboração autores elementos essenciais "
+            "ABNT NBR 6023"
+        )
+    elif "formatacao" in normalized:
         expansion = (
             "trabalhos acadêmicos estrutura formato margens fonte "
             "espaçamento paginação citações referências"

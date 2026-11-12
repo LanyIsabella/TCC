@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from collections.abc import Mapping
 from typing import Any
 
@@ -11,7 +12,11 @@ from src.app.conversation import (
     ConversationIntent,
     interpret_intent,
 )
-from src.app.query_planner import is_contextual_follow_up
+from src.app.query_planner import (
+    is_broad_question,
+    is_contextual_follow_up,
+    normalize_text,
+)
 from src.app.scope_guard import (
     ACTION_UNAVAILABLE_MESSAGE,
     CLARIFICATION_MESSAGE,
@@ -23,6 +28,16 @@ from src.app.scope_guard import (
 from .schemas import PlannerDecision, is_structured_clarification
 
 logger = logging.getLogger(__name__)
+
+
+def _is_underspecified_question(question: str) -> bool:
+    normalized = normalize_text(question).strip().rstrip("?.!")
+    return bool(
+        re.fullmatch(
+            r"qual (?:e )?(?:o|a) (?:recuo|margem|fonte|espacamento)",
+            normalized,
+        )
+    )
 
 
 class Planner:
@@ -76,7 +91,27 @@ class Planner:
             parsed = self._parsed(value)
             if parsed is None:
                 return fallback
-            return self._safe_decision(parsed, fallback)
+            decision = self._safe_decision(parsed, fallback)
+            if (
+                is_broad_question(question)
+                and fallback.intent == ConversationIntent.NORMATIVE_QUERY
+                and decision.intent
+                in {
+                    ConversationIntent.ACTION_REQUEST,
+                    ConversationIntent.CONVERSATIONAL,
+                    ConversationIntent.UNKNOWN,
+                }
+            ):
+                return decision.model_copy(
+                    update={
+                        "intent": ConversationIntent.NORMATIVE_QUERY,
+                        "needs_clarification": False,
+                        "needs_retrieval": True,
+                        "reply": None,
+                        "clarification_questions": [],
+                    }
+                )
+            return decision
         except Exception:
             logger.exception("planner_execution_failed=True")
             return fallback
@@ -158,6 +193,17 @@ class Planner:
 
     def _fallback(self, question: str, history: list[Any]) -> PlannerDecision:
         decision = interpret_intent([*history, {"role": "user", "content": question}])
+        if _is_underspecified_question(question):
+            return PlannerDecision(
+                intent=ConversationIntent.AMBIGUOUS,
+                needs_clarification=True,
+                clarification_questions=[
+                    (
+                        "Você se refere ao recuo de citações, referências ou "
+                        "outro elemento?"
+                    )
+                ],
+            )
         reply = None
         if decision.intent == ConversationIntent.AMBIGUOUS:
             clarification_questions = [CLARIFICATION_MESSAGE]

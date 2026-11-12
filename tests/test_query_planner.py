@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from src.app.query_planner import (
     contextualize_query,
     focused_query,
@@ -19,10 +20,28 @@ def test_broad_question_gets_generic_expansion() -> None:
     assert "estrutura" in queries[1]
 
 
+def test_common_normative_topics_get_targeted_expansion() -> None:
+    citation_queries = plan_queries("Como fazer citações?")
+    reference_queries = plan_queries("Como formatar referências?")
+
+    assert "NBR 10520" in citation_queries[1]
+    assert "recuo" in citation_queries[1]
+    assert "NBR 6023" in reference_queries[1]
+    assert "autores" in reference_queries[1]
+
+
 def test_specific_question_is_not_expanded() -> None:
     queries = plan_queries("Qual é o item 7.1 da ABNT NBR 10520?")
 
     assert queries == ["Qual é o item 7.1 da ABNT NBR 10520?"]
+
+
+@pytest.mark.parametrize(
+    "question",
+    ["Como fazer citações?", "Como formatar referências?", "Qual é o recuo?"],
+)
+def test_common_academic_questions_use_broad_retrieval(question: str) -> None:
+    assert is_broad_question(question)
 
 
 def test_focused_query_preserves_normative_terms_without_question_scaffolding() -> None:
@@ -84,6 +103,21 @@ def test_contextual_follow_up_keeps_original_intent_and_previous_topic() -> None
     assert "Qual o tamanho do recuo necessário?" in query
     assert "formatar um TCC" in query
     assert plan_queries("Qual o tamanho do recuo necessário?", history) == [query]
+
+
+@pytest.mark.parametrize(
+    "question",
+    ["Como formatar referências?", "Qual é o recuo?"],
+)
+def test_self_contained_questions_do_not_inherit_unrelated_context(
+    question: str,
+) -> None:
+    history = [
+        {"role": "user", "content": "Como fazer citações?"},
+        {"role": "assistant", "content": "Resposta sobre citações."},
+    ]
+
+    assert contextualize_query(question, history) == question
 
 
 def test_clarification_completion_is_contextualized_for_retrieval() -> None:

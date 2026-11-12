@@ -287,10 +287,39 @@ def _literal_support(
     claim: str, available: Mapping[str, Any], question: str
 ) -> str | None:
     for identifier, record in available.items():
+        if not _evidence_topic_matches(question, record):
+            continue
         source = str(record.get("text") or "")
         if _literal_in_source(claim, source, question):
             return identifier
     return None
+
+
+def _evidence_topic_matches(question: str, record: Mapping[str, Any]) -> bool:
+    """Evita validar uma frase literal de uma norma apenas referencial."""
+
+    normalized_question = _canonical(question)
+    document = _canonical(
+        " ".join(
+            str(record.get(key) or "") for key in ("title", "standard_id")
+        )
+    )
+    source = _canonical(str(record.get("text") or ""))
+    if not document:
+        return True
+    if "citac" in normalized_question or "citar" in normalized_question:
+        if "citac" in document or "10520" in document:
+            return True
+        return bool(
+            re.search(
+                r"\b(citacao direta|citacao indireta|autor[- ]data|"
+                r"sistema numerico|recuo de)\b",
+                source,
+            )
+        )
+    if "referenc" in normalized_question:
+        return "referenc" in document or "6023" in document or "referenc" in source
+    return True
 
 
 def _literal_in_source(claim: str, source: str, question: str) -> bool:
@@ -301,16 +330,22 @@ def _literal_in_source(claim: str, source: str, question: str) -> bool:
     )
     normalized_source = re.sub(r"(?m)^[ \t]*[-*][ \t]+", "", normalized_source)
     claim_form = _literal_form(claim)
+    claim_without_terminal_punctuation = claim_form.rstrip(".!?;:")
     for paragraph in re.split(r"\n\s*\n", normalized_source):
         sentences = _claims(" ".join(paragraph.split()))
         for part in sentences:
             part_form = _literal_form(part)
+            part_without_terminal_punctuation = part_form.rstrip(".!?;:")
             part_without_section = re.sub(
                 r"^\d+(?:\.\d+)*\s+", "", part_form
             )
             if (
                 claim_form == part_form
+                or claim_without_terminal_punctuation
+                == part_without_terminal_punctuation
                 or claim_form == part_without_section
+                or claim_without_terminal_punctuation
+                == part_without_section.rstrip(".!?;:")
                 or _optional_permission(claim, part)
             ):
                 return _compatible(claim, _quote_context(part, source), question)
