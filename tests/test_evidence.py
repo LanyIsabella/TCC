@@ -2,7 +2,10 @@
 
 import json
 
+import pytest
+from src.app.conversation import ConversationIntent
 from src.app.evidence import AgentAnswer, extract_agent_result
+from src.app.grounding import INSUFFICIENT_EVIDENCE
 from src.app.tools.rag_search import _compact_document, _matched_text
 
 
@@ -129,6 +132,33 @@ def test_extract_agent_result_hides_references_without_structured_selection() ->
 
     assert extracted.answer == "Resposta textual."
     assert extracted.evidences == []
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "As citações diretas longas exigem recuo. Qual trecho você quer formatar?",
+        "As citações diretas longas exigem recuo; qual trecho você quer formatar?",
+        "As citações diretas longas exigem recuo\nQual trecho você quer formatar?",
+    ],
+)
+def test_trusted_clarification_cannot_publish_normative_preface(answer: str) -> None:
+    result = {
+        "messages": [
+            {"role": "user", "content": "Como formatar?"},
+            {"role": "assistant", "content": answer},
+        ],
+        "_conversation": {
+            "intent": ConversationIntent.AMBIGUOUS,
+            "completion_type": "clarification_requested",
+            "clarification_source": "structured",
+        },
+    }
+
+    extracted = extract_agent_result(result)
+
+    assert extracted.grounding_status == "unsupported"
+    assert extracted.answer == INSUFFICIENT_EVIDENCE
 
 
 def test_extract_agent_result_links_relevant_evidence_without_model_ids() -> None:

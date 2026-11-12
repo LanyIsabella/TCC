@@ -434,7 +434,7 @@ def _has_normative_assertion(answer: str) -> bool:
     return bool(
         re.search(
             r"\b(?:deve\w*|obrigatori\w*|permitid\w*|proibid\w*|"
-            r"vedad\w*|necessari\w*|mede|medir)\b"
+            r"vedad\w*|necessari\w*|exig\w*|requer\w*|mede|medir)\b"
             r"|\b(?:\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|três|"
             r"quatro|cinco|seis|sete|oito|nove|dez)\s*"
             r"(?:cm|mm|pt|pontos?|centimetros?|milimetros?)\b",
