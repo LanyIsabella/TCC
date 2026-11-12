@@ -353,7 +353,19 @@ def _citation_topic_matches(document: str, source: str) -> bool:
 def _reference_topic_matches(document: str, source: str) -> bool:
     # Menções ocasionais a referências normativas não tornam uma norma de
     # citações pertinente a uma pergunta sobre referências bibliográficas.
-    return "referenc" in document or "6023" in document
+    if "referenc" in document or "6023" in document:
+        return True
+    return bool(
+        re.search(
+            r"\breferenc\w*\b[^.!?]{0,180}\b(?:separad\w*|"
+            r"espac\w*|element\w*|autor\w*|apresent\w*|ordem|"
+            r"alfab\w*|list\w*|format\w*|alinh\w*)\b|"
+            r"\b(?:separad\w*|espac\w*|element\w*|autor\w*|"
+            r"apresent\w*|ordem|alfab\w*|list\w*|format\w*|"
+            r"alinh\w*)\b[^.!?]{0,180}\breferenc\w*\b",
+            source,
+        )
+    )
 
 
 def _literal_in_source(claim: str, source: str, question: str) -> bool:

@@ -603,6 +603,25 @@ def test_short_aspect_after_answer_reuses_visible_clarification_context():
     assert "formata" in query
 
 
+def test_implicit_clarification_is_ignored_after_a_new_normative_topic():
+    history = [
+        {"role": "user", "content": "Como formatar referências?"},
+        {
+            "role": "assistant",
+            "content": "Você deseja orientação sobre autoria, elementos ou formatação?",
+        },
+        {"role": "user", "content": "Elementos"},
+        {"role": "assistant", "content": "Resposta sobre elementos."},
+        {
+            "role": "user",
+            "content": "Como formatar uma citação direta longa?",
+        },
+        {"role": "assistant", "content": "Resposta sobre citação direta longa."},
+    ]
+
+    assert AgentV2._implicit_pending_clarification("Formatação", history) is None
+
+
 def test_new_normative_subject_does_not_inherit_pending_reference_context():
     planner = ClarificationSequencePlanner()
     tools = FakeTools(rag_payload())

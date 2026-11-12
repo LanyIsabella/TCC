@@ -158,6 +158,31 @@ def test_semantic_verifier_cannot_bypass_reference_topic_filter():
     assert result.evidence_ids == ()
 
 
+def test_reference_spacing_rule_from_academic_standard_is_relevant():
+    source = (
+        "As referências, ao final do trabalho, devem ser separadas entre si "
+        "por um espaço simples em branco."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Trabalhos acadêmicos",
+            "standard_id": "abnt_nbr_14724",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Qual é o espaçamento entre referências?",
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
 def test_following_restriction_of_the_same_rule_cannot_be_omitted():
     source = (
         "A margem deve medir 2 cm. "

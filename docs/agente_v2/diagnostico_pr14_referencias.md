@@ -137,3 +137,8 @@ passou e uma execução real passou a enviar:
 O resultado real observado foi uma resposta parcial com limitação explícita e
 publicação somente da evidência selecionada da NBR 6023. A variação do modelo e
 da recuperação continua sendo uma limitação documentada.
+
+Uma revisão independente posterior também cobriu a mudança de assunto entre um
+esclarecimento e um novo tópico normativo, além da regra literal de espaçamento
+entre referências presente na NBR 14724. Ambos os casos receberam regressões
+determinísticas e passaram na suíte.

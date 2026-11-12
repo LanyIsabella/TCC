@@ -148,11 +148,22 @@ Foram adicionados ou ajustados testes para:
 - filtro de tópico impedindo que o verificador aprove norma irrelevante;
 - configuração `OLLAMA_TEMPERATURE=0` chegando ao `ChatOllama`;
 - continuidade de `Formatação` após uma resposta anterior a `Elementos`.
+- rejeição de contexto implícito depois de uma pergunta autossuficiente sobre
+  outro assunto;
+- pertinência de uma regra literal sobre espaçamento de referências localizada
+  na NBR 14724.
 
 O teste de continuidade reproduzia a falha com consulta curta sem contexto e
 passou após a recuperação genérica do pedido de esclarecimento visível no
 histórico. A alteração não adiciona um novo classificador nem muda a recuperação
 híbrida.
+
+Após a revisão independente do commit `9fd6560`, foram corrigidas duas lacunas
+adicionais. A recuperação retroativa de esclarecimento agora é invalidada por
+uma pergunta normativa autossuficiente posterior, e o filtro de referências
+aceita conteúdo de outras normas somente quando o próprio trecho contém uma
+regra explícita sobre referências (por exemplo, separação por espaço simples).
+Uma simples menção a NBR 6023 continua insuficiente.
 
 ## Limitações e pendências
 

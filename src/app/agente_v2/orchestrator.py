@@ -380,6 +380,8 @@ class AgentV2:
                 break
         if prompt_index is None:
             return None
+        if AgentV2._has_new_normative_topic(history[prompt_index + 1 :]):
+            return None
         for message in reversed(history[:prompt_index]):
             role = (
                 message.get("role")
@@ -397,6 +399,28 @@ class AgentV2:
         return None
 
     @staticmethod
+    def _has_new_normative_topic(history: list[Any]) -> bool:
+        for message in history:
+            role = (
+                message.get("role")
+                if isinstance(message, Mapping)
+                else getattr(message, "role", getattr(message, "type", None))
+            )
+            if role not in {"user", "human"}:
+                continue
+            content = (
+                message.get("content", "")
+                if isinstance(message, Mapping)
+                else getattr(message, "content", "")
+            )
+            text = str(content).strip()
+            if AgentV2._is_self_contained_question(text):
+                return True
+            if AgentV2._is_explicit_topic_change(text) and has_academic_term(text):
+                return True
+        return False
+
+    @staticmethod
     def _is_self_contained_question(question: str) -> bool:
         normalized = normalize_text(question)
         if normalized.startswith(("e ", "como fica")):
@@ -406,6 +430,12 @@ class AgentV2:
             len(terms) >= 3
             and has_academic_term(question)
             and normalized.startswith(("como ", "qual ", "quais ", "segundo "))
+        )
+
+    @staticmethod
+    def _is_explicit_topic_change(question: str) -> bool:
+        return normalize_text(question).startswith(
+            ("na verdade", "na realidade", "quero saber", "prefiro saber")
         )
 
     @staticmethod
