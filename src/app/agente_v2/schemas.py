@@ -2,12 +2,28 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.app.conversation import ConversationIntent
+
+
+def _from_llm_value(
+    model_type: type[BaseModel], value: Any, required_field: str
+) -> BaseModel | None:
+    if isinstance(value, model_type):
+        return value
+    if not isinstance(value, Mapping):
+        return None
+    parsed = value.get("parsed", value)
+    if isinstance(parsed, model_type):
+        return parsed
+    if isinstance(parsed, Mapping) and required_field in parsed:
+        return model_type.model_validate(parsed)
+    return None
 
 
 class PlannerDecision(BaseModel):
@@ -34,6 +50,22 @@ class PlannerDecision(BaseModel):
                 )
             cleaned.append(text)
         return cleaned
+
+    @classmethod
+    def from_llm_value(cls, value: Any) -> PlannerDecision | None:
+        return _from_llm_value(cls, value, "intent")  # type: ignore[return-value]
+
+
+class ClarificationResolution(BaseModel):
+    """Consulta autossuficiente derivada de um esclarecimento respondido."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    resolved_question: str = Field(min_length=8)
+
+    @classmethod
+    def from_llm_value(cls, value: Any) -> ClarificationResolution | None:
+        return _from_llm_value(cls, value, "resolved_question")  # type: ignore[return-value]
 
 
 def is_structured_clarification(value: str) -> bool:
@@ -78,6 +110,7 @@ class ToolExecution(BaseModel):
 
 __all__ = [
     "PlannerDecision",
+    "ClarificationResolution",
     "SynthesisResponse",
     "ToolExecution",
     "is_structured_clarification",

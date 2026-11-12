@@ -279,18 +279,93 @@ def _scoped_quote(quote: str, paragraph: str) -> str:
     quoted = [part for part in sentences if " ".join(quote.split()) in part]
     if not quoted:
         return paragraph
-    scope = [part for part in sentences if _qualifiers(_canonical(part))]
-    return " ".join(dict.fromkeys([*quoted, *scope]))
+    scoped = []
+    for index, sentence in enumerate(sentences):
+        if sentence not in quoted:
+            continue
+        if index and _qualifiers(_canonical(sentences[index - 1])):
+            scoped.append(sentences[index - 1])
+        scoped.append(sentence)
+        if index + 1 < len(sentences):
+            following = _canonical(sentences[index + 1])
+            if _following_restriction(following):
+                scoped.append(sentences[index + 1])
+    return " ".join(dict.fromkeys(scoped))
+
+
+def _following_restriction(sentence: str) -> bool:
+    if re.search(r"\b(exceto|salvo|a menos que|com excecao)\b", sentence):
+        return True
+    return bool(
+        re.search(r"\b(somente|apenas)\b", sentence)
+        and re.search(r"\b(regra|esta|essa|isso|isto)\b", sentence)
+    )
 
 
 def _literal_support(
     claim: str, available: Mapping[str, Any], question: str
 ) -> str | None:
     for identifier, record in available.items():
+        if not _evidence_topic_matches(question, record):
+            continue
         source = str(record.get("text") or "")
         if _literal_in_source(claim, source, question):
             return identifier
     return None
+
+
+def _evidence_topic_matches(question: str, record: Mapping[str, Any]) -> bool:
+    """Evita validar uma frase literal de uma norma apenas referencial."""
+
+    normalized_question = _canonical(question)
+    document = _canonical(
+        " ".join(
+            str(record.get(key) or "") for key in ("title", "standard_id")
+        )
+    )
+    source = _canonical(str(record.get("text") or ""))
+    if not document:
+        return True
+    if "referenc" in normalized_question:
+        # A verb "citar" can occur in a question explicitly about references;
+        # prefer the reference standard unless the question names citations.
+        if "citac" not in normalized_question:
+            return _reference_topic_matches(document, source)
+    if any(marker in normalized_question for marker in ("citac", "citar")):
+        return _citation_topic_matches(document, source)
+    return True
+
+
+def _citation_topic_matches(document: str, source: str) -> bool:
+    if "citac" in document or "10520" in document:
+        return True
+    return bool(
+        re.search(
+            r"\b(citacao direta|citacao indireta|autor[- ]data|"
+            r"sistema numerico|recuo de|citac(?:ao|oes)\b[^.!?]{0,120}"
+            r"\b(?:linha|linhas|tamanho|menor|uniforme)\b)"
+            r"\b",
+            source,
+        )
+    )
+
+
+def _reference_topic_matches(document: str, source: str) -> bool:
+    # Menções ocasionais a referências normativas não tornam uma norma de
+    # citações pertinente a uma pergunta sobre referências bibliográficas.
+    if "referenc" in document or "6023" in document:
+        return True
+    return bool(
+        re.search(
+            r"\breferenc\w*\b[^.!?]{0,180}\b(?:separad\w*|"
+            r"espac\w*|element\w*|autor\w*|apresent\w*|ordem|"
+            r"alfab\w*|list\w*|format\w*|alinh\w*)\b|"
+            r"\b(?:separad\w*|espac\w*|element\w*|autor\w*|"
+            r"apresent\w*|ordem|alfab\w*|list\w*|format\w*|"
+            r"alinh\w*)\b[^.!?]{0,180}\breferenc\w*\b",
+            source,
+        )
+    )
 
 
 def _literal_in_source(claim: str, source: str, question: str) -> bool:
@@ -301,16 +376,22 @@ def _literal_in_source(claim: str, source: str, question: str) -> bool:
     )
     normalized_source = re.sub(r"(?m)^[ \t]*[-*][ \t]+", "", normalized_source)
     claim_form = _literal_form(claim)
+    claim_without_terminal_punctuation = claim_form.rstrip(".!?;:")
     for paragraph in re.split(r"\n\s*\n", normalized_source):
         sentences = _claims(" ".join(paragraph.split()))
         for part in sentences:
             part_form = _literal_form(part)
+            part_without_terminal_punctuation = part_form.rstrip(".!?;:")
             part_without_section = re.sub(
                 r"^\d+(?:\.\d+)*\s+", "", part_form
             )
             if (
                 claim_form == part_form
+                or claim_without_terminal_punctuation
+                == part_without_terminal_punctuation
                 or claim_form == part_without_section
+                or claim_without_terminal_punctuation
+                == part_without_section.rstrip(".!?;:")
                 or _optional_permission(claim, part)
             ):
                 return _compatible(claim, _quote_context(part, source), question)
@@ -369,6 +450,8 @@ def _verified_support(
         return None
     record = available.get(identifier)
     if record is None:
+        return None
+    if not _evidence_topic_matches(question, record):
         return None
     context = _quote_context(quote, str(record.get("text") or ""))
     if context and _compatible(claim, context, question):

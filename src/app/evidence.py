@@ -760,11 +760,14 @@ def _decision(
 
 
 def finalize_grounding(
-    result: dict[str, Any], verifier: Verifier | None = None
+    result: dict[str, Any],
+    verifier: Verifier | None = None,
+    *,
+    question: str | None = None,
 ) -> dict[str, Any]:
     """Só publica a decisão central; eventos internos mantêm os pares de tools."""
     try:
-        decision = _decision(result, verifier)
+        decision = _decision(result, verifier, question=question)
     except RuntimeError:
         decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
     current_ids = {id(message) for message in current_turn_messages(result)}

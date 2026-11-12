@@ -32,6 +32,31 @@ def test_literal_complete_rule_is_supported_even_without_model_ids():
     assert result.evidence_ids == ("e1",)
 
 
+def test_literal_rule_from_reference_only_document_is_not_relevant_support():
+    source = (
+        "Os Documentos Técnicos ABNT podem ser objeto de citação em "
+        "Regulamentos Técnicos."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Trabalhos acadêmicos",
+            "standard_id": "abnt_nbr_14724",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Como fazer citações?",
+        normative_context=True,
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
 def test_literal_rule_survives_page_header_and_section_paragraphs():
     source = (
         "ABNT NBR 6023:2025\n\n"
@@ -45,6 +70,190 @@ def test_literal_rule_survives_page_header_and_section_paragraphs():
         "seguido do prenome e outros sobrenomes, abreviados ou não, conforme "
         "consta no documento."
     )
+
+    result = ground_answer(
+        answer,
+        evidence(source),
+        "Como devem ser indicados os autores nas referências?",
+        normative_context=True,
+    )
+
+    assert result.answer == answer
+    assert result.evidence_ids == ("e1",)
+
+
+def test_literal_reference_format_rule_ignores_unrelated_following_condition():
+    answer = (
+        "As referências devem ser elaboradas em espaço simples, alinhadas à "
+        "margem esquerda do texto e separadas entre si por uma linha em branco "
+        "de espaço simples."
+    )
+    source = (
+        "6.3 "
+        + answer
+        + " Quando aparecerem em notas de rodapé, devem ser alinhadas à margem "
+        "esquerda do texto."
+    )
+
+    result = ground_answer(
+        answer,
+        evidence(source),
+        "Segundo a ABNT NBR 6023, quais são as regras de formatação das referências?",
+        normative_context=True,
+    )
+
+    assert result.answer == answer
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
+def test_citation_standard_is_not_relevant_to_reference_question_by_mention():
+    source = (
+        "A citação direta, com mais de três linhas, deve ser destacada com "
+        "recuo padronizado. A ABNT NBR 6023 é uma referência normativa."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Citações em documentos",
+            "standard_id": "abnt_nbr_10520",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Como formatar referências bibliográficas?",
+        normative_context=True,
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
+def test_semantic_verifier_cannot_bypass_reference_topic_filter():
+    source = (
+        "As citações diretas no texto, de até três linhas, devem estar contidas "
+        "entre aspas duplas."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Citações em documentos",
+            "standard_id": "abnt_nbr_10520",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        "As citações devem estar entre aspas.",
+        available,
+        "Como formatar referências bibliográficas?",
+        judge(source),
+        normative_context=True,
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
+def test_reference_spacing_rule_from_academic_standard_is_relevant():
+    source = (
+        "As referências, ao final do trabalho, devem ser separadas entre si "
+        "por um espaço simples em branco."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Trabalhos acadêmicos",
+            "standard_id": "abnt_nbr_14724",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Qual é o espaçamento entre referências?",
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
+def test_following_restriction_of_the_same_rule_cannot_be_omitted():
+    source = (
+        "A margem deve medir 2 cm. "
+        "Esta regra se aplica somente a trabalhos impressos."
+    )
+
+    result = ground_answer(
+        "A margem deve medir 2 cm.", evidence(source), QUESTION
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
+def test_reference_author_rule_accepts_citar_verb_in_question():
+    source = (
+        "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "
+        "seguido do prenome."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "ABNT NBR 6023",
+            "standard_id": "abnt_nbr_6023",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Como citar autores nas referências?",
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
+def test_citation_rule_from_other_standard_is_relevant_support():
+    source = (
+        "As citações com mais de três linhas devem ser em tamanho menor e uniforme."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Artigo em publicação periódica",
+            "standard_id": "abnt_nbr_6022",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Qual deve ser o tamanho da fonte das citações em artigos científicos?",
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
+def test_literal_rule_survives_truncated_page_sentence_punctuation():
+    source = (
+        "ABNT NBR 6023:2025\n\n"
+        "8.1.1 Pessoa física\n\n"
+        "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "
+        "seguido do prenome e outros sobrenome"
+    )
+    answer = source.rsplit("\n\n", 1)[-1] + "."
 
     result = ground_answer(
         answer,

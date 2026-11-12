@@ -11,7 +11,13 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 BROAD_QUERY_TERMS = {
+    "citacoes",
+    "formatar",
     "principais",
+    "referencias",
+    "recuo",
+    "margem",
+    "margens",
     "regras",
     "regra",
     "orientacoes",
@@ -181,24 +187,44 @@ def _user_history(history: list[Any] | None) -> list[str]:
 def is_broad_question(question: str) -> bool:
     """Identifica perguntas que precisam de maior cobertura de recuperação."""
 
-    terms = set(re.findall(r"[\wÀ-ÿ]+", normalize_text(question)))
+    normalized = normalize_text(question)
+    terms = set(re.findall(r"[\wÀ-ÿ]+", normalized))
+    specific_measure = bool(
+        re.match(r"^(?:qual [oa] (?:tamanho|medida)|quanto (?:mede|e))\b", normalized)
+    )
     return (
-        len(terms & BROAD_QUERY_TERMS) >= 2
+        (len(terms) <= 8 and len(terms & BROAD_QUERY_TERMS) >= 2)
         or ("quais" in terms and len(terms) >= 6)
+        or bool(
+            len(terms) <= 8
+            and not specific_measure
+            and terms & BROAD_QUERY_TERMS
+            and terms & QUESTION_WORDS
+        )
     )
 
 
-def is_contextual_follow_up(question: str) -> bool:
+def is_contextual_follow_up(
+    question: str, history: list[Any] | None = None
+) -> bool:
     """Detecta perguntas curtas que dependem da mensagem anterior."""
 
     normalized = normalize_text(question)
-    terms = normalized.split()
+    terms = normalized.rstrip("?.!").split()
     if not terms or len(terms) > 12:
         return False
-    return (
-        bool(set(terms) & QUESTION_WORDS)
-        or bool(set(terms) & FOLLOW_UP_TERMS)
-        or normalized.startswith(("e ", "qual o ", "qual a ", "como fica"))
+    if bool(set(terms) & FOLLOW_UP_TERMS) or normalized.startswith(
+        ("e ", "como fica")
+    ):
+        return True
+    if normalized.startswith("como formatar ") and len(terms) >= 8:
+        return True
+    if _is_underspecified_contextual_question(question):
+        return True
+    if history and _is_short_clarification_answer(question, history):
+        return True
+    return normalized.startswith(
+        ("qual o tamanho", "qual a medida", "quanto mede")
     )
 
 
@@ -210,8 +236,15 @@ def contextualize_query(
 
     current = question.strip()
     previous_messages = _user_history(history)
+    if (
+        _is_underspecified_contextual_question(current)
+        and previous_messages
+        and is_broad_question(previous_messages[-1])
+        and not _has_specific_academic_element(previous_messages[-1])
+    ):
+        return current
     if not current or not previous_messages or not (
-        is_contextual_follow_up(current)
+        is_contextual_follow_up(current, history)
         or _is_clarification_follow_up(current, previous_messages)
     ):
         return current
@@ -239,6 +272,88 @@ def contextualize_query(
     return contextual
 
 
+def _is_underspecified_contextual_question(question: str) -> bool:
+    normalized = normalize_text(question).rstrip("?.!")
+    return bool(
+        re.fullmatch(
+            r"(?:qual (?:e |deve ser )?|como deve ser )"
+            r"(?:o|a) (?:recuo|margem|fonte|espacamento)",
+            normalized,
+        )
+    )
+
+
+def _is_short_clarification_answer(
+    question: str, history: list[Any]
+) -> bool:
+    normalized = normalize_text(question).rstrip("?.!")
+    terms = normalized.split()
+    if not terms or len(terms) > 4:
+        return False
+    if normalized in {
+        "oi",
+        "ola",
+        "obrigado",
+        "obrigada",
+        "outro assunto",
+        "outra coisa",
+        "novo assunto",
+    }:
+        return False
+    if set(terms) & QUESTION_WORDS:
+        return False
+    clarification_prompt = any(
+        str(_message_value(message, "role") or _message_value(message, "type") or "")
+        in {"assistant", "ai"}
+        and "?" in str(_message_value(message, "content") or "")
+        and any(
+            marker in normalize_text(str(_message_value(message, "content") or ""))
+            for marker in ("qual", "aspecto", "elemento", "orientacao", "tipo")
+        )
+        for message in history
+    )
+    prior_academic_context = any(
+        str(_message_value(message, "role") or _message_value(message, "type") or "")
+        in {"user", "human"}
+        and any(
+            marker in normalize_text(str(_message_value(message, "content") or ""))
+            for marker in (
+                "abnt",
+                "nbr",
+                "referenc",
+                "citac",
+                "format",
+                "margem",
+                "recuo",
+                "fonte",
+                "espacamento",
+            )
+        )
+        for message in history
+    )
+    return clarification_prompt and prior_academic_context
+
+
+def _has_specific_academic_element(value: str) -> bool:
+    normalized = normalize_text(value)
+    return any(
+        marker in normalized
+        for marker in (
+            "direta",
+            "indireta",
+            "recuo",
+            "autoria",
+            "autor",
+            "element",
+            "margem",
+            "fonte",
+            "espacamento",
+            "longa",
+            "curta",
+        )
+    )
+
+
 def _is_clarification_follow_up(current: str, previous_messages: list[str]) -> bool:
     """Reconhece complemento curto após uma pergunta de esclarecimento."""
 
@@ -264,7 +379,17 @@ def plan_queries(
         return [retrieval_question]
 
     normalized = normalize_text(question)
-    if "formatacao" in normalized:
+    if "citacoes" in normalized:
+        expansion = (
+            "citações diretas indiretas chamadas recuo "
+            "ABNT NBR 10520"
+        )
+    elif "referencias" in normalized:
+        expansion = (
+            "referências elaboração autores elementos essenciais "
+            "ABNT NBR 6023"
+        )
+    elif "formatacao" in normalized:
         expansion = (
             "trabalhos acadêmicos estrutura formato margens fonte "
             "espaçamento paginação citações referências"

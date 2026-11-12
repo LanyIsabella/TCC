@@ -26,43 +26,75 @@ class _RenderContext:
             self._events.append(("chat_message_end", self._kind))
         return False
 
+    def container(self, **_kwargs):
+        return self
+
+    def update(self, **kwargs):
+        self._events.append(("status_update", kwargs))
+
 
 class _FakeStreamlit:
-    def __init__(self, questions):
+    def __init__(self, questions, buttons=None, pills=None):
         self.session_state = _SessionState()
         self.events = []
         self._questions = iter(questions)
+        self._buttons = iter(buttons or [])
+        self._pills = iter(pills or [])
+        self.sidebar = _RenderContext(self.events, "sidebar")
 
-    def set_page_config(self, **_kwargs):
-        pass
+    def set_page_config(self, **kwargs):
+        self.events.append(("page_config", kwargs))
 
-    def title(self, value):
+    def title(self, value, **_kwargs):
         self.events.append(("title", value))
 
-    def button(self, _label):
-        return False
+    def button(self, label, on_click=None, **_kwargs):
+        clicked = next(self._buttons, False)
+        if clicked and on_click is not None:
+            on_click()
+        self.events.append(("button", label, clicked))
+        return clicked
 
     def rerun(self):
         raise AssertionError("rerun inesperado")
 
-    def chat_message(self, role):
+    def chat_message(self, role, **_kwargs):
         self.events.append(("chat_message", role))
         return _RenderContext(self.events, role)
 
-    def chat_input(self, _label):
+    def chat_input(self, _label, **_kwargs):
         return next(self._questions)
 
-    def markdown(self, value):
+    def markdown(self, value, **_kwargs):
         self.events.append(("markdown", value))
 
-    def spinner(self, _label):
-        return _RenderContext(self.events, "spinner")
+    def status(self, label, **_kwargs):
+        self.events.append(("status", label))
+        return _RenderContext(self.events, "status")
 
     def caption(self, value):
         self.events.append(("caption", value))
 
-    def expander(self, _label):
+    def expander(self, _label, **_kwargs):
         return _RenderContext(self.events, "expander")
+
+    def container(self, **_kwargs):
+        return _RenderContext(self.events, "container")
+
+    def empty(self):
+        return _RenderContext(self.events, "empty")
+
+    def subheader(self, value):
+        self.events.append(("subheader", value))
+
+    def pills(self, *_args, **_kwargs):
+        return next(self._pills, None)
+
+    def divider(self):
+        self.events.append(("divider",))
+
+    def error(self, value):
+        self.events.append(("error", value))
 
 
 class _FakeAgent:
@@ -140,6 +172,192 @@ def test_v2_streamlit_entrypoint_bootstraps_when_run_as_file(tmp_path: Path) -> 
     assert result.returncode == 0, result.stderr
 
 
+def test_v2_uses_v1_page_identity_and_initial_suggestions(monkeypatch) -> None:
+    fake_st = _FakeStreamlit([None])
+    monkeypatch.setattr(v2_streamlit_app, "st", fake_st)
+    monkeypatch.setattr(v2_streamlit_app, "_agent", lambda: _FakeAgent(fake_st.events))
+
+    v2_streamlit_app.main()
+
+    config = next(event[1] for event in fake_st.events if event[0] == "page_config")
+    assert config == {
+        "page_title": "Normas Acadêmicas",
+        "page_icon": ":material/menu_book:",
+        "layout": "wide",
+        "initial_sidebar_state": "expanded",
+    }
+    assert ("title", "Normas Acadêmicas") in fake_st.events
+    assert ("subheader", "Comece por uma pergunta") in fake_st.events
+    assert ("button", "Nova conversa", False) in fake_st.events
+
+
+def test_v2_initial_screen_headless() -> None:
+    app_path = (
+        Path(__file__).parents[1]
+        / "src"
+        / "app"
+        / "agente_v2"
+        / "streamlit_app.py"
+    )
+    app = AppTest.from_file(app_path, default_timeout=10).run()
+
+    assert not app.exception
+    assert any(item.value == "Normas Acadêmicas" for item in app.title)
+    assert any(item.value == "Comece por uma pergunta" for item in app.subheader)
+    assert app.chat_input[0].placeholder == (
+        "Pergunte sobre citações, referências ou formatação ABNT..."
+    )
+    assert any(button.label == "Nova conversa" for button in app.button)
+
+
+def test_v2_initial_suggestion_submits_to_agent(monkeypatch) -> None:
+    selected = next(iter(v2_streamlit_app.SUGGESTIONS))
+    fake_st = _FakeStreamlit([None], pills=[selected])
+    fake_agent = _FakeAgent(fake_st.events)
+    monkeypatch.setattr(v2_streamlit_app, "st", fake_st)
+    monkeypatch.setattr(v2_streamlit_app, "_agent", lambda: fake_agent)
+
+    v2_streamlit_app.main()
+
+    assert ("invoke", v2_streamlit_app.SUGGESTIONS[selected]) in fake_st.events
+
+
+def test_v2_presentation_never_promotes_unpublished_evidence() -> None:
+    record = v2_streamlit_app._presentation_record(
+        {
+            "answer": "Resposta sem suporte",
+            "evidences": [
+                {
+                    "evidence_id": "rejected",
+                    "title": "Não publicar",
+                    "text": "Trecho rejeitado",
+                }
+            ],
+            "published_evidence_ids": [],
+        }
+    )
+
+    assert record["evidences"] == []
+
+
+def test_v2_keeps_distinct_published_sources_with_identical_text() -> None:
+    record = v2_streamlit_app._presentation_record(
+        {
+            "answer": "Resposta apoiada em duas normas",
+            "evidences": [
+                {
+                    "evidence_id": "e1",
+                    "title": "ABNT NBR 10520",
+                    "version": "2023",
+                    "page_number": 5,
+                    "matched_text": "Regra textual idêntica.",
+                },
+                {
+                    "evidence_id": "e2",
+                    "title": "ABNT NBR 6023",
+                    "version": "2023",
+                    "page_number": 5,
+                    "matched_text": "Regra textual idêntica.",
+                },
+            ],
+            "published_evidence_ids": ["e1", "e2"],
+        }
+    )
+
+    assert [evidence["evidence_id"] for evidence in record["evidences"]] == [
+        "e1",
+        "e2",
+    ]
+
+
+def test_v2_deduplicates_repeated_published_id() -> None:
+    record = v2_streamlit_app._presentation_record(
+        {
+            "answer": "Resposta",
+            "evidences": [
+                {
+                    "evidence_id": "e1",
+                    "title": "ABNT NBR 10520",
+                    "page_number": 5,
+                    "text": "Trecho autorizado.",
+                }
+            ],
+            "published_evidence_ids": ["e1", "e1"],
+        }
+    )
+
+    assert [evidence["evidence_id"] for evidence in record["evidences"]] == [
+        "e1"
+    ]
+
+
+def test_v2_rejects_evidence_without_valid_id() -> None:
+    record = v2_streamlit_app._presentation_record(
+        {
+            "answer": "Resposta",
+            "evidences": [
+                {"evidence_id": "", "title": "Sem ID", "text": "Trecho"}
+            ],
+            "published_evidence_ids": [""],
+        }
+    )
+
+    assert record["evidences"] == []
+
+
+def test_v2_keeps_source_label_with_each_published_evidence(monkeypatch) -> None:
+    fake_st = _FakeStreamlit([None])
+    monkeypatch.setattr(v2_streamlit_app, "st", fake_st)
+
+    v2_streamlit_app._render_document_references(
+        [
+            {
+                "evidence_id": "document:1:page:5",
+                "title": "ABNT NBR 10520",
+                "version": "2023",
+                "page_number": 5,
+                "text": "Trecho da primeira norma.",
+            },
+            {
+                "evidence_id": "document:2:page:5",
+                "title": "ABNT NBR 6023",
+                "version": "2023",
+                "page_number": 5,
+                "text": "Trecho da segunda norma.",
+            },
+        ]
+    )
+
+    captions = [event[1] for event in fake_st.events if event[0] == "caption"]
+    assert "ABNT NBR 10520 (2023)" in captions
+    assert "ABNT NBR 6023 (2023)" in captions
+
+
+def test_v2_new_conversation_resets_visual_context_and_id(monkeypatch) -> None:
+    fake_st = _FakeStreamlit([None, None], buttons=[False, True])
+    fake_agent = _FakeAgent(fake_st.events)
+    monkeypatch.setattr(v2_streamlit_app, "st", fake_st)
+    monkeypatch.setattr(v2_streamlit_app, "_agent", lambda: fake_agent)
+
+    v2_streamlit_app.main()
+    first_id = fake_st.session_state.conversation_id_v2
+    fake_st.session_state.messages_v2 = [
+        {
+            "role": "assistant",
+            "content": "Resposta",
+            "turn_id": "turn-1",
+            "presentation": {"published_evidence_ids": ["e1"]},
+        }
+    ]
+    fake_st.session_state.suggestion_v2 = "selected"
+
+    v2_streamlit_app.main()
+
+    assert fake_st.session_state.conversation_id_v2 != first_id
+    assert fake_st.session_state.messages_v2 == []
+    assert "suggestion_v2" not in fake_st.session_state
+
+
 def test_v2_renders_submitted_user_message_once_before_agent_call(monkeypatch) -> None:
     fake_st = _FakeStreamlit(["Como citar?", None])
     fake_agent = _FakeAgent(fake_st.events)
@@ -196,7 +414,7 @@ def test_v2_persists_turn_metadata_across_rerun_and_new_question(monkeypatch) ->
         if event[0] == "caption"
     )
     for index, event in enumerate(third_run):
-        if event[0] == "caption":
+        if event[0] == "caption" and "Limitação" in event[1]:
             assert any(
                 prior == ("chat_message", "assistant")
                 for prior in third_run[:index]
