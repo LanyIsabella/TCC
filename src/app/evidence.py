@@ -501,6 +501,21 @@ def _has_unsafe_clarification_preface(answer: str) -> bool:
     )
 
 
+def _is_isolated_clarification_question(answer: str) -> bool:
+    parts = [part.strip() for part in answer.splitlines() if part.strip()]
+    if not parts:
+        return False
+    for part in parts:
+        if not part.endswith("?"):
+            return False
+        body = part[:-1].rstrip()
+        if re.search(r"[.!;]", body):
+            return False
+        if "," in body and _has_normative_assertion(body.rsplit(",", 1)[0]):
+            return False
+    return True
+
+
 def _extract_answer(result: Mapping[str, Any]) -> str:
     structured = _structured_data(result)
     if structured is not None:
@@ -690,8 +705,7 @@ def _decision(
         if trusted_clarification:
             isolated_question = (
                 clarification_question
-                and "\n" not in answer
-                and not re.search(r"[.!;]", answer.rstrip()[:-1])
+                and _is_isolated_clarification_question(answer)
             )
             if isolated_question:
                 normative_assertion = False
