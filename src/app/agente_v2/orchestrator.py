@@ -15,7 +15,7 @@ from src.app.conversation import (
 )
 from src.app.evidence import AgentResult, public_evidence
 from src.app.query_planner import contextualize_query, is_broad_question, normalize_text
-from src.app.scope_guard import GREETING_MESSAGE
+from src.app.scope_guard import GREETING_MESSAGE, has_academic_term
 
 from .grounding_adapter import (
     conversational_result,
@@ -311,6 +311,7 @@ class AgentV2:
         normalized = normalize_text(question)
         if (
             len(normalized.split()) > 8
+            or self._is_self_contained_question(question)
             or normalized.startswith(
                 ("na verdade", "na realidade", "quero saber", "prefiro saber")
             )
@@ -330,6 +331,18 @@ class AgentV2:
         return (
             f"{question.strip()} Contexto da pergunta original: "
             f"{pending.original_question.strip()}"
+        )
+
+    @staticmethod
+    def _is_self_contained_question(question: str) -> bool:
+        normalized = normalize_text(question)
+        if normalized.startswith(("e ", "como fica")):
+            return False
+        terms = normalized.rstrip("?.!").split()
+        return (
+            len(terms) >= 3
+            and has_academic_term(question)
+            and normalized.startswith(("como ", "qual ", "quais ", "segundo "))
         )
 
     @staticmethod

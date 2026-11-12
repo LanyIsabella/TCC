@@ -398,6 +398,38 @@ def test_pending_clarification_can_be_abandoned_for_new_subject():
     assert "referências" not in tools.calls[-1][1]["question"].casefold()
 
 
+def test_self_contained_normative_question_bypasses_pending_clarification():
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=Planner(None),
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+
+    first = agent.invoke(
+        {
+            "conversation_id": "clarification-self-contained",
+            "messages": [{"role": "user", "content": "Como formatar referências?"}],
+        }
+    )
+    agent.invoke(
+        {
+            "conversation_id": "clarification-self-contained",
+            "messages": [
+                *first["messages"],
+                {
+                    "role": "user",
+                    "content": "Como formatar citação direta longa?",
+                },
+            ],
+        }
+    )
+
+    assert tools.calls[-1][1]["question"] == "Como formatar citação direta longa?"
+
+
 def rag_payload():
     return {
         "status": "success",
