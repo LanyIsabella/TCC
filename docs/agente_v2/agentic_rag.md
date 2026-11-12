@@ -64,6 +64,25 @@ Os testes determinísticos validam contratos e decisões de publicação; eles n
 comprovam fidelidade factual de uma LLM real. A avaliação com Ollama e
 PostgreSQL depende dos serviços locais e deve ser registrada separadamente.
 
+## Validação da PR #15
+
+As correções desta etapa consultam a LLM para perguntas contextuais, normalizam
+contradições entre intenção, modo e recuperação, limitam tentativas a consultas
+planejadas quando a primeira evidência é ausente ou insuficiente, e mantêm uma
+resposta geral controlada quando a recuperação mista falha. A política de
+grounding também classifica afirmações semânticas no modo geral: explicações
+procedurais podem permanecer conversacionais, mas regras normativas implícitas
+falham fechadas sem suporte.
+
+Na validação local, `uv run --locked pytest -q` registrou 443 aprovados, 1
+ignorado e 9 `xfail`; Ruff e `git diff --check` passaram. Uma execução real com
+Ollama `gemma4:e2b` e PostgreSQL local, sem escrita, preservou o comportamento
+fail-closed nas consultas normativas sem suporte e produziu respostas
+conversacionais para explicações gerais. A consulta ampla sobre regras de
+formatação ainda pode recuperar um trecho temático inadequado; isso permanece
+uma limitação de qualidade da recuperação/síntese, não uma autorização para
+publicar evidência não verificada.
+
 ## Limitações conhecidas
 
 - A classificação semântica dos modos ainda depende da LLM; as heurísticas são

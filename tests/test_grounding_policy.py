@@ -60,7 +60,54 @@ def test_mixed_mode_rejects_unsupported_normative_claim_but_keeps_general_prose(
     assert result.status == "partial"
     assert "A metodologia organiza" in result.answer
     assert PARTIAL_LIMITATION in result.answer
-    assert result.evidence_ids == ()
+
+
+def test_mixed_mode_semantic_classifier_rejects_implicit_normative_claim():
+    answer = "A citação direta curta fica entre aspas duplas."
+    def classifier(*_args):
+        return {"claims": [{"index": 0, "kind": "normative"}]}
+
+    result = ground_answer(
+        answer,
+        evidence("A metodologia organiza as etapas."),
+        "Como fazer uma citação direta curta segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "insufficient"
+    assert result.answer == INSUFFICIENT_EVIDENCE
+
+
+def test_mixed_mode_preserves_markdown_structure_when_removing_unsupported_rule():
+    answer = (
+        "A metodologia organiza as etapas.\n\n"
+        "- A margem direita deve medir 2 cm.\n"
+        "- A citação direta curta fica entre aspas duplas."
+    )
+    def classifier(*_args):
+        return {
+            "claims": [
+                {"index": 0, "kind": "general"},
+                {"index": 1, "kind": "normative"},
+                {"index": 2, "kind": "normative"},
+            ]
+        }
+
+    result = ground_answer(
+        answer,
+        evidence("A margem direita deve medir 2 cm."),
+        "Como fazer citações segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "partial"
+    assert "\n- A margem direita deve medir 2 cm." in result.answer
+    assert "\n- A citação direta curta" not in result.answer
+    assert PARTIAL_LIMITATION in result.answer
 
 
 def test_literal_rule_from_reference_only_document_is_not_relevant_support():

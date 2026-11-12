@@ -45,11 +45,17 @@ class Synthesizer:
         *,
         mode: ResponseMode | str = ResponseMode.NORMATIVE,
         objective: str | None = None,
+        use_parametric_knowledge: bool = True,
     ) -> SynthesisResponse:
         if self._structured is None:
             raise SynthesisFailure("Saída estruturada indisponível.")
         prompt = self._prompt(
-            question, history, retrieval, mode=mode, objective=objective
+            question,
+            history,
+            retrieval,
+            mode=mode,
+            objective=objective,
+            use_parametric_knowledge=use_parametric_knowledge,
         )
         for attempt in range(2):
             parsed = self._attempt(prompt, attempt)
@@ -76,6 +82,7 @@ class Synthesizer:
         *,
         mode: ResponseMode | str = ResponseMode.NORMATIVE,
         objective: str | None = None,
+        use_parametric_knowledge: bool = True,
     ) -> str:
         context = [
             {
@@ -98,7 +105,9 @@ class Synthesizer:
                 "conceitos, procedimentos, exemplos e comparações gerais. Não "
                 "apresente regra específica de ABNT como verificada sem evidência. "
                 "Marque exemplos inventados como 'Exemplo ilustrativo:' e não crie "
-                "citações ou IDs documentais."
+                "citações ou IDs documentais. Sem trechos RAG, não use "
+                "evidence_unavailable apenas por falta de documentos; use uma lista "
+                "de limitações vazia quando a explicação geral for válida."
             )
         elif selected_mode == ResponseMode.MIXED:
             policy = (
@@ -128,6 +137,8 @@ class Synthesizer:
             "Retorne somente JSON com answer, evidence_ids e limitations.\n\n"
             f"Histórico contextual: {json.dumps(context, ensure_ascii=False)}\n"
             f"Modo: {selected_mode.value}\n"
+            "Conhecimento paramétrico autorizado: "
+            f"{'sim' if use_parametric_knowledge else 'não'}\n"
             f"Objetivo: {objective or question}\n"
             f"Pergunta: {question}\n"
             f"Trechos documentais: {json.dumps(evidence, ensure_ascii=False)}"

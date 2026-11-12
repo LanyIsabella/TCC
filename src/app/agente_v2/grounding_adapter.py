@@ -90,6 +90,40 @@ def grounding_verifier(model: Any | None) -> Callable[..., Any] | None:
     return verify
 
 
+def grounding_claim_classifier(model: Any | None) -> Callable[..., Any] | None:
+    """Classifica afirmações do modo misto sem decidir o suporte factual."""
+
+    if model is None or not callable(getattr(model, "invoke", None)):
+        return None
+
+    def classify(
+        question: str, claims: list[str]
+    ) -> str | Mapping[str, Any] | list[Any]:
+        prompt = (
+            "Classifique cada afirmação como normativa, geral ou exemplo. "
+            "Normativa significa uma regra ou requisito apresentado como aplicável "
+            "à ABNT; geral significa explicação conceitual/procedural; exemplo é "
+            "um caso explicitamente ilustrativo. Não avalie se a afirmação é "
+            "verdadeira. Retorne somente JSON no formato "
+            '{"claims":[{"index":0,"kind":"normative"}]}.'
+        )
+        response = model.invoke(
+            [
+                {"role": "system", "content": prompt},
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {"question": question, "claims": claims},
+                        ensure_ascii=False,
+                    ),
+                },
+            ]
+        )
+        return _model_text(response)
+
+    return classify
+
+
 def _limitation_messages(values: list[object]) -> tuple[str, ...]:
     messages = []
     for value in values:
@@ -169,6 +203,7 @@ def generated_result(
     synthesis: SynthesisResponse,
     planner: PlannerDecision,
     verifier: Callable[..., Any] | None = None,
+    claim_classifier: Callable[..., Any] | None = None,
 ) -> AgentResult:
     """Publica síntese geral, mantendo a mesma decisão central de grounding."""
 
@@ -193,7 +228,10 @@ def generated_result(
         ),
     }
     finalized = finalize_grounding(
-        result, verifier=verifier, question=question
+        result,
+        verifier=verifier,
+        claim_classifier=claim_classifier,
+        question=question,
     )
     extracted = extract_agent_result(finalized)
     if synthesis.limitations:
@@ -221,6 +259,7 @@ def grounded_result(
     execution: ToolExecution,
     planner: PlannerDecision,
     verifier: Callable[..., Any] | None = None,
+    claim_classifier: Callable[..., Any] | None = None,
 ) -> AgentResult:
     turn = _turn(conversation_id, turn_id, question)
     call_id = f"v2-{turn_id}"
@@ -261,7 +300,10 @@ def grounded_result(
     }
     validation_question = grounding_question or question
     finalized = finalize_grounding(
-        result, verifier=verifier, question=validation_question
+        result,
+        verifier=verifier,
+        claim_classifier=claim_classifier,
+        question=validation_question,
     )
     extracted = extract_agent_result(finalized)
     if (
@@ -336,6 +378,7 @@ __all__ = [
     "conversational_result",
     "generated_result",
     "failed_normative_result",
+    "grounding_claim_classifier",
     "grounding_verifier",
     "grounded_result",
     "retrieval_error_code",

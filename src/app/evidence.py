@@ -6,7 +6,7 @@ import hashlib
 import json
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 from uuid import uuid4
@@ -434,15 +434,54 @@ def looks_like_guarded_answer(answer: str) -> bool:
 def _has_normative_assertion(answer: str) -> bool:
     normalized = normalize_text(answer)
     return bool(
-        re.search(
-            r"\b(?:deve\w*|obrigatori\w*|permitid\w*|proibid\w*|"
-            r"vedad\w*|necessari\w*|exig\w*|requer\w*|mede|medir)\b"
-            r"|\b(?:\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|três|"
+        (
+            re.search(
+                r"\b(?:deve\w*|obrigatori\w*|permitid\w*|proibid\w*|"
+                r"vedad\w*|necessari\w*|exig\w*|requer\w*|mede|medir)\b",
+                normalized,
+            )
+            and re.search(
+                r"\b(?:margem|fonte|citac\w*|referenc\w*|recuo|espac\w*|"
+                r"norma\w*|regra\w*|abnt|nbr)\b",
+                normalized,
+            )
+        )
+        or re.search(
+            r"\b(?:\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|três|"
             r"quatro|cinco|seis|sete|oito|nove|dez)\s*"
             r"(?:cm|mm|pt|pontos?|centimetros?|milimetros?)\b",
             normalized,
         )
+        or re.search(
+            r"\b(citac\w*|referenc\w*|margens?|folha|resumo)\b"
+            r"[^.!?]{0,100}\b(fica\w*|ficam\w*|usa\w*|utiliza\w*|"
+            r"apresenta\w*|seguem?)\b",
+            normalized,
+        )
     )
+
+
+def _classified_normative_assertion(
+    classifier: Callable[[str, list[str]], Any] | None,
+    question: str,
+    answer: str,
+) -> bool:
+    if classifier is None:
+        return False
+    try:
+        raw = classifier(question, [answer])
+        if isinstance(raw, str):
+            raw = json.loads(raw)
+        entries = raw.get("claims", []) if isinstance(raw, Mapping) else []
+        return any(
+            isinstance(item, Mapping)
+            and str(item.get("index")) == "0"
+            and str(item.get("kind") or "").casefold() == "normative"
+            for item in entries
+        )
+    except (TypeError, ValueError, json.JSONDecodeError):
+        logger.warning("grounding_claim_classification_invalid=True")
+        return False
 
 
 def _is_safe_non_normative_response(
@@ -648,6 +687,7 @@ def _trace_metadata(
 def _decision(
     result: Mapping[str, Any],
     verifier: Verifier | None = None,
+    claim_classifier: Callable[[str, list[str]], Any] | None = None,
     question: str | None = None,
 ) -> GroundingDecision:
     answer = _extract_answer(result)
@@ -710,7 +750,12 @@ def _decision(
             )
             or clarification_question
         )
-        normative_assertion = _has_normative_assertion(answer)
+        normative_assertion = (
+            _has_normative_assertion(answer)
+            or _classified_normative_assertion(
+                claim_classifier, question, answer
+            )
+        )
         safe_non_normative = _is_safe_non_normative_response(
             answer, intent, completion_type
         )
@@ -771,6 +816,7 @@ def _decision(
                 if isinstance(conversation, Mapping)
                 else None
             ),
+            claim_classifier=claim_classifier,
         )
     logger.info(
         "grounding status=%s available=%d supported=%d",
@@ -784,12 +830,15 @@ def _decision(
 def finalize_grounding(
     result: dict[str, Any],
     verifier: Verifier | None = None,
+    claim_classifier: Callable[[str, list[str]], Any] | None = None,
     *,
     question: str | None = None,
 ) -> dict[str, Any]:
     """Só publica a decisão central; eventos internos mantêm os pares de tools."""
     try:
-        decision = _decision(result, verifier, question=question)
+        decision = _decision(
+            result, verifier, claim_classifier, question=question
+        )
     except RuntimeError:
         decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
     current_ids = {id(message) for message in current_turn_messages(result)}

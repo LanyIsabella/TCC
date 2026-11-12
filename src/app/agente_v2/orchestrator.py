@@ -14,6 +14,7 @@ from src.app.conversation import (
     PendingClarification,
 )
 from src.app.evidence import AgentResult, public_evidence
+from src.app.grounding import INSUFFICIENT_EVIDENCE
 from src.app.query_planner import (
     contextualize_query,
     is_broad_question,
@@ -27,11 +28,18 @@ from .grounding_adapter import (
     failed_normative_result,
     generated_result,
     grounded_result,
+    grounding_claim_classifier,
     grounding_verifier,
     retrieval_error_code,
 )
 from .planner import Planner
-from .schemas import LimitationCode, PlannerDecision, ResponseMode, ToolExecution
+from .schemas import (
+    LimitationCode,
+    PlannerDecision,
+    ResponseMode,
+    SynthesisResponse,
+    ToolExecution,
+)
 from .synthesis import SynthesisFailure, Synthesizer
 from .tools import ToolRegistry
 
@@ -53,6 +61,7 @@ class AgentV2:
         self._planner = planner or Planner(model)
         self._synthesizer = synthesizer or Synthesizer(model)
         self._grounding_verifier = grounding_verifier(model)
+        self._claim_classifier = grounding_claim_classifier(model)
         self._tools = tools or ToolRegistry()
         self._store = store or ConversationStore()
 
@@ -98,15 +107,26 @@ class AgentV2:
             plan.retrieval_queries,
         )
         if self._retrieval_failed(execution):
-            result = failed_normative_result(
-                conversation_id=conversation_id,
-                turn_id=turn_id,
-                question=question,
-                execution=execution,
-                planner=plan,
-                error_code=LimitationCode.EVIDENCE_UNAVAILABLE,
-                error_detail=retrieval_error_code(execution),
-            )
+            if plan.effective_mode() == ResponseMode.MIXED:
+                result = self._mixed_turn_without_evidence(
+                    question,
+                    planning_question,
+                    history,
+                    execution,
+                    plan,
+                    turn_id,
+                    conversation_id,
+                )
+            else:
+                result = failed_normative_result(
+                    conversation_id=conversation_id,
+                    turn_id=turn_id,
+                    question=question,
+                    execution=execution,
+                    planner=plan,
+                    error_code=LimitationCode.EVIDENCE_UNAVAILABLE,
+                    error_detail=retrieval_error_code(execution),
+                )
             return self._finish_turn(
                 conversation_id,
                 question,
@@ -139,6 +159,14 @@ class AgentV2:
 
     def _plan(self, question: str, history: list[Any]) -> PlannerDecision:
         plan = self._planner.plan(question, history)
+        if isinstance(plan, PlannerDecision):
+            plan = plan.model_copy()
+            if (
+                plan.mode is not None
+                or plan.needs_retrieval
+                or plan.intent == ConversationIntent.NORMATIVE_QUERY
+            ):
+                Planner._normalize_retrieval_flag(plan)
         if (
             plan.needs_retrieval
             and plan.intent != ConversationIntent.NORMATIVE_QUERY
@@ -160,13 +188,21 @@ class AgentV2:
         history: list[Any],
         plan: PlannerDecision,
     ) -> AgentResult:
+        if not plan.use_parametric_knowledge:
+            return self._general_failure(
+                conversation_id,
+                turn_id,
+                question,
+                plan,
+                "parametric_knowledge_disabled",
+            )
         try:
             synthesis = self._synthesize(
                 planning_question, history, {}, plan
             )
         except SynthesisFailure:
-            return self._conversational_turn(
-                conversation_id, turn_id, question, plan
+            return self._general_failure(
+                conversation_id, turn_id, question, plan, "synthesis_failed"
             )
         return generated_result(
             conversation_id=conversation_id,
@@ -175,6 +211,36 @@ class AgentV2:
             synthesis=synthesis,
             planner=plan,
             verifier=self._grounding_verifier,
+            claim_classifier=self._claim_classifier,
+        )
+
+    def _general_failure(
+        self,
+        conversation_id: str,
+        turn_id: str,
+        question: str,
+        plan: PlannerDecision,
+        error: str,
+    ) -> AgentResult:
+        result = generated_result(
+            conversation_id=conversation_id,
+            turn_id=turn_id,
+            question=question,
+            synthesis=SynthesisResponse(
+                answer=(
+                    "A síntese geral não foi publicada porque não pôde ser "
+                    "validada com segurança."
+                ),
+                limitations=[LimitationCode.SYNTHESIS_FAILED],
+            ),
+            planner=plan,
+            verifier=self._grounding_verifier,
+            claim_classifier=self._claim_classifier,
+        )
+        return replace(
+            result,
+            completion_type="technical_failure",
+            errors=(*result.errors, error),
         )
 
     def _conversational_turn(
@@ -246,7 +312,7 @@ class AgentV2:
                 question, history, conversation_id, turn_id, query=query or None
             )
             executions.append(execution)
-            if not self._retrieval_failed(execution):
+            if self._retrieval_sufficient(execution, question):
                 break
         if len(executions) == 1:
             return executions[0]
@@ -289,6 +355,7 @@ class AgentV2:
                 retrieval,
                 mode=plan.effective_mode(),
                 objective=plan.objective,
+                use_parametric_knowledge=plan.use_parametric_knowledge,
             )
         except TypeError as error:
             if "unexpected keyword" not in str(error):
@@ -300,6 +367,76 @@ class AgentV2:
         return (
             execution.status != "success"
             or execution.raw_result.get("evidence_found") is False
+        )
+
+    @staticmethod
+    def _retrieval_sufficient(execution: ToolExecution, question: str) -> bool:
+        if AgentV2._retrieval_failed(execution):
+            return False
+        terms = {
+            term
+            for term in normalize_text(question).split()
+            if len(term) >= 4
+            and term
+            not in {"qual", "quais", "como", "para", "segundo", "sobre"}
+        }
+        for document in execution.raw_result.get("documents", []):
+            if not isinstance(document, Mapping):
+                continue
+            for evidence in document.get("evidence", []):
+                if not isinstance(evidence, Mapping):
+                    continue
+                text = normalize_text(str(evidence.get("text") or ""))
+                overlap = any(term in text for term in terms)
+                if evidence.get("direct_match") and (not terms or overlap):
+                    return True
+                if evidence.get("matched_text") and overlap:
+                    return True
+        return False
+
+    def _mixed_turn_without_evidence(
+        self,
+        question: str,
+        planning_question: str,
+        history: list[Any],
+        execution: ToolExecution,
+        plan: PlannerDecision,
+        turn_id: str,
+        conversation_id: str,
+    ) -> AgentResult:
+        try:
+            synthesis = self._synthesize(
+                planning_question, history, {"documents": []}, plan
+            )
+        except SynthesisFailure:
+            synthesis = SynthesisResponse(
+                answer=INSUFFICIENT_EVIDENCE,
+                evidence_ids=[],
+                limitations=[
+                    LimitationCode.EVIDENCE_UNAVAILABLE,
+                    LimitationCode.SYNTHESIS_FAILED,
+                ],
+            )
+        else:
+            if LimitationCode.EVIDENCE_UNAVAILABLE not in synthesis.limitations:
+                synthesis = synthesis.model_copy(
+                    update={
+                        "limitations": [
+                            *synthesis.limitations,
+                            LimitationCode.EVIDENCE_UNAVAILABLE,
+                        ]
+                    }
+                )
+        return grounded_result(
+            conversation_id=conversation_id,
+            turn_id=turn_id,
+            question=question,
+            grounding_question=planning_question,
+            synthesis=synthesis,
+            execution=execution,
+            planner=plan,
+            verifier=self._grounding_verifier,
+            claim_classifier=self._claim_classifier,
         )
 
     def _normative_turn(
@@ -334,6 +471,7 @@ class AgentV2:
             execution=execution,
             planner=plan,
             verifier=self._grounding_verifier,
+            claim_classifier=self._claim_classifier,
         )
         if (
             self._is_underspecified_broad_question(question, history)

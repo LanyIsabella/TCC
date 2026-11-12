@@ -32,12 +32,16 @@ _RULE_MARKERS = (
     r"\b(deve\w*|obrigatori\w*|permitid\w*|proibid\w*|vedad\w*|cm|mm|pt|pontos)\b"
 )
 _DOCUMENTARY_FIELDS = r"\b(fontes?|recuos?|(?:tipo|tamanho|estilo) de letras?)\b"
-_MIXED_NORMATIVE_MARKERS = (
+_NORMATIVE_MODAL = (
     r"\b(deve\w*|obrigatori\w*|permitid\w*|proibid\w*|vedad\w*|"
-    r"exig\w*|requer\w*|necessári\w*|necessari\w*|norma\w*|regra\w*|"
-    r"conforme|segundo|cm|mm|pt|pontos)\b"
+    r"exig\w*|requer\w*|necessári\w*|necessari\w*)\b"
+)
+_DOCUMENTARY_SUBJECT = (
+    r"\b(citac\w*|referenc\w*|margens?|recuos?|fonte|folha|resumo|"
+    r"espac\w*|elementos? pre[- ]textuais?|norma\w*|regra\w*|abnt|nbr)\b"
 )
 Verifier = Callable[[str, list[str], Mapping[str, Any]], Any]
+ClaimClassifier = Callable[[str, list[str]], Any]
 
 
 @dataclass(frozen=True)
@@ -104,9 +108,53 @@ def needs_support(answer: str, question: str = "") -> bool:
 def _claim_requires_normative_support(claim: str) -> bool:
     canonical = _canonical(claim)
     return bool(
-        re.search(_MIXED_NORMATIVE_MARKERS, canonical)
-        or _QUANTITY.search(canonical)
+        _QUANTITY.search(canonical)
+        or re.search(r"\b(conforme|segundo|norma\w*|regra\w*|abnt|nbr)\b", canonical)
+        or (
+            re.search(_NORMATIVE_MODAL, canonical)
+            and re.search(_DOCUMENTARY_SUBJECT, canonical)
+        )
     )
+
+
+def _implicit_normative_claim(claim: str) -> bool:
+    canonical = _canonical(claim)
+    return bool(
+        re.search(
+            r"\b(citac\w*|referenc\w*|margens?|folha|resumo|"
+            r"elementos? pre[- ]textuais?)\b",
+            canonical,
+        )
+        and re.search(
+            r"\b(fica\w*|ficam\w*|usa\w*|utiliza\w*|apresenta\w*|"
+            r"apresentam\w*|segue\w*|seguem\w*)\b",
+            canonical,
+        )
+    )
+
+
+def _classified_normative_claims(
+    classifier: ClaimClassifier | None,
+    question: str,
+    claims: list[str],
+) -> set[int]:
+    if classifier is None:
+        return set()
+    try:
+        raw = classifier(question, claims)
+        if isinstance(raw, str):
+            raw = json.loads(raw)
+        entries = raw.get("claims", []) if isinstance(raw, Mapping) else []
+        return {
+            int(item["index"])
+            for item in entries
+            if isinstance(item, Mapping)
+            and str(item.get("kind") or "").casefold() == "normative"
+            and str(item.get("index", "")).isdigit()
+        }
+    except (TypeError, ValueError, json.JSONDecodeError):
+        logger.warning("grounding_claim_classification_invalid=True")
+        return set()
 
 
 def _plain_text_rewrite(answer: str, question: str) -> bool:
@@ -478,18 +526,21 @@ def _claim_support(
     question: str,
     verifier: Verifier | None,
 ) -> dict[int, str | None]:
+    normalized_claims = [
+        re.sub(r"^[ \t]*[-*+][ \t]+", "", claim) for claim in claims
+    ]
     support = {
         index: _literal_support(claim, available, question)
-        for index, claim in enumerate(claims)
+        for index, claim in enumerate(normalized_claims)
     }
     if not available or all(support.values()):
         return support
-    assessments = _assess(verifier, question, claims, available)
+    assessments = _assess(verifier, question, normalized_claims, available)
     counts = Counter(item.index for item in assessments)
     for item in assessments:
         if 0 <= item.index < len(claims) and counts[item.index] == 1:
             support[item.index] = support[item.index] or _verified_support(
-                item, claims[item.index], available, question
+                item, normalized_claims[item.index], available, question
             )
     return support
 
@@ -515,17 +566,34 @@ def _compose(
     )
     if not required:
         return GroundingDecision(answer, (), "conversational")
+    unsupported = [
+        claim
+        for index, claim in enumerate(claims)
+        if index in required and not support[index]
+    ]
     if required and not identifiers:
         if kept:
             return GroundingDecision(
-                "\n".join([*kept, PARTIAL_LIMITATION]), (), "partial"
+                _preserve_structure(answer, unsupported), (), "partial"
             )
         return GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
     if len(kept) == len(claims):
         return GroundingDecision(answer, identifiers, "supported")
     return GroundingDecision(
-        "\n".join([*kept, PARTIAL_LIMITATION]), identifiers, "partial"
+        _preserve_structure(answer, unsupported), identifiers, "partial"
     )
+
+
+def _preserve_structure(answer: str, unsupported: list[str]) -> str:
+    cleaned = answer
+    for claim in unsupported:
+        cleaned = cleaned.replace(claim, "")
+    cleaned = re.sub(r"(?m)^\s*[-*]\s*$\r?\n?", "", cleaned)
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+    if not cleaned:
+        return INSUFFICIENT_EVIDENCE
+    return f"{cleaned}\n\n{PARTIAL_LIMITATION}"
 
 
 def ground_answer(
@@ -536,6 +604,7 @@ def ground_answer(
     *,
     normative_context: bool = False,
     response_mode: str | None = None,
+    claim_classifier: ClaimClassifier | None = None,
 ) -> GroundingDecision:
     """IDs e similaridade não provam suporte; paráfrases exigem avaliação semântica."""
     if (
@@ -546,13 +615,15 @@ def ground_answer(
         return GroundingDecision(answer, (), "conversational")
     claims = _claims(answer)
     support = _claim_support(claims, available, question, verifier)
-    required = (
-        {
+    required = None
+    if response_mode == "mixed":
+        required = {
             index
             for index, claim in enumerate(claims)
             if _claim_requires_normative_support(claim)
+            or _implicit_normative_claim(claim)
         }
-        if response_mode == "mixed"
-        else None
-    )
+        required.update(
+            _classified_normative_claims(claim_classifier, question, claims)
+        )
     return _compose(answer, claims, support, required)
