@@ -240,6 +240,34 @@ def test_v2_presentation_never_promotes_unpublished_evidence() -> None:
     assert record["evidences"] == []
 
 
+def test_v2_keeps_source_label_with_each_published_evidence(monkeypatch) -> None:
+    fake_st = _FakeStreamlit([None])
+    monkeypatch.setattr(v2_streamlit_app, "st", fake_st)
+
+    v2_streamlit_app._render_document_references(
+        [
+            {
+                "evidence_id": "document:1:page:5",
+                "title": "ABNT NBR 10520",
+                "version": "2023",
+                "page_number": 5,
+                "text": "Trecho da primeira norma.",
+            },
+            {
+                "evidence_id": "document:2:page:5",
+                "title": "ABNT NBR 6023",
+                "version": "2023",
+                "page_number": 5,
+                "text": "Trecho da segunda norma.",
+            },
+        ]
+    )
+
+    captions = [event[1] for event in fake_st.events if event[0] == "caption"]
+    assert "ABNT NBR 10520 (2023)" in captions
+    assert "ABNT NBR 6023 (2023)" in captions
+
+
 def test_v2_new_conversation_resets_visual_context_and_id(monkeypatch) -> None:
     fake_st = _FakeStreamlit([None, None], buttons=[False, True])
     fake_agent = _FakeAgent(fake_st.events)

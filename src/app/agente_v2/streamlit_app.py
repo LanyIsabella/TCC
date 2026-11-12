@@ -170,6 +170,7 @@ def _render_document_references(evidences: list[MappingLike]) -> None:
     ):
         for rendered_count, evidence in enumerate(evidences, start=1):
             st.markdown(f"**Trecho {rendered_count}**")
+            st.caption(_document_label(evidence))
             page_number = evidence.get("page_number")
             if page_number is not None:
                 st.caption(f"Página: {page_number}")
