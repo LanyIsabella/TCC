@@ -107,6 +107,57 @@ def test_literal_reference_format_rule_ignores_unrelated_following_condition():
     assert result.evidence_ids == ("e1",)
 
 
+def test_citation_standard_is_not_relevant_to_reference_question_by_mention():
+    source = (
+        "A citação direta, com mais de três linhas, deve ser destacada com "
+        "recuo padronizado. A ABNT NBR 6023 é uma referência normativa."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Citações em documentos",
+            "standard_id": "abnt_nbr_10520",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Como formatar referências bibliográficas?",
+        normative_context=True,
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
+def test_semantic_verifier_cannot_bypass_reference_topic_filter():
+    source = (
+        "As citações diretas no texto, de até três linhas, devem estar contidas "
+        "entre aspas duplas."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Citações em documentos",
+            "standard_id": "abnt_nbr_10520",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        "As citações devem estar entre aspas.",
+        available,
+        "Como formatar referências bibliográficas?",
+        judge(source),
+        normative_context=True,
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
 def test_following_restriction_of_the_same_rule_cannot_be_omitted():
     source = (
         "A margem deve medir 2 cm. "

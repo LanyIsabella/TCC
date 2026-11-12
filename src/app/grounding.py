@@ -351,7 +351,9 @@ def _citation_topic_matches(document: str, source: str) -> bool:
 
 
 def _reference_topic_matches(document: str, source: str) -> bool:
-    return "referenc" in document or "6023" in document or "referenc" in source
+    # Menções ocasionais a referências normativas não tornam uma norma de
+    # citações pertinente a uma pergunta sobre referências bibliográficas.
+    return "referenc" in document or "6023" in document
 
 
 def _literal_in_source(claim: str, source: str, question: str) -> bool:
@@ -436,6 +438,8 @@ def _verified_support(
         return None
     record = available.get(identifier)
     if record is None:
+        return None
+    if not _evidence_topic_matches(question, record):
         return None
     context = _quote_context(quote, str(record.get("text") or ""))
     if context and _compatible(claim, context, question):

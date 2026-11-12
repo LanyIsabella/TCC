@@ -47,21 +47,21 @@ class Synthesizer:
             raise SynthesisFailure("Saída estruturada indisponível.")
         prompt = self._prompt(question, history, retrieval)
         for attempt in range(2):
-            try:
-                value = self._structured.invoke(
-                    [{"role": "system", "content": prompt}]
-                )
-                parsed = self._parsed(value)
-                if parsed is not None:
-                    return parsed
-            except Exception:
-                logger.exception("synthesis_attempt_failed attempt=%d", attempt + 1)
-            prompt = (
-                prompt
-                + "\nA tentativa anterior falhou. Retorne obrigatoriamente apenas "
-                "os campos answer, evidence_ids e limitations; nunca invente IDs."
-            )
+            parsed = self._attempt(prompt, attempt)
+            if parsed is not None:
+                return parsed
+            prompt = _retry_prompt(prompt)
         raise SynthesisFailure("A síntese não produziu um contrato válido.")
+
+    def _attempt(self, prompt: str, attempt: int) -> SynthesisResponse | None:
+        try:
+            value = self._structured.invoke(
+                [{"role": "system", "content": prompt}]
+            )
+            return self._parsed(value)
+        except Exception:
+            logger.exception("synthesis_attempt_failed attempt=%d", attempt + 1)
+            return None
 
     def _prompt(
         self,
@@ -82,53 +82,101 @@ class Synthesizer:
             }
             for item in history[-8:]
         ]
+        evidence = _prompt_evidence(retrieval)
         return (
-            "Você é o sintetizador de um assistente acadêmico. Responda à pergunta "
-            "usando somente as evidências documentais fornecidas. Para cada afirmação "
-            "normativa, prefira copiar literalmente uma frase completa da evidência "
-            "(incluindo o identificador da seção quando houver) e selecione seu "
-            "evidence_id. Não invente IDs, números, condições ou exceções. Se não "
-            "houver suporte, use evidence_unavailable; use partial_support somente "
-            "para respostas explicitamente parciais e synthesis_failed apenas se a "
-            "síntese não puder ser validada. "
-            "Retorne somente o contrato estruturado.\n\n"
+            "Você é o sintetizador de um assistente acadêmico ABNT. Responda de "
+            "forma clara e natural usando somente o texto dos trechos fornecidos. "
+            "Pode explicar e combinar regras pertinentes, mas preserve integralmente "
+            "números, unidades, obrigações, permissões, negações, condições e "
+            "exceções; não copie fragmentos que não respondam ao aspecto perguntado. "
+            "O título, o nome da norma, a similaridade lexical e o marcador "
+            "direct_match não são prova factual. Para cada afirmação normativa "
+            "sustentada, selecione um evidence_id existente. Se os trechos não "
+            "responderem, use evidence_ids=[] e "
+            "limitations=[\"evidence_unavailable\"]. "
+            "Use partial_support quando a resposta for explicitamente parcial e "
+            "synthesis_failed somente se o contrato não puder ser produzido. "
+            "Retorne somente JSON com answer, evidence_ids e limitations.\n\n"
             f"Histórico contextual: {json.dumps(context, ensure_ascii=False)}\n"
             f"Pergunta: {question}\n"
-            f"Recuperação: {json.dumps(retrieval, ensure_ascii=False)}"
+            f"Trechos documentais: {json.dumps(evidence, ensure_ascii=False)}"
         )
 
     def _parsed(self, value: Any) -> SynthesisResponse | None:
-        parsed: SynthesisResponse | None = None
+        parsed = self._coerce(value)
+        return _normalize_inline_evidence_ids(parsed)
+
+    @staticmethod
+    def _coerce(value: Any) -> SynthesisResponse | None:
         if isinstance(value, SynthesisResponse):
-            parsed = value
-        elif isinstance(value, Mapping):
-            parsed = value.get("parsed")
-            if isinstance(parsed, SynthesisResponse):
-                pass
-            elif isinstance(parsed, Mapping):
-                parsed = SynthesisResponse.model_validate(parsed)
-            elif "answer" in value:
-                parsed = SynthesisResponse.model_validate(value)
-            else:
-                parsed = None
-        if parsed is None or parsed.evidence_ids:
-            if parsed is None:
-                return None
-            inline_ids = list(dict.fromkeys(_INLINE_EVIDENCE_ID.findall(parsed.answer)))
-            if not inline_ids:
-                return parsed
-            return parsed.model_copy(
-                update={"answer": _without_inline_ids(parsed.answer)}
-            )
-        inline_ids = list(dict.fromkeys(_INLINE_EVIDENCE_ID.findall(parsed.answer)))
-        if not inline_ids:
+            return value
+        if not isinstance(value, Mapping):
+            return None
+        parsed = value.get("parsed", value)
+        if isinstance(parsed, SynthesisResponse):
             return parsed
-        return parsed.model_copy(
-            update={
-                "answer": _without_inline_ids(parsed.answer),
-                "evidence_ids": inline_ids,
-            }
+        if not isinstance(parsed, Mapping) or "answer" not in parsed:
+            return None
+        return SynthesisResponse.model_validate(parsed)
+
+
+def _normalize_inline_evidence_ids(
+    parsed: SynthesisResponse | None,
+) -> SynthesisResponse | None:
+    if parsed is None:
+        return None
+    inline_ids = list(dict.fromkeys(_INLINE_EVIDENCE_ID.findall(parsed.answer)))
+    if not inline_ids:
+        return parsed
+    updates: dict[str, Any] = {"answer": _without_inline_ids(parsed.answer)}
+    if not parsed.evidence_ids:
+        updates["evidence_ids"] = inline_ids
+    return parsed.model_copy(update=updates)
+
+
+def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
+    candidates: list[dict[str, Any]] = []
+    for document in retrieval.get("documents", []):
+        if not isinstance(document, Mapping):
+            continue
+        for item in document.get("evidence", []):
+            if not isinstance(item, Mapping):
+                continue
+            text = str(item.get("text") or "").strip()
+            if not text:
+                continue
+            candidates.append(
+                {
+                    "evidence_id": str(item.get("evidence_id") or ""),
+                    "standard": str(
+                        document.get("standard_label")
+                        or document.get("standard_id")
+                        or document.get("title")
+                        or ""
+                    ),
+                    "page": item.get("page_number"),
+                    "direct_match": bool(item.get("direct_match")),
+                    "text": text[:1000],
+                }
+            )
+    direct = [item for item in candidates if item["direct_match"]]
+    selected = direct or candidates
+    selected.sort(
+        key=lambda item: (
+            not item["direct_match"],
+            not bool(item["evidence_id"]),
+            str(item["evidence_id"]),
         )
+    )
+    return selected[:4]
+
+
+def _retry_prompt(prompt: str) -> str:
+    return (
+        prompt
+        + "\nA tentativa anterior falhou. Retorne obrigatoriamente apenas "
+        "os campos answer, evidence_ids e limitations; nunca invente IDs."
+    )
 
 
 def _without_inline_ids(answer: str) -> str:

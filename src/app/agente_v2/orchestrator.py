@@ -14,13 +14,19 @@ from src.app.conversation import (
     PendingClarification,
 )
 from src.app.evidence import AgentResult, public_evidence
-from src.app.query_planner import contextualize_query, is_broad_question, normalize_text
+from src.app.query_planner import (
+    contextualize_query,
+    is_broad_question,
+    is_contextual_follow_up,
+    normalize_text,
+)
 from src.app.scope_guard import GREETING_MESSAGE, has_academic_term
 
 from .grounding_adapter import (
     conversational_result,
     failed_normative_result,
     grounded_result,
+    grounding_verifier,
     retrieval_error_code,
 )
 from .planner import Planner
@@ -45,6 +51,7 @@ class AgentV2:
             model = Client().return_model()
         self._planner = planner or Planner(model)
         self._synthesizer = synthesizer or Synthesizer(model)
+        self._grounding_verifier = grounding_verifier(model)
         self._tools = tools or ToolRegistry()
         self._store = store or ConversationStore()
 
@@ -213,6 +220,7 @@ class AgentV2:
             synthesis=synthesis,
             execution=execution,
             planner=plan,
+            verifier=self._grounding_verifier,
         )
         if (
             self._is_underspecified_broad_question(question)
@@ -308,6 +316,8 @@ class AgentV2:
         history: list[Any],
     ) -> str:
         if pending is None:
+            pending = self._implicit_pending_clarification(question, history)
+        if pending is None:
             return question
         normalized = normalize_text(question)
         if (
@@ -333,6 +343,58 @@ class AgentV2:
             f"{question.strip()} Contexto da pergunta original: "
             f"{pending.original_question.strip()}"
         )
+
+    @staticmethod
+    def _implicit_pending_clarification(
+        question: str, history: list[Any]
+    ) -> PendingClarification | None:
+        """Recupera um pedido de esclarecimento ainda visível no histórico."""
+
+        if not is_contextual_follow_up(question, history):
+            return None
+        prompt_index = None
+        prompt = ""
+        for index in range(len(history) - 1, -1, -1):
+            message = history[index]
+            role = (
+                message.get("role")
+                if isinstance(message, Mapping)
+                else getattr(message, "role", getattr(message, "type", None))
+            )
+            content = (
+                message.get("content", "")
+                if isinstance(message, Mapping)
+                else getattr(message, "content", "")
+            )
+            normalized = normalize_text(str(content))
+            if (
+                role in {"assistant", "ai"}
+                and "?" in str(content)
+                and any(
+                    marker in normalized
+                    for marker in ("qual", "aspecto", "elemento", "orientacao", "tipo")
+                )
+            ):
+                prompt_index = index
+                prompt = str(content).strip()
+                break
+        if prompt_index is None:
+            return None
+        for message in reversed(history[:prompt_index]):
+            role = (
+                message.get("role")
+                if isinstance(message, Mapping)
+                else getattr(message, "role", getattr(message, "type", None))
+            )
+            content = (
+                message.get("content", "")
+                if isinstance(message, Mapping)
+                else getattr(message, "content", "")
+            )
+            original = str(content).strip()
+            if role in {"user", "human"} and is_broad_question(original):
+                return PendingClarification(original, prompt)
+        return None
 
     @staticmethod
     def _is_self_contained_question(question: str) -> bool:

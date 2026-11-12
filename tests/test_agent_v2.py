@@ -59,6 +59,32 @@ class FakeStructuredModel:
         return {"parsed": self.decision}
 
 
+class FakeSynthesisModel:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+
+    def with_structured_output(self, *_args, **_kwargs):
+        return self
+
+    def invoke(self, messages):
+        self.calls.append(messages)
+        response = self.responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+
+class FakeGroundingVerifierModel:
+    def __init__(self, response):
+        self.response = response
+        self.calls = []
+
+    def invoke(self, messages):
+        self.calls.append(messages)
+        return self.response
+
+
 class FakeClarificationResolutionModel:
     def with_structured_output(self, *_args, **_kwargs):
         return self
@@ -181,6 +207,124 @@ def test_structured_contract_parsers_accept_raw_and_typed_values():
         {"resolved_question": clarification.resolved_question}
     )
     assert ClarificationResolution.from_llm_value([]) is None
+
+
+def test_synthesizer_retries_invalid_contract_and_returns_valid_response():
+    model = FakeSynthesisModel(
+        [
+            {"parsed": {}},
+            {
+                "parsed": {
+                    "answer": "A regra é aplicada.",
+                    "evidence_ids": ["e1"],
+                    "limitations": [],
+                }
+            },
+        ]
+    )
+
+    result = Synthesizer(model).synthesize("Qual é a regra?", [], {})
+
+    assert result.answer == "A regra é aplicada."
+    assert len(model.calls) == 2
+    assert "tentativa anterior falhou" in model.calls[1][0]["content"]
+
+
+def test_synthesis_parser_accepts_typed_and_wrapped_contracts():
+    typed = SynthesisResponse(answer="Resposta", evidence_ids=["e1"])
+    synthesizer = Synthesizer(None)
+
+    assert synthesizer._parsed(typed) is typed
+    assert synthesizer._parsed({"parsed": typed}) is typed
+    assert synthesizer._parsed({"answer": "Resposta"}).answer == "Resposta"
+    assert synthesizer._parsed("invalid") is None
+
+
+def test_synthesis_prompt_prefers_natural_relevant_evidence():
+    prompt = Synthesizer(None)._prompt(
+        "Como formatar uma citação direta longa?",
+        [],
+        {
+            "documents": [
+                {
+                    "standard_label": "ABNT NBR 10520",
+                    "evidence": [
+                        {
+                            "evidence_id": "e1",
+                            "direct_match": True,
+                            "page_number": 16,
+                            "text": "A citação direta deve observar o recuo.",
+                        },
+                        {
+                            "evidence_id": "e2",
+                            "direct_match": False,
+                            "page_number": 3,
+                            "text": "Trecho não pertinente.",
+                        },
+                    ],
+                }
+            ]
+        },
+    )
+
+    assert "forma clara e natural" in prompt
+    assert "prefira copiar literalmente" not in prompt
+    assert '"evidence_id": "e1"' in prompt
+    assert '"evidence_id": "e2"' not in prompt
+
+
+def test_planner_prompt_requests_specific_clarification_for_broad_normative_questions():
+    prompt = Planner(None)._prompt("Como formatar referências?", [])
+
+    assert "autoria" in prompt
+    assert "esclarecimento específico" in prompt
+
+
+def test_v2_uses_semantic_verifier_only_after_deterministic_support_fails():
+    verifier_model = FakeGroundingVerifierModel(
+        '{"claims":[{"index":0,"supported":true,"evidence_id":"e1",'
+        '"quote":"A margem direita deve medir 2 cm."}]}'
+    )
+    agent = AgentV2(
+        model=verifier_model,
+        planner=FakePlanner(
+            PlannerDecision(
+                intent=ConversationIntent.NORMATIVE_QUERY,
+                needs_retrieval=True,
+            )
+        ),
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer="É obrigatório deixar dois centímetros na margem direita.",
+                evidence_ids=["e1"],
+            )
+        ),
+        tools=FakeTools(
+            {
+                "status": "success",
+                "evidence_found": True,
+                "documents": [
+                    {
+                        "document_id": 1,
+                        "evidence": [
+                            {
+                                "evidence_id": "e1",
+                                "text": "A margem direita deve medir 2 cm.",
+                            }
+                        ],
+                    }
+                ],
+            }
+        ),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual a margem direita?"}]}
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert result["published_evidence_ids"] == ["e1"]
+    assert len(verifier_model.calls) == 1
 
 
 def test_synthesis_recovers_inline_evidence_ids_when_structured_list_is_empty():
@@ -412,6 +556,51 @@ def test_follow_up_keeps_reference_topic_after_clarification_resolution():
     assert third["grounding_status"] == "supported"
     assert "refer" in tools.calls[-1][1]["question"].casefold()
     assert "element" in tools.calls[-1][1]["question"].casefold()
+
+
+def test_short_aspect_after_answer_reuses_visible_clarification_context():
+    tools = FakeTools(references_payload()[0])
+    agent = AgentV2(
+        planner=ClarificationSequencePlanner(),
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer=references_payload()[1], evidence_ids=["ref-1"]
+            )
+        ),
+        tools=tools,
+    )
+    conversation_id = "implicit-clarification-context"
+
+    first = agent.invoke(
+        {
+            "conversation_id": conversation_id,
+            "messages": [{"role": "user", "content": "Como formatar referências?"}],
+        }
+    )
+    agent.invoke(
+        {
+            "conversation_id": conversation_id,
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Elementos"},
+            ],
+        }
+    )
+    agent.invoke(
+        {
+            "conversation_id": conversation_id,
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Elementos"},
+                {"role": "assistant", "content": "Resposta sobre elementos."},
+                {"role": "user", "content": "Formatação"},
+            ],
+        }
+    )
+
+    query = tools.calls[-1][1]["question"].casefold()
+    assert "6023" in query
+    assert "formata" in query
 
 
 def test_new_normative_subject_does_not_inherit_pending_reference_context():

@@ -1,5 +1,10 @@
 # PR #14 — Diagnóstico das consultas sobre referências
 
+> Atualização da revisão: o diagnóstico abaixo preserva os registros da
+> execução anterior. A configuração efetiva atual é `OLLAMA_TEMPERATURE=0`;
+> resultados adicionais e a correção de continuidade implícita estão em
+> [`auditoria_prompts_guardrails_pr14.md`](auditoria_prompts_guardrails_pr14.md).
+
 Data da verificação: 2026-11-12
 Branch: `fix/agente-v2-post-merge`
 Modelo: `gemma4:e2b`
@@ -117,3 +122,18 @@ renderizadas com grounding e o expander de evidências documentais. Capturas:
   documenta os casos executados e a decisão determinística do grounding.
 - Os gates globais ub-mode continuam com limitações históricas de cobertura,
   mutação e duplicação; não foram feitas refatorações fora desta correção.
+
+## Verificação complementar da continuidade
+
+Foi reproduzido o caso em que `Formatação` e `Autoria` eram enviados depois de
+uma resposta anterior a `Elementos`. Sem contexto implícito, a consulta era
+montada apenas com o termo curto e podia recuperar NBR 10520. O Orchestrator
+agora recupera um pedido de esclarecimento ainda visível no histórico e
+reutiliza o resolvedor existente da Planner. O teste determinístico correspondente
+passou e uma execução real passou a enviar:
+
+`Segundo a ABNT NBR 6023, quais são as regras de formatação das referências?`
+
+O resultado real observado foi uma resposta parcial com limitação explícita e
+publicação somente da evidência selecionada da NBR 6023. A variação do modelo e
+da recuperação continua sendo uma limitação documentada.
