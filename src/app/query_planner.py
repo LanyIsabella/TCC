@@ -236,6 +236,7 @@ def contextualize_query(
         _is_underspecified_contextual_question(current)
         and previous_messages
         and is_broad_question(previous_messages[-1])
+        and not _has_specific_academic_element(previous_messages[-1])
     ):
         return current
     if not current or not previous_messages or not (
@@ -273,6 +274,26 @@ def _is_underspecified_contextual_question(question: str) -> bool:
         re.fullmatch(
             r"qual (?:e )?(?:o|a) (?:recuo|margem|fonte|espacamento)",
             normalized,
+        )
+    )
+
+
+def _has_specific_academic_element(value: str) -> bool:
+    normalized = normalize_text(value)
+    return any(
+        marker in normalized
+        for marker in (
+            "direta",
+            "indireta",
+            "recuo",
+            "autoria",
+            "autor",
+            "element",
+            "margem",
+            "fonte",
+            "espacamento",
+            "longa",
+            "curta",
         )
     )
 

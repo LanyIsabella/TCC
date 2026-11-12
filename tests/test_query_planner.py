@@ -114,7 +114,18 @@ def test_underspecified_recuo_follow_up_uses_academic_history() -> None:
     query = contextualize_query("Qual é o recuo?", history)
 
     assert "Qual é o recuo?" in query
-    assert "Citação direta longa" in query
+    assert "citação direta longa" in query.casefold()
+
+
+def test_specific_element_in_broad_previous_question_is_preserved() -> None:
+    history = [
+        {"role": "user", "content": "Como formatar citação direta longa?"},
+        {"role": "assistant", "content": "A citação deve ter recuo."},
+    ]
+
+    query = contextualize_query("Qual é o recuo?", history)
+
+    assert "citação direta longa" in query.casefold()
 
 
 @pytest.mark.parametrize(
