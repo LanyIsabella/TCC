@@ -294,12 +294,26 @@ def _literal_support(
 
 
 def _literal_in_source(claim: str, source: str, question: str) -> bool:
-    sentences = _claims(" ".join(source.split()))
-    for part in sentences:
-        if _literal_form(claim) == _literal_form(part) or _optional_permission(
-            claim, part
-        ):
-            return _compatible(claim, _quote_context(part, source), question)
+    # Evidence snippets may carry Markdown headings/list markers from extraction;
+    # those formatting tokens must not prevent an exact normative sentence match.
+    normalized_source = re.sub(
+        r"(?m)^[ \t]*#{1,6}[ \t]*[^\r\n]*\r?\n?", "", source
+    )
+    normalized_source = re.sub(r"(?m)^[ \t]*[-*][ \t]+", "", normalized_source)
+    claim_form = _literal_form(claim)
+    for paragraph in re.split(r"\n\s*\n", normalized_source):
+        sentences = _claims(" ".join(paragraph.split()))
+        for part in sentences:
+            part_form = _literal_form(part)
+            part_without_section = re.sub(
+                r"^\d+(?:\.\d+)*\s+", "", part_form
+            )
+            if (
+                claim_form == part_form
+                or claim_form == part_without_section
+                or _optional_permission(claim, part)
+            ):
+                return _compatible(claim, _quote_context(part, source), question)
     return False
 
 

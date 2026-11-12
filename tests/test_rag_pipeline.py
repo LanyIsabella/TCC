@@ -320,6 +320,127 @@ def test_rag_tool_returns_complete_document(monkeypatch: pytest.MonkeyPatch) -> 
     assert '"pages": [5]' in result
 
 
+def test_rag_tool_retries_once_with_focused_query_when_first_result_has_no_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.app.tools import rag_search
+
+    calls: list[dict[str, object]] = []
+
+    def fake_search(**kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            return [
+                {
+                    "id": 5,
+                    "document_id": 5,
+                    "title": "Documento sem páginas",
+                    "pages": [],
+                    "page_context": [],
+                }
+            ]
+        return [
+            {
+                "id": 5,
+                "document_id": 5,
+                "title": "Documento sem páginas",
+                "pages": [],
+                "page_context": [],
+            },
+            {
+                "id": 32,
+                "document_id": 16,
+                "title": "Referências",
+                "metadata": {"id": "abnt_nbr_6023"},
+                "pages": [40],
+                "page_context": [
+                    {
+                        "page_number": 40,
+                        "direct_match": True,
+                        "page_text": "O autor deve ser indicado em letras maiúsculas.",
+                    }
+                ],
+            },
+        ]
+
+    monkeypatch.setattr(rag_search, "search_documents", fake_search)
+    question = (
+        "Segundo a ABNT, como devem ser escritos os nomes dos autores "
+        "nas referências bibliográficas? Devem ficar em letras maiúsculas?"
+    )
+
+    result = json.loads(rag_search.rag_document_search.invoke({"question": question}))
+
+    assert len(calls) == 2
+    assert calls[0]["question"] == question
+    assert calls[0]["documents_limit"] == 1
+    assert calls[1]["question"] == (
+        "abnt (autores letras maiúsculas) OR "
+        "nomes referências bibliográficas"
+    )
+    assert calls[1]["documents_limit"] == 5
+    assert calls[1]["pages_limit"] == 50
+    assert result["status"] == "success"
+    assert len(result["documents"]) == 1
+    assert result["documents"][0]["rag_document_id"] == 32
+    assert result["documents"][0]["evidence"][0]["page_number"] == 40
+    assert result["retrieval_queries"] == [question, calls[1]["question"]]
+
+
+def test_rag_tool_does_not_retry_a_successful_specific_search(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.app.tools import rag_search
+
+    calls: list[str] = []
+
+    def fake_search(**kwargs):
+        calls.append(kwargs["question"])
+        return [
+            {
+                "id": 32,
+                "document_id": 16,
+                "title": "Referências",
+                "pages": [40],
+                "page_context": [
+                    {"page_number": 40, "page_text": "Trecho normativo."}
+                ],
+            }
+        ]
+
+    monkeypatch.setattr(rag_search, "search_documents", fake_search)
+
+    result = json.loads(
+        rag_search.rag_document_search.invoke({"question": "Como citar?"})
+    )
+
+    assert result["status"] == "success"
+    assert calls == ["Como citar?"]
+
+
+def test_rag_tool_keeps_no_evidence_after_bounded_retry(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.app.tools import rag_search
+
+    calls = 0
+
+    def fake_search(**_kwargs):
+        nonlocal calls
+        calls += 1
+        return [{"id": calls, "pages": [], "page_context": []}]
+
+    monkeypatch.setattr(rag_search, "search_documents", fake_search)
+
+    result = json.loads(
+        rag_search.rag_document_search.invoke({"question": "Como citar?"})
+    )
+
+    assert calls == 2
+    assert result["status"] == "no_evidence"
+    assert result["evidence_found"] is False
+
+
 def test_rag_tool_validates_and_compacts_evidence(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

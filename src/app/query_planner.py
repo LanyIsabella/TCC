@@ -47,6 +47,59 @@ FOLLOW_UP_TERMS = {
     "tambem",
     "entao",
 }
+FOCUSED_QUERY_STOPWORDS = {
+    "a",
+    "as",
+    "ao",
+    "aos",
+    "como",
+    "da",
+    "das",
+    "de",
+    "do",
+    "dos",
+    "e",
+    "em",
+    "entre",
+    "essa",
+    "esse",
+    "esta",
+    "este",
+    "ficar",
+    "fica",
+    "ficam",
+    "mais",
+    "na",
+    "nas",
+    "no",
+    "nos",
+    "o",
+    "os",
+    "para",
+    "por",
+    "qual",
+    "quais",
+    "que",
+    "segundo",
+    "ser",
+    "sao",
+    "uma",
+    "um",
+    "deve",
+    "devem",
+    "escrita",
+    "escritas",
+    "escrito",
+    "escritos",
+}
+TOPIC_FOCUSED_TERMS = {
+    "bibliografica",
+    "bibliograficas",
+    "nome",
+    "nomes",
+    "referencia",
+    "referencias",
+}
 MAX_CONTEXT_MESSAGE_CHARS = 500
 
 
@@ -60,6 +113,47 @@ def normalize_text(value: str) -> str:
         if unicodedata.category(character) != "Mn"
     )
     return " ".join(normalized.split())
+
+
+def focused_query(question: str) -> str:
+    """Reduz uma pergunta a termos normativos para uma única recuperação."""
+
+    terms: list[str] = []
+    seen: set[str] = set()
+    for raw_term in re.findall(r"[\wÀ-ÿ]+", question.casefold()):
+        normalized_term = normalize_text(raw_term)
+        if (
+            len(normalized_term) < 3
+            or normalized_term in FOCUSED_QUERY_STOPWORDS
+            or normalized_term in seen
+        ):
+            continue
+        terms.append(raw_term)
+        seen.add(normalized_term)
+    if len(terms) >= 5:
+        topic_terms = [
+            term
+            for term in terms
+            if normalize_text(term) in TOPIC_FOCUSED_TERMS
+        ]
+        core_terms = [
+            term
+            for term in terms
+            if normalize_text(term) not in TOPIC_FOCUSED_TERMS
+        ]
+        anchors = [
+            term
+            for term in core_terms
+            if normalize_text(term) in {"abnt", "nbr"} or term.isdigit()
+        ]
+        core_terms = [term for term in core_terms if term not in anchors]
+        if topic_terms and core_terms:
+            prefix = f"{' '.join(anchors)} " if anchors else ""
+            return (
+                f"{prefix}({' '.join(core_terms)}) OR "
+                f"{' '.join(topic_terms)}"
+            ).strip()
+    return " ".join(terms)
 
 
 def _message_value(message: Any, key: str) -> Any:
@@ -116,7 +210,10 @@ def contextualize_query(
 
     current = question.strip()
     previous_messages = _user_history(history)
-    if not current or not previous_messages or not is_contextual_follow_up(current):
+    if not current or not previous_messages or not (
+        is_contextual_follow_up(current)
+        or _is_clarification_follow_up(current, previous_messages)
+    ):
         return current
 
     previous = next(
@@ -140,6 +237,16 @@ def contextualize_query(
         len(previous),
     )
     return contextual
+
+
+def _is_clarification_follow_up(current: str, previous_messages: list[str]) -> bool:
+    """Reconhece complemento curto após uma pergunta de esclarecimento."""
+
+    current_terms = normalize_text(current).rstrip("?.!").split()
+    if not current_terms or len(current_terms) > 6:
+        return False
+    previous = normalize_text(previous_messages[-1]).rstrip("?.!")
+    return previous in {"como formatar", "como formatar isso", "como formatar isto"}
 
 
 def plan_queries(
@@ -172,6 +279,7 @@ def plan_queries(
 
 __all__ = [
     "contextualize_query",
+    "focused_query",
     "is_broad_question",
     "is_contextual_follow_up",
     "normalize_text",

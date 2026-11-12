@@ -27,6 +27,8 @@ EXPLICIT_ACADEMIC_TERMS = (
     "nbr",
     "citacao",
     "citacoes",
+    "citar",
+    "referenciar",
     "bibliografia",
     "bibliografias",
     "bibliografica",
@@ -68,6 +70,11 @@ AMBIGUOUS_ACADEMIC_TERMS = (
     "lombada",
     "folha de rosto",
     "margem",
+    "margens",
+    "fonte",
+    "fontes",
+    "recuo",
+    "recuos",
     "secao",
     "metodologia",
     "introducao",
@@ -131,6 +138,15 @@ OUT_OF_SCOPE_MESSAGE = (
 GREETING_MESSAGE = (
     "Olá! Posso ajudar com normas ABNT, citações, referências, formatação "
     "e estrutura de trabalhos acadêmicos."
+)
+CLARIFICATION_MESSAGE = (
+    "Qual elemento você deseja formatar: citações, referências, margens, "
+    "fonte ou outro componente do trabalho?"
+)
+ACTION_UNAVAILABLE_MESSAGE = (
+    "Posso orientar com base nas normas, mas ainda não consigo formatar o texto "
+    "automaticamente. Envie o trecho e indique o tipo de elemento para eu explicar "
+    "o procedimento documentado."
 )
 
 
@@ -243,11 +259,37 @@ def guarded_response(messages: list[Any], decision: ScopeDecision) -> dict[str, 
     }
 
 
+def clarification_response(messages: list[Any]) -> dict[str, Any]:
+    """Encerra uma pergunta estruturalmente ambígua sem inventar uma regra."""
+
+    return {
+        "messages": [
+            *messages,
+            {"role": "assistant", "content": CLARIFICATION_MESSAGE},
+        ]
+    }
+
+
+def action_unavailable_response(messages: list[Any]) -> dict[str, Any]:
+    """Explica a limitação sem simular uma ferramenta ainda inexistente."""
+
+    return {
+        "messages": [
+            *messages,
+            {"role": "assistant", "content": ACTION_UNAVAILABLE_MESSAGE},
+        ]
+    }
+
+
 __all__ = [
     "GREETING_MESSAGE",
+    "CLARIFICATION_MESSAGE",
+    "ACTION_UNAVAILABLE_MESSAGE",
     "OUT_OF_SCOPE_MESSAGE",
     "ScopeDecision",
     "classify_messages",
+    "clarification_response",
+    "action_unavailable_response",
     "guarded_response",
     "has_academic_term",
     "normalize_text",
