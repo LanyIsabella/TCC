@@ -6,6 +6,7 @@ from src.app.agente_v2.schemas import (
     ClarificationResolution,
     LimitationCode,
     PlannerDecision,
+    ResponseMode,
     SynthesisResponse,
 )
 from src.app.agente_v2.synthesis import SynthesisFailure, Synthesizer
@@ -44,6 +45,16 @@ class FakeTools:
     def execute(self, name, arguments, *, conversation_id, turn_id):
         self.calls.append((name, arguments, conversation_id, turn_id))
         return self.payload
+
+
+class SequencedTools(FakeTools):
+    def __init__(self, payloads):
+        super().__init__(None)
+        self.payloads = list(payloads)
+
+    def execute(self, name, arguments, *, conversation_id, turn_id):
+        self.calls.append((name, arguments, conversation_id, turn_id))
+        return self.payloads.pop(0)
 
 
 class FakeStructuredModel:
@@ -209,6 +220,38 @@ def test_structured_contract_parsers_accept_raw_and_typed_values():
     assert ClarificationResolution.from_llm_value([]) is None
 
 
+def test_planner_modes_normalize_retrieval_contract():
+    planner = Planner(None)
+    mixed = planner._safe_decision(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.MIXED,
+            needs_retrieval=False,
+        ),
+        PlannerDecision(intent=ConversationIntent.CONVERSATIONAL),
+    )
+    general = planner._safe_decision(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.GENERAL,
+            needs_retrieval=True,
+        ),
+        PlannerDecision(intent=ConversationIntent.CONVERSATIONAL),
+    )
+
+    assert mixed.needs_retrieval is True
+    assert general.needs_retrieval is False
+
+
+def test_planner_routes_explicit_conceptual_question_to_general_mode():
+    planner = Planner(None)
+
+    decision = planner.plan("O que é metodologia científica?", [])
+
+    assert decision.mode == ResponseMode.GENERAL
+    assert decision.needs_retrieval is False
+
+
 def test_synthesizer_retries_invalid_contract_and_returns_valid_response():
     model = FakeSynthesisModel(
         [
@@ -271,6 +314,19 @@ def test_synthesis_prompt_prefers_natural_relevant_evidence():
     assert "prefira copiar literalmente" not in prompt
     assert '"evidence_id": "e1"' in prompt
     assert '"evidence_id": "e2"' not in prompt
+
+
+def test_general_synthesis_prompt_allows_examples_without_fabricating_sources():
+    prompt = Synthesizer(None)._prompt(
+        "O que é metodologia?",
+        [],
+        {},
+        mode=ResponseMode.GENERAL,
+    )
+
+    assert "conhecimento paramétrico" in prompt
+    assert "Exemplo ilustrativo:" in prompt
+    assert "não crie citações ou IDs documentais" in prompt
 
 
 def test_synthesis_prompt_keeps_adjacent_page_context():
@@ -1051,6 +1107,33 @@ def test_conversational_turn_does_not_call_rag() -> None:
     assert tools.calls == []
 
 
+def test_general_mode_uses_synthesis_without_rag():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.GENERAL,
+            reply="",
+        )
+    )
+    synthesizer = FakeSynthesizer(
+        SynthesisResponse(
+            answer="A metodologia organiza as etapas do trabalho.",
+            evidence_ids=[],
+        )
+    )
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(planner=planner, synthesizer=synthesizer, tools=tools)
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "O que é metodologia?"}]}
+    )
+
+    assert result["answer"] == "A metodologia organiza as etapas do trabalho."
+    assert result["grounding_status"] == "conversational"
+    assert tools.calls == []
+    assert synthesizer.calls
+
+
 def test_conversational_plan_without_reply_uses_greeting() -> None:
     planner = FakePlanner(
         PlannerDecision(
@@ -1098,7 +1181,67 @@ def test_normative_turn_retrieves_and_publishes_validated_evidence() -> None:
     assert [item["evidence_id"] for item in result["evidences"]] == ["e1"]
     assert result["published_evidence_ids"] == ["e1"]
     assert tools.calls[0][0] == "rag_document_search"
-    assert synthesizer.calls
+
+
+def test_mixed_mode_keeps_general_explanation_and_grounds_normative_claim():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.MIXED,
+            needs_retrieval=True,
+        )
+    )
+    tools = FakeTools(rag_payload())
+    synthesizer = FakeSynthesizer(
+        SynthesisResponse(
+            answer=(
+                "A metodologia organiza as etapas do trabalho. "
+                + SOURCE
+            ),
+            evidence_ids=["e1"],
+        )
+    )
+    agent = AgentV2(planner=planner, synthesizer=synthesizer, tools=tools)
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Explique e fundamente."}]}
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert "A metodologia organiza" in result["answer"]
+    assert SOURCE in result["answer"]
+    assert result["published_evidence_ids"] == ["e1"]
+
+
+def test_normative_mode_can_retry_one_planner_query_when_first_is_empty():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["primeira consulta", "segunda consulta"],
+        )
+    )
+    tools = SequencedTools(
+        [
+            {"status": "success", "evidence_found": False, "documents": []},
+            rag_payload(),
+        ]
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual é a regra?"}]}
+    )
+
+    assert len(tools.calls) == 2
+    assert result["grounding_status"] == "supported"
 
 
 def test_normative_turn_accepts_literal_evidence_after_page_header() -> None:

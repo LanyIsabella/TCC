@@ -25,12 +25,13 @@ from src.app.scope_guard import GREETING_MESSAGE, has_academic_term
 from .grounding_adapter import (
     conversational_result,
     failed_normative_result,
+    generated_result,
     grounded_result,
     grounding_verifier,
     retrieval_error_code,
 )
 from .planner import Planner
-from .schemas import LimitationCode, PlannerDecision, ToolExecution
+from .schemas import LimitationCode, PlannerDecision, ResponseMode, ToolExecution
 from .synthesis import SynthesisFailure, Synthesizer
 from .tools import ToolRegistry
 
@@ -72,16 +73,29 @@ class AgentV2:
             self._store.clear_pending_clarification(conversation_id)
         plan = self._plan(planning_question, history)
 
-        if not plan.needs_retrieval:
-            result = self._conversational_turn(
-                conversation_id, turn_id, question, plan
-            )
+        if plan.effective_mode() in {
+            ResponseMode.GENERAL,
+            ResponseMode.CLARIFY,
+            ResponseMode.OUT_OF_SCOPE,
+        }:
+            if plan.mode == ResponseMode.GENERAL:
+                result = self._general_turn(
+                    conversation_id, turn_id, question, planning_question, history, plan
+                )
+            else:
+                result = self._conversational_turn(
+                    conversation_id, turn_id, question, plan
+                )
             return self._finish_turn(
                 conversation_id, question, result, plan, turn_id
             )
 
-        execution = self._execute_search(
-            planning_question, history, conversation_id, turn_id
+        execution = self._execute_searches(
+            planning_question,
+            history,
+            conversation_id,
+            turn_id,
+            plan.retrieval_queries,
         )
         if self._retrieval_failed(execution):
             result = failed_normative_result(
@@ -125,11 +139,43 @@ class AgentV2:
 
     def _plan(self, question: str, history: list[Any]) -> PlannerDecision:
         plan = self._planner.plan(question, history)
-        if plan.needs_retrieval and plan.intent != ConversationIntent.NORMATIVE_QUERY:
+        if (
+            plan.needs_retrieval
+            and plan.intent != ConversationIntent.NORMATIVE_QUERY
+        ):
             return plan.model_copy(
-                update={"intent": ConversationIntent.NORMATIVE_QUERY}
+                update={
+                    "intent": ConversationIntent.NORMATIVE_QUERY,
+                    "mode": plan.mode or ResponseMode.NORMATIVE,
+                }
             )
         return plan
+
+    def _general_turn(
+        self,
+        conversation_id: str,
+        turn_id: str,
+        question: str,
+        planning_question: str,
+        history: list[Any],
+        plan: PlannerDecision,
+    ) -> AgentResult:
+        try:
+            synthesis = self._synthesize(
+                planning_question, history, {}, plan
+            )
+        except SynthesisFailure:
+            return self._conversational_turn(
+                conversation_id, turn_id, question, plan
+            )
+        return generated_result(
+            conversation_id=conversation_id,
+            turn_id=turn_id,
+            question=question,
+            synthesis=synthesis,
+            planner=plan,
+            verifier=self._grounding_verifier,
+        )
 
     def _conversational_turn(
         self,
@@ -163,8 +209,9 @@ class AgentV2:
         history: list[Any],
         conversation_id: str,
         turn_id: str,
+        query: str | None = None,
     ) -> ToolExecution:
-        query = contextualize_query(question, history)
+        query = query or contextualize_query(question, history)
         execution = self._tools.execute(
             "rag_document_search",
             {"question": query},
@@ -181,6 +228,72 @@ class AgentV2:
                 raw_result=dict(execution),
             )
         return execution
+
+    def _execute_searches(
+        self,
+        question: str,
+        history: list[Any],
+        conversation_id: str,
+        turn_id: str,
+        queries: list[str],
+    ) -> ToolExecution:
+        candidates = [item.strip() for item in queries[:2] if item.strip()]
+        if not candidates:
+            candidates = [""]
+        executions: list[ToolExecution] = []
+        for query in candidates:
+            execution = self._execute_search(
+                question, history, conversation_id, turn_id, query=query or None
+            )
+            executions.append(execution)
+            if not self._retrieval_failed(execution):
+                break
+        if len(executions) == 1:
+            return executions[0]
+        successful = next(
+            (item for item in executions if not self._retrieval_failed(item)),
+            executions[-1],
+        )
+        merged = dict(successful.raw_result)
+        documents: list[Any] = []
+        seen: set[str] = set()
+        for execution in executions:
+            for document in execution.raw_result.get("documents", []):
+                if not isinstance(document, Mapping):
+                    continue
+                key = str(
+                    document.get("rag_document_id")
+                    or document.get("document_id")
+                    or document.get("standard_id")
+                    or len(documents)
+                )
+                if key not in seen:
+                    seen.add(key)
+                    documents.append(document)
+        merged["documents"] = documents
+        merged["evidence_found"] = bool(documents)
+        return successful.model_copy(update={"raw_result": merged})
+
+    def _synthesize(
+        self,
+        question: str,
+        history: list[Any],
+        retrieval: Mapping[str, Any],
+        plan: PlannerDecision,
+    ) -> Any:
+        synthesize = self._synthesizer.synthesize
+        try:
+            return synthesize(
+                question,
+                history,
+                retrieval,
+                mode=plan.effective_mode(),
+                objective=plan.objective,
+            )
+        except TypeError as error:
+            if "unexpected keyword" not in str(error):
+                raise
+            return synthesize(question, history, retrieval)
 
     @staticmethod
     def _retrieval_failed(execution: ToolExecution) -> bool:
@@ -200,8 +313,8 @@ class AgentV2:
         conversation_id: str,
     ) -> AgentResult:
         try:
-            synthesis = self._synthesizer.synthesize(
-                planning_question, history, execution.raw_result
+            synthesis = self._synthesize(
+                planning_question, history, execution.raw_result, plan
             )
         except SynthesisFailure:
             return failed_normative_result(

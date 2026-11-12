@@ -151,6 +151,7 @@ def conversational_result(
             "conversation_id": conversation_id,
             "turn_id": turn_id,
             "intent": planner.intent,
+            "response_mode": planner.effective_mode().value,
             "completion_type": "clarification_requested"
             if planner.needs_clarification
             else "conversational",
@@ -158,6 +159,56 @@ def conversational_result(
         },
     }
     return extract_agent_result(result, question=question)
+
+
+def generated_result(
+    *,
+    conversation_id: str,
+    turn_id: str,
+    question: str,
+    synthesis: SynthesisResponse,
+    planner: PlannerDecision,
+    verifier: Callable[..., Any] | None = None,
+) -> AgentResult:
+    """Publica síntese geral, mantendo a mesma decisão central de grounding."""
+
+    turn = _turn(conversation_id, turn_id, question)
+    result = {
+        "messages": [
+            {"role": "user", "content": question, "id": turn.id},
+            {"role": "assistant", "content": synthesis.answer},
+        ],
+        "_turn": turn,
+        "_textual_synthesis": True,
+        "_conversation": {
+            "conversation_id": conversation_id,
+            "turn_id": turn_id,
+            "intent": planner.intent,
+            "response_mode": planner.effective_mode().value,
+        },
+        "_synthesis_evidence_ids": list(synthesis.evidence_ids),
+        "structured_response": AgentAnswer(
+            answer=synthesis.answer,
+            evidence_ids=list(synthesis.evidence_ids),
+        ),
+    }
+    finalized = finalize_grounding(
+        result, verifier=verifier, question=question
+    )
+    extracted = extract_agent_result(finalized)
+    if synthesis.limitations:
+        extracted = replace(
+            extracted,
+            limitations=tuple(
+                dict.fromkeys(
+                    (
+                        *extracted.limitations,
+                        *_limitation_messages(synthesis.limitations),
+                    )
+                )
+            ),
+        )
+    return extracted
 
 
 def grounded_result(
@@ -200,6 +251,7 @@ def grounded_result(
             "conversation_id": conversation_id,
             "turn_id": turn_id,
             "intent": planner.intent,
+            "response_mode": planner.effective_mode().value,
         },
         "_synthesis_evidence_ids": list(synthesis.evidence_ids),
         "structured_response": AgentAnswer(
@@ -282,6 +334,7 @@ def retrieval_error_code(execution: ToolExecution) -> str:
 
 __all__ = [
     "conversational_result",
+    "generated_result",
     "failed_normative_result",
     "grounding_verifier",
     "grounded_result",

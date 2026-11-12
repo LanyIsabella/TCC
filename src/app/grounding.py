@@ -32,6 +32,11 @@ _RULE_MARKERS = (
     r"\b(deve\w*|obrigatori\w*|permitid\w*|proibid\w*|vedad\w*|cm|mm|pt|pontos)\b"
 )
 _DOCUMENTARY_FIELDS = r"\b(fontes?|recuos?|(?:tipo|tamanho|estilo) de letras?)\b"
+_MIXED_NORMATIVE_MARKERS = (
+    r"\b(deve\w*|obrigatori\w*|permitid\w*|proibid\w*|vedad\w*|"
+    r"exig\w*|requer\w*|necessári\w*|necessari\w*|norma\w*|regra\w*|"
+    r"conforme|segundo|cm|mm|pt|pontos)\b"
+)
 Verifier = Callable[[str, list[str], Mapping[str, Any]], Any]
 
 
@@ -93,6 +98,14 @@ def needs_support(answer: str, question: str = "") -> bool:
         re.search(_RULE_MARKERS, _canonical(answer))
         or re.search(_DOCUMENTARY_FIELDS, _canonical(question))
         or _QUANTITY.search(_canonical(answer))
+    )
+
+
+def _claim_requires_normative_support(claim: str) -> bool:
+    canonical = _canonical(claim)
+    return bool(
+        re.search(_MIXED_NORMATIVE_MARKERS, canonical)
+        or _QUANTITY.search(canonical)
     )
 
 
@@ -482,17 +495,31 @@ def _claim_support(
 
 
 def _compose(
-    answer: str, claims: list[str], support: Mapping[int, str | None]
+    answer: str,
+    claims: list[str],
+    support: Mapping[int, str | None],
+    required: set[int] | None = None,
 ) -> GroundingDecision:
+    required = set(range(len(claims))) if required is None else required
     kept = [
         claim
         for index, claim in enumerate(claims)
-        if support[index] or _conversational(claim)
+        if index not in required or support[index] or _conversational(claim)
     ]
     identifiers = tuple(
-        dict.fromkeys(identifier for identifier in support.values() if identifier)
+        dict.fromkeys(
+            identifier
+            for index, identifier in support.items()
+            if index in required and identifier
+        )
     )
-    if not identifiers:
+    if not required:
+        return GroundingDecision(answer, (), "conversational")
+    if required and not identifiers:
+        if kept:
+            return GroundingDecision(
+                "\n".join([*kept, PARTIAL_LIMITATION]), (), "partial"
+            )
         return GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
     if len(kept) == len(claims):
         return GroundingDecision(answer, identifiers, "supported")
@@ -508,6 +535,7 @@ def ground_answer(
     verifier: Verifier | None = None,
     *,
     normative_context: bool = False,
+    response_mode: str | None = None,
 ) -> GroundingDecision:
     """IDs e similaridade não provam suporte; paráfrases exigem avaliação semântica."""
     if (
@@ -517,6 +545,14 @@ def ground_answer(
     ):
         return GroundingDecision(answer, (), "conversational")
     claims = _claims(answer)
-    return _compose(
-        answer, claims, _claim_support(claims, available, question, verifier)
+    support = _claim_support(claims, available, question, verifier)
+    required = (
+        {
+            index
+            for index, claim in enumerate(claims)
+            if _claim_requires_normative_support(claim)
+        }
+        if response_mode == "mixed"
+        else None
     )
+    return _compose(answer, claims, support, required)

@@ -3,7 +3,7 @@
 import json
 
 import pytest
-from src.app.grounding import INSUFFICIENT_EVIDENCE, ground_answer
+from src.app.grounding import INSUFFICIENT_EVIDENCE, PARTIAL_LIMITATION, ground_answer
 
 QUESTION = "Qual a regra de formatação segundo a ABNT?"
 
@@ -30,6 +30,37 @@ def test_literal_complete_rule_is_supported_even_without_model_ids():
     result = ground_answer(text, evidence(text), QUESTION)
     assert result.answer == text
     assert result.evidence_ids == ("e1",)
+
+
+def test_mixed_mode_preserves_general_prose_while_grounding_normative_claims():
+    answer = "A metodologia organiza as etapas. A margem direita deve medir 2 cm."
+    result = ground_answer(
+        answer,
+        evidence("A margem direita deve medir 2 cm."),
+        QUESTION,
+        response_mode="mixed",
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.answer == answer
+    assert result.evidence_ids == ("e1",)
+
+
+def test_mixed_mode_rejects_unsupported_normative_claim_but_keeps_general_prose():
+    answer = "A metodologia organiza as etapas. A margem direita deve medir 9 cm."
+    result = ground_answer(
+        answer,
+        evidence("A margem direita deve medir 2 cm."),
+        QUESTION,
+        response_mode="mixed",
+        normative_context=True,
+    )
+
+    assert result.status == "partial"
+    assert "A metodologia organiza" in result.answer
+    assert PARTIAL_LIMITATION in result.answer
+    assert result.evidence_ids == ()
 
 
 def test_literal_rule_from_reference_only_document_is_not_relevant_support():

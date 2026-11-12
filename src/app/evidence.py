@@ -583,6 +583,12 @@ def _fingerprint(
 
 def _normative_context(result: Mapping[str, Any]) -> bool:
     conversation = result.get("_conversation")
+    if isinstance(conversation, Mapping):
+        mode = str(conversation.get("response_mode") or "")
+        if mode == "general":
+            return False
+        if mode in {"normative", "mixed"}:
+            return True
     if isinstance(conversation, Mapping) and conversation.get("intent") in {
         ConversationIntent.CONVERSATIONAL,
         ConversationIntent.AMBIGUOUS,
@@ -717,6 +723,10 @@ def _decision(
             "structured",
             "legacy_structured",
         }
+        general_mode = (
+            isinstance(conversation, Mapping)
+            and str(conversation.get("response_mode") or "") == "general"
+        )
         untrusted_clarification = (
             intent == ConversationIntent.AMBIGUOUS
             and completion_type == "clarification_requested"
@@ -730,13 +740,20 @@ def _decision(
             if isolated_question:
                 normative_assertion = False
             safe_non_normative = not normative_assertion
-        if untrusted_clarification or normative_assertion or (
-            not safe_non_normative and needs_support(answer, question)
+        if (
+            untrusted_clarification
+            or normative_assertion
+            or (
+                not general_mode
+                and not safe_non_normative
+                and needs_support(answer, question)
+            )
         ):
             decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
         elif (
             explicitly_non_normative
             or safe_non_normative
+            or general_mode
             or not needs_support(answer, question)
         ):
             decision = GroundingDecision(answer, (), "conversational")
@@ -749,6 +766,11 @@ def _decision(
             question,
             verifier,
             normative_context=_normative_context(result),
+            response_mode=(
+                str(conversation.get("response_mode"))
+                if isinstance(conversation, Mapping)
+                else None
+            ),
         )
     logger.info(
         "grounding status=%s available=%d supported=%d",

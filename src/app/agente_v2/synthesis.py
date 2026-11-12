@@ -8,7 +8,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-from .schemas import SynthesisResponse
+from .schemas import ResponseMode, SynthesisResponse
 
 logger = logging.getLogger(__name__)
 _INLINE_EVIDENCE_ID = re.compile(
@@ -42,10 +42,15 @@ class Synthesizer:
         question: str,
         history: list[Any],
         retrieval: Mapping[str, Any],
+        *,
+        mode: ResponseMode | str = ResponseMode.NORMATIVE,
+        objective: str | None = None,
     ) -> SynthesisResponse:
         if self._structured is None:
             raise SynthesisFailure("Saída estruturada indisponível.")
-        prompt = self._prompt(question, history, retrieval)
+        prompt = self._prompt(
+            question, history, retrieval, mode=mode, objective=objective
+        )
         for attempt in range(2):
             parsed = self._attempt(prompt, attempt)
             if parsed is not None:
@@ -68,6 +73,9 @@ class Synthesizer:
         question: str,
         history: list[Any],
         retrieval: Mapping[str, Any],
+        *,
+        mode: ResponseMode | str = ResponseMode.NORMATIVE,
+        objective: str | None = None,
     ) -> str:
         context = [
             {
@@ -83,10 +91,31 @@ class Synthesizer:
             for item in history[-8:]
         ]
         evidence = _prompt_evidence(retrieval)
+        selected_mode = ResponseMode(mode)
+        if selected_mode == ResponseMode.GENERAL:
+            policy = (
+                "Explique de forma natural usando conhecimento paramétrico para "
+                "conceitos, procedimentos, exemplos e comparações gerais. Não "
+                "apresente regra específica de ABNT como verificada sem evidência. "
+                "Marque exemplos inventados como 'Exemplo ilustrativo:' e não crie "
+                "citações ou IDs documentais."
+            )
+        elif selected_mode == ResponseMode.MIXED:
+            policy = (
+                "Combine explicação geral, passos e exemplos claramente marcados "
+                "com regras documentais dos trechos. Somente afirmações normativas "
+                "devem usar evidence_id; não transforme relação temática em prova."
+            )
+        else:
+            policy = (
+                "Use somente o texto dos trechos fornecidos para afirmações "
+                "normativas e não complete informação ausente."
+            )
         return (
-            "Você é o sintetizador de um assistente acadêmico ABNT. Responda de "
-            "forma clara e natural usando somente o texto dos trechos fornecidos. "
-            "Pode explicar e combinar regras pertinentes, mas preserve integralmente "
+            "Você é o sintetizador de um assistente acadêmico ABNT. "
+            + policy
+            + " Responda de forma clara e natural. Pode explicar e combinar regras "
+            "pertinentes, mas preserve integralmente "
             "números, unidades, obrigações, permissões, negações, condições e "
             "exceções; não copie fragmentos que não respondam ao aspecto perguntado. "
             "O título, o nome da norma, a similaridade lexical e o marcador "
@@ -98,6 +127,8 @@ class Synthesizer:
             "synthesis_failed somente se o contrato não puder ser produzido. "
             "Retorne somente JSON com answer, evidence_ids e limitations.\n\n"
             f"Histórico contextual: {json.dumps(context, ensure_ascii=False)}\n"
+            f"Modo: {selected_mode.value}\n"
+            f"Objetivo: {objective or question}\n"
             f"Pergunta: {question}\n"
             f"Trechos documentais: {json.dumps(evidence, ensure_ascii=False)}"
         )
