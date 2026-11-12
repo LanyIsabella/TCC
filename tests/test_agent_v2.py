@@ -616,6 +616,74 @@ def test_follow_up_keeps_reference_topic_after_clarification_resolution():
     assert "element" in tools.calls[-1][1]["question"].casefold()
 
 
+def test_three_turn_reference_follow_up_preserves_partial_grounding():
+    planner = ClarificationSequencePlanner()
+    tools = FakeTools(references_payload()[0])
+    partial_answer = (
+        "A referência deve ser apresentada conforme os elementos necessários. "
+        "A formatação deve seguir regras específicas."
+    )
+    synthesizer = FakeSynthesizer(
+        SynthesisResponse(answer=partial_answer, evidence_ids=["ref-1"])
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=synthesizer,
+        tools=tools,
+    )
+    conversation_id = "three-turn-reference-formatting"
+
+    first = agent.invoke(
+        {
+            "conversation_id": conversation_id,
+            "messages": [{"role": "user", "content": "Como fazer referências?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": conversation_id,
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Elementos"},
+            ],
+        }
+    )
+    third = agent.invoke(
+        {
+            "conversation_id": conversation_id,
+            "messages": [
+                *second["messages"],
+                {"role": "user", "content": "E formatação das referências?"},
+            ],
+        }
+    )
+
+    assert first["completion_type"] == "clarification_requested"
+    assert second["grounding_status"] == "partial"
+    assert third["grounding_status"] == "partial"
+    assert third["completion_type"] != "clarification_requested"
+    assert len(synthesizer.calls) == 2
+    assert third["available_evidence_ids"] == ["ref-1"]
+    assert third["selected_evidence_ids"] == ["ref-1"]
+    assert third["published_evidence_ids"] == ["ref-1"]
+    assert PARTIAL_LIMITATION in third["answer"]
+    assert "6023" in tools.calls[-1][1]["question"]
+    assert "formata" in tools.calls[-1][1]["question"].casefold()
+    assert third["messages"][-2]["content"] == "E formatação das referências?"
+
+
+def test_genuinely_ambiguous_question_still_requests_clarification():
+    planner = Planner(None)
+    tools = FakeTools(references_payload()[0])
+    agent = AgentV2(planner=planner, tools=tools)
+
+    result = agent.invoke({"messages": [{"role": "user", "content": "Como formatar?"}]})
+
+    assert result["completion_type"] == "clarification_requested"
+    assert result["grounding_status"] == "conversational"
+    assert tools.calls == []
+
+
 def test_short_aspect_after_answer_reuses_visible_clarification_context():
     tools = FakeTools(references_payload()[0])
     agent = AgentV2(

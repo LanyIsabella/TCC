@@ -223,7 +223,7 @@ class AgentV2:
             verifier=self._grounding_verifier,
         )
         if (
-            self._is_underspecified_broad_question(question)
+            self._is_underspecified_broad_question(question, history)
             and result.grounding_status in {"unsupported", "partial"}
         ):
             return self._clarification_after_unsupported_broad_query(result, question)
@@ -250,9 +250,27 @@ class AgentV2:
         return self._public(result, plan, turn_id)
 
     @staticmethod
-    def _is_underspecified_broad_question(question: str) -> bool:
+    def _is_underspecified_broad_question(
+        question: str, history: list[Any] | None = None
+    ) -> bool:
         normalized = normalize_text(question)
         terms = normalized.split()
+        if (
+            is_contextual_follow_up(question, history)
+            and any(
+                marker in normalized
+                for marker in (
+                    "autor",
+                    "element",
+                    "format",
+                    "recuo",
+                    "margem",
+                    "fonte",
+                    "citac",
+                )
+            )
+        ):
+            return False
         return (
             is_broad_question(question)
             and len(terms) <= 5
