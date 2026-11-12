@@ -32,6 +32,31 @@ def test_literal_complete_rule_is_supported_even_without_model_ids():
     assert result.evidence_ids == ("e1",)
 
 
+def test_literal_rule_survives_page_header_and_section_paragraphs():
+    source = (
+        "ABNT NBR 6023:2025\n\n"
+        "8.1.1 Pessoa física\n\n"
+        "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "
+        "seguido do prenome e outros sobrenomes, abreviados ou não, conforme "
+        "consta no documento."
+    )
+    answer = (
+        "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "
+        "seguido do prenome e outros sobrenomes, abreviados ou não, conforme "
+        "consta no documento."
+    )
+
+    result = ground_answer(
+        answer,
+        evidence(source),
+        "Como devem ser indicados os autores nas referências?",
+        normative_context=True,
+    )
+
+    assert result.answer == answer
+    assert result.evidence_ids == ("e1",)
+
+
 def test_paraphrase_can_be_supported_by_semantic_assessment_and_real_quote():
     source = "A margem direita deve medir 2 cm."
     answer = "É obrigatório deixar dois centímetros na margem direita."

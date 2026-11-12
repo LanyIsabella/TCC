@@ -213,6 +213,64 @@ def test_normative_turn_retrieves_and_publishes_validated_evidence() -> None:
     assert synthesizer.calls
 
 
+def test_normative_turn_accepts_literal_evidence_after_page_header() -> None:
+    answer = (
+        "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "
+        "seguido do prenome e outros sobrenomes, abreviados ou não, conforme "
+        "consta no documento."
+    )
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_clarification=False,
+            needs_retrieval=True,
+        )
+    )
+    tools = FakeTools(
+        {
+            "status": "success",
+            "evidence_found": True,
+            "documents": [
+                {
+                    "rag_document_id": 32,
+                    "standard_id": "abnt_nbr_6023",
+                    "evidence": [
+                        {
+                            "evidence_id": "document:32:page:40",
+                            "page_number": 40,
+                            "text": (
+                                "ABNT NBR 6023:2025\n\n8.1.1 Pessoa física\n\n"
+                                + answer
+                            ),
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=answer, evidence_ids=["document:32:page:40"])
+        ),
+        tools=tools,
+    )
+
+    result = agent.invoke(
+        {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "Como indicar autores nas referências?",
+                }
+            ]
+        }
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert result["published_evidence_ids"] == ["document:32:page:40"]
+
+
 def test_normative_turn_without_evidence_fails_closed() -> None:
     planner = FakePlanner(
         PlannerDecision(
