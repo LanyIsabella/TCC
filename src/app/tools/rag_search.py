@@ -684,12 +684,12 @@ def rag_document_search(
                     "pages_limit=%d",
                     alternative_query[:240],
                     5,
-                    1,
+                    50,
                 )
                 try:
                     fallback_documents = search_documents(
                         question=alternative_query,
-                        pages_limit=1,
+                        pages_limit=50,
                         documents_limit=5,
                         full_documents_limit=0,
                         neighbor_radius=0,

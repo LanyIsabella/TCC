@@ -92,7 +92,7 @@ FOCUSED_QUERY_STOPWORDS = {
     "escrito",
     "escritos",
 }
-REDUNDANT_FOCUSED_TERMS = {
+TOPIC_FOCUSED_TERMS = {
     "bibliografica",
     "bibliograficas",
     "nome",
@@ -131,11 +131,28 @@ def focused_query(question: str) -> str:
         terms.append(raw_term)
         seen.add(normalized_term)
     if len(terms) >= 5:
-        terms = [
+        topic_terms = [
             term
             for term in terms
-            if normalize_text(term) not in REDUNDANT_FOCUSED_TERMS
+            if normalize_text(term) in TOPIC_FOCUSED_TERMS
         ]
+        core_terms = [
+            term
+            for term in terms
+            if normalize_text(term) not in TOPIC_FOCUSED_TERMS
+        ]
+        anchors = [
+            term
+            for term in core_terms
+            if normalize_text(term) in {"abnt", "nbr"} or term.isdigit()
+        ]
+        core_terms = [term for term in core_terms if term not in anchors]
+        if topic_terms and core_terms:
+            prefix = f"{' '.join(anchors)} " if anchors else ""
+            return (
+                f"{prefix}({' '.join(core_terms)}) OR "
+                f"{' '.join(topic_terms)}"
+            ).strip()
     return " ".join(terms)
 
 

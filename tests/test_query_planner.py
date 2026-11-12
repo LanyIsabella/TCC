@@ -31,7 +31,46 @@ def test_focused_query_preserves_normative_terms_without_question_scaffolding() 
         "nas referências bibliográficas? Devem ficar em letras maiúsculas?"
     )
 
-    assert focused_query(question) == "abnt autores letras maiúsculas"
+    assert focused_query(question) == (
+        "abnt (autores letras maiúsculas) OR "
+        "nomes referências bibliográficas"
+    )
+
+
+def test_focused_query_preserves_multiple_normative_subjects() -> None:
+    question = (
+        "Qual a diferença entre referências bibliográficas e citações diretas "
+        "segundo a ABNT?"
+    )
+
+    result = focused_query(question)
+
+    assert "referências" in result
+    assert "bibliográficas" in result
+    assert "citações" in result
+    assert "diretas" in result
+
+
+def test_focused_query_preserves_name_and_reference_subjects() -> None:
+    question = "Como apresentar os nomes dos autores nas referências segundo a ABNT?"
+
+    result = focused_query(question)
+
+    assert "nomes" in result
+    assert "autores" in result
+    assert "referências" in result
+
+
+def test_focused_query_preserves_margin_and_spacing_subjects() -> None:
+    question = (
+        "Quais regras de margens e espaçamento devo usar em trabalhos "
+        "acadêmicos segundo a ABNT?"
+    )
+
+    result = focused_query(question)
+
+    assert "margens" in result
+    assert "espaçamento" in result
 
 
 def test_contextual_follow_up_keeps_original_intent_and_previous_topic() -> None:

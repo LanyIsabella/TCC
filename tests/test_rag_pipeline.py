@@ -374,9 +374,12 @@ def test_rag_tool_retries_once_with_focused_query_when_first_result_has_no_evide
     assert len(calls) == 2
     assert calls[0]["question"] == question
     assert calls[0]["documents_limit"] == 1
-    assert calls[1]["question"] == "abnt autores letras maiúsculas"
+    assert calls[1]["question"] == (
+        "abnt (autores letras maiúsculas) OR "
+        "nomes referências bibliográficas"
+    )
     assert calls[1]["documents_limit"] == 5
-    assert calls[1]["pages_limit"] == 1
+    assert calls[1]["pages_limit"] == 50
     assert result["status"] == "success"
     assert len(result["documents"]) == 1
     assert result["documents"][0]["rag_document_id"] == 32
