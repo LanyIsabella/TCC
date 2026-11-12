@@ -81,10 +81,19 @@ class ConversationTrace:
     tool_provenance: tuple[Mapping[str, Any], ...] = ()
 
 
+@dataclass(frozen=True)
+class PendingClarification:
+    """Esclarecimento solicitado no turno anterior, mantido apenas em memória."""
+
+    original_question: str
+    prompt: str
+
+
 @dataclass
 class _ConversationState:
     conversation_id: str
     messages: list[dict[str, str]] = field(default_factory=list)
+    pending_clarification: PendingClarification | None = None
 
 
 def new_conversation_id() -> str:
@@ -166,15 +175,25 @@ def _is_conversational(question: str) -> bool:
 def interpret_intent(messages: list[Any]) -> IntentDecision:
     """Interpreta intenção com contexto e forma, sem rotear só por palavra."""
 
-    user_messages = [
+    user_messages = _user_messages(messages)
+    if not user_messages:
+        return IntentDecision(ConversationIntent.OUT_OF_SCOPE)
+    question = str(_message_value(user_messages[-1], "content") or "").strip()
+    return _classify_intent(messages, question, user_messages)
+
+
+def _user_messages(messages: list[Any]) -> list[Any]:
+    return [
         message
         for message in messages
         if str(_message_value(message, "role") or _message_value(message, "type") or "")
         in {"user", "human"}
     ]
-    if not user_messages:
-        return IntentDecision(ConversationIntent.OUT_OF_SCOPE)
-    question = str(_message_value(user_messages[-1], "content") or "").strip()
+
+
+def _classify_intent(
+    messages: list[Any], question: str, user_messages: list[Any]
+) -> IntentDecision:
     scope = classify_messages(messages)
     if scope == ScopeDecision.GREETING or _is_conversational(question):
         return IntentDecision(ConversationIntent.CONVERSATIONAL)
@@ -184,12 +203,16 @@ def interpret_intent(messages: list[Any]) -> IntentDecision:
         return IntentDecision(ConversationIntent.AMBIGUOUS, needs_clarification=True)
     if _is_action_request(question):
         return IntentDecision(ConversationIntent.ACTION_REQUEST)
-    if has_academic_term(question) or any(
-        has_academic_term(str(_message_value(message, "content") or ""))
-        for message in user_messages[:-1]
-    ):
+    if _has_academic_context(question, user_messages):
         return IntentDecision(ConversationIntent.NORMATIVE_QUERY)
     return IntentDecision(ConversationIntent.UNKNOWN)
+
+
+def _has_academic_context(question: str, user_messages: list[Any]) -> bool:
+    return has_academic_term(question) or any(
+        has_academic_term(str(_message_value(message, "content") or ""))
+        for message in user_messages[:-1]
+    )
 
 
 def completion_for(intent: str, grounding_status: str | None) -> str:
@@ -278,6 +301,37 @@ class ConversationStore:
             )
             state.messages.extend(messages)
 
+    def set_pending_clarification(
+        self, conversation_id: str, original_question: str, prompt: str
+    ) -> None:
+        conversation_id = validate_conversation_id(conversation_id)
+        original_question = original_question.strip()
+        prompt = prompt.strip()
+        if not original_question or not prompt:
+            raise ValueError("O esclarecimento pendente precisa de conteúdo.")
+        with self._lock:
+            state = self._states.setdefault(
+                conversation_id, _ConversationState(conversation_id)
+            )
+            state.pending_clarification = PendingClarification(
+                original_question, prompt
+            )
+
+    def pending_clarification(
+        self, conversation_id: str
+    ) -> PendingClarification | None:
+        conversation_id = validate_conversation_id(conversation_id)
+        with self._lock:
+            state = self._states.get(conversation_id)
+            return state.pending_clarification if state else None
+
+    def clear_pending_clarification(self, conversation_id: str) -> None:
+        conversation_id = validate_conversation_id(conversation_id)
+        with self._lock:
+            state = self._states.get(conversation_id)
+            if state:
+                state.pending_clarification = None
+
     def clear(self, conversation_id: str) -> None:
         conversation_id = validate_conversation_id(conversation_id)
         with self._lock:
@@ -292,6 +346,7 @@ __all__ = [
     "GroundingState",
     "IntentDecision",
     "InvalidConversationId",
+    "PendingClarification",
     "completion_for",
     "interpret_intent",
     "new_conversation_id",

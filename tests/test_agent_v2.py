@@ -58,6 +58,258 @@ class FakeStructuredModel:
         return {"parsed": self.decision}
 
 
+class FakeClarificationResolutionModel:
+    def with_structured_output(self, *_args, **_kwargs):
+        return self
+
+    def invoke(self, _messages):
+        return {
+            "parsed": {
+                "resolved_question": (
+                    "Quais são os elementos necessários para elaborar referências?"
+                )
+            }
+        }
+
+
+class ClarificationSequencePlanner:
+    def __init__(self):
+        self.calls = []
+
+    def plan(self, question, history):
+        self.calls.append((question, history))
+        if len(self.calls) == 1:
+            return PlannerDecision(
+                intent=ConversationIntent.AMBIGUOUS,
+                needs_clarification=True,
+                clarification_questions=[
+                    "Você deseja orientação sobre qual aspecto das referências?"
+                ],
+            )
+        if question in {"Autoria", "Elementos", "Formatação", "Citação direta longa"}:
+            return PlannerDecision(
+                intent=ConversationIntent.CONVERSATIONAL,
+                reply=GREETING_MESSAGE,
+            )
+        return PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+
+
+def references_payload():
+    source = "A referência deve ser apresentada conforme os elementos necessários."
+    return {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "document_id": 6023,
+                "title": "ABNT NBR 6023",
+                "standard_id": "abnt_nbr_6023",
+                "evidence": [{"evidence_id": "ref-1", "text": source}],
+            }
+        ],
+    }, source
+
+
+def test_clarification_resolution_preserves_the_answered_aspect():
+    planner = Planner(FakeClarificationResolutionModel())
+
+    resolved = planner.resolve_clarification(
+        "Autoria",
+        "Como formatar referências?",
+        "Você deseja orientação sobre qual aspecto?",
+        [],
+    )
+
+    assert resolved is not None
+    assert "autor" in resolved.casefold()
+    assert "referências" in resolved.casefold()
+
+
+@pytest.mark.parametrize("answer", ["Autoria", "Elementos", "Formatação"])
+def test_clarification_answer_resolves_reference_context(answer):
+    planner = ClarificationSequencePlanner()
+    tools = FakeTools(references_payload()[0])
+    source = references_payload()[1]
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=source, evidence_ids=["ref-1"])
+        ),
+        tools=tools,
+    )
+
+    first = agent.invoke(
+        {
+            "conversation_id": "clarification-reference",
+            "messages": [{"role": "user", "content": "Como formatar referências?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": "clarification-reference",
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": answer},
+            ],
+        }
+    )
+
+    assert first["completion_type"] == "clarification_requested"
+    assert second["answer"] != GREETING_MESSAGE
+    assert second["grounding_status"] == "supported"
+    assert second["published_evidence_ids"] == ["ref-1"]
+    assert tools.calls[-1][1]["question"] != answer
+    assert "refer" in tools.calls[-1][1]["question"].casefold()
+    assert any(message["content"] == first["answer"] for message in second["messages"])
+
+
+def test_clarification_answer_for_margin_retrieves_citation_context():
+    planner = ClarificationSequencePlanner()
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+
+    first = agent.invoke(
+        {
+            "conversation_id": "clarification-margin",
+            "messages": [{"role": "user", "content": "Qual é o recuo?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": "clarification-margin",
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Citação direta longa"},
+            ],
+        }
+    )
+
+    assert first["completion_type"] == "clarification_requested"
+    assert second["answer"] != GREETING_MESSAGE
+    assert second["grounding_status"] == "supported"
+    assert "recuo" in tools.calls[-1][1]["question"].casefold()
+
+
+def test_follow_up_keeps_reference_topic_after_clarification_resolution():
+    planner = ClarificationSequencePlanner()
+    tools = FakeTools(references_payload()[0])
+    source = references_payload()[1]
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=source, evidence_ids=["ref-1"])
+        ),
+        tools=tools,
+    )
+    first = agent.invoke(
+        {
+            "conversation_id": "clarification-follow-up",
+            "messages": [{"role": "user", "content": "Como formatar referências?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": "clarification-follow-up",
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Autoria"},
+            ],
+        }
+    )
+    third = agent.invoke(
+        {
+            "conversation_id": "clarification-follow-up",
+            "messages": [
+                *second["messages"],
+                {"role": "user", "content": "E quanto aos elementos?"},
+            ],
+        }
+    )
+
+    assert third["grounding_status"] == "supported"
+    assert "refer" in tools.calls[-1][1]["question"].casefold()
+    assert "element" in tools.calls[-1][1]["question"].casefold()
+
+
+def test_new_normative_subject_does_not_inherit_pending_reference_context():
+    planner = ClarificationSequencePlanner()
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+    first = agent.invoke(
+        {
+            "conversation_id": "clarification-new-subject",
+            "messages": [{"role": "user", "content": "Como formatar referências?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": "clarification-new-subject",
+            "messages": [
+                *first["messages"],
+                {
+                    "role": "user",
+                    "content": (
+                        "Segundo a NBR 10520, como formatar uma citação direta longa?"
+                    ),
+                },
+            ],
+        }
+    )
+
+    assert second["grounding_status"] == "supported"
+    assert "refer" not in tools.calls[-1][1]["question"].casefold()
+    assert "10520" in tools.calls[-1][1]["question"]
+
+
+def test_pending_clarification_can_be_abandoned_for_new_subject():
+    planner = ClarificationSequencePlanner()
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+
+    first = agent.invoke(
+        {
+            "conversation_id": "clarification-abandon",
+            "messages": [{"role": "user", "content": "Como formatar referências?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": "clarification-abandon",
+            "messages": [
+                *first["messages"],
+                {
+                    "role": "user",
+                    "content": "Na verdade, quero saber sobre as margens do trabalho.",
+                },
+            ],
+        }
+    )
+
+    assert second["answer"] != GREETING_MESSAGE
+    assert "referências" not in tools.calls[-1][1]["question"].casefold()
+
+
 def rag_payload():
     return {
         "status": "success",
@@ -141,6 +393,35 @@ def test_planner_requests_clarification_for_underspecified_margin_question() -> 
     assert decision.intent == ConversationIntent.AMBIGUOUS
     assert decision.needs_clarification is True
     assert decision.clarification_questions
+
+
+def test_planner_routes_explicit_academic_topic_change_to_retrieval() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(intent=ConversationIntent.ACTION_REQUEST)
+    )
+    planner = Planner(model)
+
+    decision = planner.plan(
+        "Na verdade, quero saber sobre as margens do trabalho.", []
+    )
+
+    assert decision.intent == ConversationIntent.NORMATIVE_QUERY
+    assert decision.needs_retrieval is True
+
+
+def test_planner_routes_academic_contextual_follow_up_to_retrieval() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(intent=ConversationIntent.ACTION_REQUEST)
+    )
+    planner = Planner(model)
+
+    decision = planner.plan(
+        "E quanto aos elementos?",
+        [{"role": "user", "content": "Como indicar autoria nas referências?"}],
+    )
+
+    assert decision.intent == ConversationIntent.NORMATIVE_QUERY
+    assert decision.needs_retrieval is True
 
 
 def test_contextual_follow_up_reaches_normative_retrieval() -> None:
@@ -960,6 +1241,7 @@ def test_unsupported_broad_citation_question_requests_clarification() -> None:
             needs_retrieval=True,
         )
     )
+    store = ConversationStore()
     agent = AgentV2(
         planner=planner,
         synthesizer=FakeSynthesizer(
@@ -969,6 +1251,7 @@ def test_unsupported_broad_citation_question_requests_clarification() -> None:
             )
         ),
         tools=FakeTools(rag_payload()),
+        store=store,
     )
 
     result = agent.invoke(
@@ -980,6 +1263,7 @@ def test_unsupported_broad_citation_question_requests_clarification() -> None:
     assert result["answer"].endswith("fontes?")
     assert result["published_evidence_ids"] == []
     assert result["errors"] == ["grounding_rejected"]
+    assert store.pending_clarification(result["conversation_id"]) is not None
 
 
 @pytest.mark.parametrize(
@@ -1046,3 +1330,18 @@ def test_conversation_store_isolates_v2_contexts() -> None:
     assert first["conversation_id"] == "first"
     assert second["conversation_id"] == "second"
     assert store.history("first") != store.history("second")
+
+
+def test_pending_clarification_state_isolated_and_consumed() -> None:
+    store = ConversationStore()
+    store.ensure("first")
+    store.ensure("second")
+    store.set_pending_clarification(
+        "first", "Como formatar referências?", "Qual aspecto?"
+    )
+
+    assert store.pending_clarification("first") is not None
+    assert store.pending_clarification("second") is None
+
+    store.clear_pending_clarification("first")
+    assert store.pending_clarification("first") is None

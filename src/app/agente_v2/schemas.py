@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from enum import StrEnum
 from typing import Any
 
@@ -34,6 +35,40 @@ class PlannerDecision(BaseModel):
                 )
             cleaned.append(text)
         return cleaned
+
+    @classmethod
+    def from_llm_value(cls, value: Any) -> PlannerDecision | None:
+        if isinstance(value, cls):
+            return value
+        if not isinstance(value, Mapping):
+            return None
+        parsed = value.get("parsed", value)
+        if isinstance(parsed, cls):
+            return parsed
+        if isinstance(parsed, Mapping) and "intent" in parsed:
+            return cls.model_validate(parsed)
+        return None
+
+
+class ClarificationResolution(BaseModel):
+    """Consulta autossuficiente derivada de um esclarecimento respondido."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    resolved_question: str = Field(min_length=8)
+
+    @classmethod
+    def from_llm_value(cls, value: Any) -> ClarificationResolution | None:
+        if isinstance(value, cls):
+            return value
+        if not isinstance(value, Mapping):
+            return None
+        parsed = value.get("parsed", value)
+        if isinstance(parsed, cls):
+            return parsed
+        if isinstance(parsed, Mapping) and "resolved_question" in parsed:
+            return cls.model_validate(parsed)
+        return None
 
 
 def is_structured_clarification(value: str) -> bool:
@@ -78,6 +113,7 @@ class ToolExecution(BaseModel):
 
 __all__ = [
     "PlannerDecision",
+    "ClarificationResolution",
     "SynthesisResponse",
     "ToolExecution",
     "is_structured_clarification",
