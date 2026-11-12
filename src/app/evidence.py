@@ -501,6 +501,17 @@ def _has_unsafe_clarification_preface(answer: str) -> bool:
     )
 
 
+def _is_interrogative_clause(clause: str) -> bool:
+    normalized = " ".join(normalize_text(clause).split())
+    return bool(
+        re.match(
+            r"^(?:voce\s+(?:quer|gostaria|sabe|pode|deveria)|"
+            r"qual|como|quando|onde|por que)\b",
+            normalized,
+        )
+    )
+
+
 def _is_isolated_clarification_question(answer: str) -> bool:
     parts = [part.strip() for part in answer.splitlines() if part.strip()]
     if not parts:
@@ -511,8 +522,15 @@ def _is_isolated_clarification_question(answer: str) -> bool:
         body = part[:-1].rstrip()
         if re.search(r"[.!;]", body):
             return False
-        if "," in body and _has_normative_assertion(body.rsplit(",", 1)[0]):
-            return False
+        if "," in body:
+            prefix, suffix = body.rsplit(",", 1)
+            if _has_normative_assertion(suffix):
+                return False
+            if (
+                _has_normative_assertion(prefix)
+                and not _is_interrogative_clause(prefix)
+            ):
+                return False
     return True
 
 
