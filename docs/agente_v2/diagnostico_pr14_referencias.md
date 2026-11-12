@@ -33,6 +33,14 @@ no trecho recuperado.
 - `synthesis.py`: quando a lista estruturada está vazia, recupera apenas tokens
   estritos no formato `evidence_id: <id>`. O ID continua sujeito à existência no
   payload e à validação textual do grounding; a extração não é prova factual.
+- Ainda em `synthesis.py`, os marcadores inline reconhecidos são removidos do
+  texto antes da validação e da publicação; eles permanecem apenas como
+  metadados de seleção.
+- Em `grounding.py`, restrições posteriores da mesma regra (`somente`, `apenas`,
+  exceções e referências anafóricas à regra) continuam no contexto de validação.
+  Sentenças condicionais posteriores que introduzem outra regra, como a
+  orientação específica para notas de rodapé, não são anexadas ao primeiro
+  enunciado literal.
 - Testes determinísticos em `tests/test_agent_v2.py` e
   `tests/test_grounding_policy.py` cobrem esses contratos.
 
@@ -63,6 +71,9 @@ esclarecimento e publicou zero IDs.
   `document:32:page:12`.
 - Consulta direta de formatação: após a correção, `supported`, página 11, ID
   publicado `document:32:page:11`.
+- Consulta direta de formatação repetida após o ajuste P2 com temperatura 0:
+  o sintetizador selecionou `document:32:page:11`; o texto público não contém
+  `evidence_id` e o resultado foi `supported`/`grounded_answer`.
 - Continuidade após autoria: `E quanto aos elementos?` foi contextualizada com
   a pergunta anterior, recuperou NBR 6023 páginas 11, 24 e 26 e publicou uma
   síntese sustentada pela página 11.
@@ -93,7 +104,7 @@ renderizadas com grounding e o expander de evidências documentais. Capturas:
   `supported`; o teste de escopo literal falhava por incorporar uma condição
   posterior não relacionada; o teste de IDs inline retornava lista vazia.
 - GREEN: os três testes passaram após as menores correções correspondentes.
-- Suíte completa: **396 passed, 1 skipped, 9 xfailed**.
+- Suíte completa após os ajustes P1/P2: **398 passed, 1 skipped, 9 xfailed**.
 - Ruff: **aprovado** (`uv run --locked ruff check .`).
 - Diferenças: **aprovado** (`git diff --check`).
 

@@ -193,7 +193,53 @@ def test_synthesis_recovers_inline_evidence_ids_when_structured_list_is_empty():
     )
 
     assert parsed is not None
+    assert parsed.answer == "A regra é aplicada."
     assert parsed.evidence_ids == ["document:32:page:11"]
+
+
+def test_inline_evidence_metadata_is_removed_before_grounding():
+    parsed = Synthesizer(None)._parsed(
+        {
+            "answer": "A margem direita deve medir 2 cm. evidence_id: e1",
+            "evidence_ids": [],
+            "limitations": [],
+        }
+    )
+    assert parsed is not None
+    agent = AgentV2(
+        planner=FakePlanner(
+            PlannerDecision(
+                intent=ConversationIntent.NORMATIVE_QUERY,
+                needs_retrieval=True,
+            )
+        ),
+        synthesizer=FakeSynthesizer(parsed),
+        tools=FakeTools(
+            {
+                "status": "success",
+                "evidence_found": True,
+                "documents": [
+                    {
+                        "document_id": 1,
+                        "evidence": [
+                            {
+                                "evidence_id": "e1",
+                                "text": "A margem direita deve medir 2 cm.",
+                            }
+                        ],
+                    }
+                ],
+            }
+        ),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual a margem direita?"}]}
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert result["published_evidence_ids"] == ["e1"]
+    assert "evidence_id" not in result["answer"]
 
 
 def test_safe_decision_normalizes_ambiguous_and_unknown_contracts():

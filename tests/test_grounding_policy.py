@@ -107,6 +107,20 @@ def test_literal_reference_format_rule_ignores_unrelated_following_condition():
     assert result.evidence_ids == ("e1",)
 
 
+def test_following_restriction_of_the_same_rule_cannot_be_omitted():
+    source = (
+        "A margem deve medir 2 cm. "
+        "Esta regra se aplica somente a trabalhos impressos."
+    )
+
+    result = ground_answer(
+        "A margem deve medir 2 cm.", evidence(source), QUESTION
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
 def test_reference_author_rule_accepts_citar_verb_in_question():
     source = (
         "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "

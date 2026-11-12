@@ -112,9 +112,29 @@ class Synthesizer:
             else:
                 parsed = None
         if parsed is None or parsed.evidence_ids:
-            return parsed
+            if parsed is None:
+                return None
+            inline_ids = list(dict.fromkeys(_INLINE_EVIDENCE_ID.findall(parsed.answer)))
+            if not inline_ids:
+                return parsed
+            return parsed.model_copy(
+                update={"answer": _without_inline_ids(parsed.answer)}
+            )
         inline_ids = list(dict.fromkeys(_INLINE_EVIDENCE_ID.findall(parsed.answer)))
-        return parsed.model_copy(update={"evidence_ids": inline_ids})
+        if not inline_ids:
+            return parsed
+        return parsed.model_copy(
+            update={
+                "answer": _without_inline_ids(parsed.answer),
+                "evidence_ids": inline_ids,
+            }
+        )
+
+
+def _without_inline_ids(answer: str) -> str:
+    cleaned = _INLINE_EVIDENCE_ID.sub("", answer)
+    cleaned = re.sub(r"(?m)^[ \t]+(?=\r?$)", "", cleaned)
+    return re.sub(r"\n{3,}", "\n\n", cleaned).strip()
 
 
 __all__ = ["SynthesisFailure", "Synthesizer"]

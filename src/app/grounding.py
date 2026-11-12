@@ -288,9 +288,18 @@ def _scoped_quote(quote: str, paragraph: str) -> str:
         scoped.append(sentence)
         if index + 1 < len(sentences):
             following = _canonical(sentences[index + 1])
-            if re.search(r"\b(exceto|salvo|a menos que|com excecao)\b", following):
+            if _following_restriction(following):
                 scoped.append(sentences[index + 1])
     return " ".join(dict.fromkeys(scoped))
+
+
+def _following_restriction(sentence: str) -> bool:
+    if re.search(r"\b(exceto|salvo|a menos que|com excecao)\b", sentence):
+        return True
+    return bool(
+        re.search(r"\b(somente|apenas)\b", sentence)
+        and re.search(r"\b(regra|esta|essa|isso|isto)\b", sentence)
+    )
 
 
 def _literal_support(
