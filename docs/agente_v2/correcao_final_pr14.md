@@ -206,5 +206,7 @@ como aprovados.
 
 O P1 reproduzido está corrigido sem liberar afirmações sem suporte; os P2
 permanecem caracterizados e documentados, sem alterações especulativas na
-infraestrutura. A PR deve ser submetida a uma última revisão independente após
-o novo commit.
+infraestrutura. O CI do commit `af506cd0683bce74e6131b9cf0573b51ef32c7d1`
+concluiu com sucesso (Ruff, testes e diff). A revisão independente do Codex
+para esse commit não encontrou problemas maiores. A PR permanece aberta e sem
+merge.
