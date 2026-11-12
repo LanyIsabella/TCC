@@ -138,6 +138,27 @@ autossuficiente sobre citação direta cancela o contexto pendente de referênci
 - IDs inline ou similaridade lexical não autorizam publicação sem registro real
   no turno.
 
+## Avaliação final do conjunto observado
+
+Os indicadores abaixo resumem somente os cenários reais documentados nesta PR;
+eles não estimam a fidelidade geral do LLM e não substituem uma avaliação com
+amostra pré-registrada. O holdout de 80 casos não foi utilizado.
+
+| Indicador | Observação verificável | Resultado observado |
+|---|---|---|
+| Pertinência | Consultas normativas diretas de autoria, elementos, formatação (incluindo repetição) e continuidade receberam respostas sobre o aspecto solicitado | 5/5 pertinentes nos casos positivos registrados |
+| Suporte factual publicado | Os mesmos cinco casos tiveram `supported` e IDs publicados pertencentes ao payload do turno | 5/5 fundamentados no conjunto observado |
+| Rejeição de evidência inadequada | Consulta sobre discos de vinil e consulta de referências atribuída à NBR 10520 não publicaram IDs | 2/2 rejeitadas sem suporte |
+| Rejeição indevida | Não houve rejeição nos cinco casos positivos acima; a execução real da UI que terminou sem evidência é mantida como limitação, não como sucesso ou falha factual conclusiva | 0/5 nos casos positivos; UI inconclusiva |
+| Respostas parciais | A sequência real `referências → Elementos → Formatação` produziu uma resposta parcial em `Formatação`, com limitação explícita | 1 caso parcial registrado; taxa geral não estimada |
+| Afirmações sem suporte publicadas | Nos negativos executados, nenhum ID ou afirmação normativa foi publicado como fundamentado | 0 casos observados |
+| Falhas de contextualização | Os seguimentos de `Elementos`, `Formatação`, `Autoria` e a mudança explícita para citação longa mantiveram ou reiniciaram o contexto correto | 0 falhas nos cenários registrados |
+| Consistência entre execuções | Houve variação entre execuções diretas e a interface, inclusive uma resposta parcial e uma execução sem evidência | Não calculada; requer protocolo repetido e amostra fixa |
+
+Esses números são contagens de casos reproduzidos, não uma taxa de qualidade
+populacional. A variabilidade do modelo, a cobertura limitada do corpus e a
+execução de UI sem evidência impedem declarar fidelidade geral ou determinismo.
+
 ## TDD e regressões
 
 Foram adicionados ou ajustados testes para:
