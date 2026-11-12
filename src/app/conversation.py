@@ -216,16 +216,15 @@ def _has_academic_context(question: str, user_messages: list[Any]) -> bool:
 
 
 def completion_for(intent: str, grounding_status: str | None) -> str:
-    if intent == ConversationIntent.CONVERSATIONAL:
-        return CompletionType.CONVERSATIONAL
-    if intent == ConversationIntent.AMBIGUOUS:
-        return CompletionType.CLARIFICATION_REQUESTED
-    if intent == ConversationIntent.ACTION_REQUEST:
-        return CompletionType.ACTION_UNAVAILABLE
-    if intent == ConversationIntent.OUT_OF_SCOPE:
-        return CompletionType.OUT_OF_SCOPE
-    if intent == ConversationIntent.TECHNICAL_FAILURE:
-        return CompletionType.TECHNICAL_FAILURE
+    fixed = {
+        ConversationIntent.CONVERSATIONAL: CompletionType.CONVERSATIONAL,
+        ConversationIntent.AMBIGUOUS: CompletionType.CLARIFICATION_REQUESTED,
+        ConversationIntent.ACTION_REQUEST: CompletionType.ACTION_UNAVAILABLE,
+        ConversationIntent.OUT_OF_SCOPE: CompletionType.OUT_OF_SCOPE,
+        ConversationIntent.TECHNICAL_FAILURE: CompletionType.TECHNICAL_FAILURE,
+    }
+    if intent in fixed:
+        return fixed[intent]
     return {
         "supported": CompletionType.GROUNDED_ANSWER,
         "partial": CompletionType.PARTIAL_ANSWER,

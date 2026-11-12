@@ -3,6 +3,7 @@ from pydantic import ValidationError
 from src.app.agente_v2.orchestrator import AgentV2
 from src.app.agente_v2.planner import Planner
 from src.app.agente_v2.schemas import (
+    ClarificationResolution,
     LimitationCode,
     PlannerDecision,
     SynthesisResponse,
@@ -126,6 +127,93 @@ def test_clarification_resolution_preserves_the_answered_aspect():
     assert resolved is not None
     assert "autor" in resolved.casefold()
     assert "referências" in resolved.casefold()
+
+
+@pytest.mark.parametrize(
+    ("answer", "original_question", "expected"),
+    [
+        ("Elementos", "Como formatar referências?", "elementos"),
+        ("Formatação", "Como formatar referências?", "formatação"),
+        ("Citação direta longa", "Qual é o recuo?", "recuo"),
+        ("Outro assunto", "Como formatar referências?", None),
+    ],
+)
+def test_deterministic_clarification_queries_cover_known_aspects(
+    answer, original_question, expected
+):
+    resolved = Planner._deterministic_clarification_query(answer, original_question)
+
+    if expected is None:
+        assert resolved is None
+    else:
+        assert expected in resolved.casefold()
+
+
+def test_structured_clarification_falls_back_when_model_loses_the_aspect():
+    planner = Planner(FakeClarificationResolutionModel())
+
+    resolved = planner.resolve_clarification(
+        "Outro aspecto",
+        "Como organizar referências?",
+        "Você deseja orientação sobre qual aspecto?",
+        [],
+    )
+
+    assert resolved == "Como organizar referências — aspecto: Outro aspecto"
+
+
+def test_structured_contract_parsers_accept_raw_and_typed_values():
+    planner_decision = PlannerDecision(intent=ConversationIntent.NORMATIVE_QUERY)
+    clarification = ClarificationResolution(
+        resolved_question="Como indicar autores nas referências?"
+    )
+
+    assert PlannerDecision.from_llm_value(planner_decision) is planner_decision
+    assert PlannerDecision.from_llm_value({"intent": "normative_query"})
+    assert PlannerDecision.from_llm_value({"parsed": {}}) is None
+    assert ClarificationResolution.from_llm_value(clarification) is clarification
+    assert ClarificationResolution.from_llm_value(
+        {"resolved_question": clarification.resolved_question}
+    )
+    assert ClarificationResolution.from_llm_value([]) is None
+
+
+def test_safe_decision_normalizes_ambiguous_and_unknown_contracts():
+    planner = Planner(None)
+    fallback = PlannerDecision(
+        intent=ConversationIntent.AMBIGUOUS,
+        clarification_questions=["Qual aspecto você deseja consultar?"],
+    )
+    ambiguous = PlannerDecision(
+        intent=ConversationIntent.AMBIGUOUS,
+        reply="Qual aspecto você deseja consultar?",
+    )
+
+    normalized = planner._safe_decision(ambiguous, fallback)
+    assert normalized.needs_clarification is True
+    assert normalized.clarification_questions == [
+        "Qual aspecto você deseja consultar?"
+    ]
+    assert normalized.reply is None
+
+    unknown = PlannerDecision(intent=ConversationIntent.UNKNOWN)
+    normative_fallback = PlannerDecision(
+        intent=ConversationIntent.NORMATIVE_QUERY,
+        needs_retrieval=True,
+    )
+    assert planner._safe_decision(unknown, normative_fallback).needs_retrieval is True
+
+
+def test_safe_decision_uses_default_clarification_when_no_question_exists():
+    planner = Planner(None)
+    decision = PlannerDecision(intent=ConversationIntent.AMBIGUOUS)
+
+    normalized = planner._safe_decision(
+        decision, PlannerDecision(intent=ConversationIntent.UNKNOWN)
+    )
+
+    assert normalized.clarification_questions
+    assert normalized.reply is None
 
 
 @pytest.mark.parametrize("answer", ["Autoria", "Elementos", "Formatação"])
