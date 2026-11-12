@@ -107,6 +107,30 @@ def test_reference_author_rule_accepts_citar_verb_in_question():
     assert result.evidence_ids == ("e1",)
 
 
+def test_citation_rule_from_other_standard_is_relevant_support():
+    source = (
+        "As citações com mais de três linhas devem ser em tamanho menor e uniforme."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Artigo em publicação periódica",
+            "standard_id": "abnt_nbr_6022",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Qual deve ser o tamanho da fonte das citações em artigos científicos?",
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
 def test_literal_rule_survives_truncated_page_sentence_punctuation():
     source = (
         "ABNT NBR 6023:2025\n\n"

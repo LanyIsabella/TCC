@@ -323,7 +323,9 @@ def _citation_topic_matches(document: str, source: str) -> bool:
     return bool(
         re.search(
             r"\b(citacao direta|citacao indireta|autor[- ]data|"
-            r"sistema numerico|recuo de)\b",
+            r"sistema numerico|recuo de|citac(?:ao|oes)\b[^.!?]{0,120}"
+            r"\b(?:linha|linhas|tamanho|menor|uniforme)\b)"
+            r"\b",
             source,
         )
     )
