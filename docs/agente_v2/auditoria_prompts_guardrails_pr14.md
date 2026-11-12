@@ -170,6 +170,11 @@ preservar páginas adjacentes do mesmo documento quando uma página direta é
 selecionada. O limite de quatro trechos continua valendo; a mudança apenas
 preenche posições restantes com continuidades adjacentes, sem alterar a busca.
 
+O recorte de cada trecho também passou a usar `matched_text` quando disponível.
+Assim, uma regra localizada depois do primeiro milhar de caracteres da página
+continua chegando ao Synthesizer, sem aumentar o orçamento global nem alterar a
+recuperação.
+
 ## Limitações e pendências
 
 - A interface Streamlit foi inicializada e exercitada com Playwright, mas uma

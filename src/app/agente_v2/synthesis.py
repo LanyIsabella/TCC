@@ -149,7 +149,7 @@ def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
         for item in document.get("evidence", []):
             if not isinstance(item, Mapping):
                 continue
-            text = str(item.get("text") or "").strip()
+            text = _compact_evidence_text(item)
             if not text:
                 continue
             candidates.append(
@@ -200,6 +200,20 @@ def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
         {key: value for key, value in item.items() if not key.startswith("_")}
         for item in selected[:4]
     ]
+
+
+def _compact_evidence_text(item: Mapping[str, Any], limit: int = 1000) -> str:
+    text = str(item.get("text") or "").strip()
+    if len(text) <= limit:
+        return text
+    matched = str(item.get("matched_text") or "").strip()
+    if matched and (start := text.find(matched)) >= 0:
+        window_start = max(0, start - 200)
+        window_end = min(len(text), window_start + limit)
+        if window_end - window_start < limit:
+            window_start = max(0, window_end - limit)
+        return text[window_start:window_end].strip()
+    return text[:limit]
 
 
 def _retry_prompt(prompt: str) -> str:
