@@ -8,7 +8,7 @@ from src.app.agente_v2.schemas import (
     PlannerDecision,
     SynthesisResponse,
 )
-from src.app.agente_v2.synthesis import SynthesisFailure
+from src.app.agente_v2.synthesis import SynthesisFailure, Synthesizer
 from src.app.conversation import ConversationIntent, ConversationStore
 from src.app.grounding import INSUFFICIENT_EVIDENCE, PARTIAL_LIMITATION
 from src.app.scope_guard import GREETING_MESSAGE
@@ -76,6 +76,11 @@ class FakeClarificationResolutionModel:
 class ClarificationSequencePlanner:
     def __init__(self):
         self.calls = []
+
+    def resolve_clarification(self, answer, original_question, _prompt, _history):
+        return Planner._deterministic_clarification_query(
+            answer, original_question
+        )
 
     def plan(self, question, history):
         self.calls.append((question, history))
@@ -176,6 +181,19 @@ def test_structured_contract_parsers_accept_raw_and_typed_values():
         {"resolved_question": clarification.resolved_question}
     )
     assert ClarificationResolution.from_llm_value([]) is None
+
+
+def test_synthesis_recovers_inline_evidence_ids_when_structured_list_is_empty():
+    parsed = Synthesizer(None)._parsed(
+        {
+            "answer": "A regra é aplicada. evidence_id: document:32:page:11",
+            "evidence_ids": [],
+            "limitations": [],
+        }
+    )
+
+    assert parsed is not None
+    assert parsed.evidence_ids == ["document:32:page:11"]
 
 
 def test_safe_decision_normalizes_ambiguous_and_unknown_contracts():
@@ -759,6 +777,66 @@ def test_normative_turn_accepts_literal_evidence_after_page_header() -> None:
 
     assert result["grounding_status"] == "supported"
     assert result["published_evidence_ids"] == ["document:32:page:40"]
+
+
+def test_short_clarification_grounds_against_resolved_question() -> None:
+    planner = ClarificationSequencePlanner()
+    answer = (
+        "Os elementos essenciais para livro e/ou folheto são: autor, título, "
+        "subtítulo (se houver), edição (se houver), local, editora e data de "
+        "publicação."
+    )
+    tools = FakeTools(
+        {
+            "status": "success",
+            "evidence_found": True,
+            "documents": [
+                {
+                    "document_id": 6023,
+                    "title": "ABNT NBR 6023",
+                    "standard_id": "abnt_nbr_6023",
+                    "evidence": [
+                        {
+                            "evidence_id": "ref-elements",
+                            "text": (
+                                "7.1.1 "
+                                + answer
+                                + " Quando necessário, acrescentam-se elementos "
+                                "complementares à referência."
+                            ),
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=answer, evidence_ids=["ref-elements"])
+        ),
+        tools=tools,
+    )
+
+    first = agent.invoke(
+        {
+            "conversation_id": "short-clarification-grounding",
+            "messages": [{"role": "user", "content": "Como formatar referências?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": first["conversation_id"],
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Elementos"},
+            ],
+        }
+    )
+
+    assert second["grounding_status"] == "supported"
+    assert second["published_evidence_ids"] == ["ref-elements"]
+    assert "NBR 6023" in tools.calls[-1][1]["question"]
 
 
 def test_normative_turn_without_evidence_fails_closed() -> None:
@@ -1439,6 +1517,52 @@ def test_unsupported_broad_citation_question_requests_clarification() -> None:
     assert result["published_evidence_ids"] == []
     assert result["errors"] == ["grounding_rejected"]
     assert store.pending_clarification(result["conversation_id"]) is not None
+
+
+def test_partial_broad_reference_answer_requests_clarification() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    supported = (
+        "As notas de referência devem ter numeração única e consecutiva para "
+        "cada capítulo ou parte."
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer=(
+                    f"{supported}\nA formatação deve seguir uma regra "
+                    "não recuperada."
+                ),
+                evidence_ids=["e1"],
+            )
+        ),
+        tools=FakeTools(
+            {
+                "status": "success",
+                "evidence_found": True,
+                "documents": [
+                    {
+                        "document_id": 10520,
+                        "title": "ABNT NBR 10520",
+                        "evidence": [{"evidence_id": "e1", "text": supported}],
+                    }
+                ],
+            }
+        ),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como formatar referências?"}]}
+    )
+
+    assert result["completion_type"] == "clarification_requested"
+    assert result["grounding_status"] == "conversational"
+    assert result["published_evidence_ids"] == []
 
 
 def test_supported_broad_answer_is_not_replaced_by_clarification() -> None:

@@ -209,13 +209,14 @@ class AgentV2:
             conversation_id=conversation_id,
             turn_id=turn_id,
             question=question,
+            grounding_question=planning_question,
             synthesis=synthesis,
             execution=execution,
             planner=plan,
         )
         if (
             self._is_underspecified_broad_question(question)
-            and result.grounding_status == "unsupported"
+            and result.grounding_status in {"unsupported", "partial"}
         ):
             return self._clarification_after_unsupported_broad_query(result, question)
         return result

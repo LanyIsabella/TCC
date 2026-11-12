@@ -279,8 +279,18 @@ def _scoped_quote(quote: str, paragraph: str) -> str:
     quoted = [part for part in sentences if " ".join(quote.split()) in part]
     if not quoted:
         return paragraph
-    scope = [part for part in sentences if _qualifiers(_canonical(part))]
-    return " ".join(dict.fromkeys([*quoted, *scope]))
+    scoped = []
+    for index, sentence in enumerate(sentences):
+        if sentence not in quoted:
+            continue
+        if index and _qualifiers(_canonical(sentences[index - 1])):
+            scoped.append(sentences[index - 1])
+        scoped.append(sentence)
+        if index + 1 < len(sentences):
+            following = _canonical(sentences[index + 1])
+            if re.search(r"\b(exceto|salvo|a menos que|com excecao)\b", following):
+                scoped.append(sentences[index + 1])
+    return " ".join(dict.fromkeys(scoped))
 
 
 def _literal_support(

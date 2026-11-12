@@ -82,6 +82,31 @@ def test_literal_rule_survives_page_header_and_section_paragraphs():
     assert result.evidence_ids == ("e1",)
 
 
+def test_literal_reference_format_rule_ignores_unrelated_following_condition():
+    answer = (
+        "As referências devem ser elaboradas em espaço simples, alinhadas à "
+        "margem esquerda do texto e separadas entre si por uma linha em branco "
+        "de espaço simples."
+    )
+    source = (
+        "6.3 "
+        + answer
+        + " Quando aparecerem em notas de rodapé, devem ser alinhadas à margem "
+        "esquerda do texto."
+    )
+
+    result = ground_answer(
+        answer,
+        evidence(source),
+        "Segundo a ABNT NBR 6023, quais são as regras de formatação das referências?",
+        normative_context=True,
+    )
+
+    assert result.answer == answer
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
 def test_reference_author_rule_accepts_citar_verb_in_question():
     source = (
         "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "

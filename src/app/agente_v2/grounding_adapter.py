@@ -114,6 +114,7 @@ def grounded_result(
     conversation_id: str,
     turn_id: str,
     question: str,
+    grounding_question: str | None = None,
     synthesis: SynthesisResponse,
     execution: ToolExecution,
     planner: PlannerDecision,
@@ -154,8 +155,9 @@ def grounded_result(
             evidence_ids=list(synthesis.evidence_ids),
         ),
     }
-    finalized = finalize_grounding(result)
-    extracted = extract_agent_result(finalized, question=question)
+    validation_question = grounding_question or question
+    finalized = finalize_grounding(result, question=validation_question)
+    extracted = extract_agent_result(finalized)
     if (
         extracted.grounding_status == "unsupported"
         and synthesis.answer.strip() != INSUFFICIENT_EVIDENCE

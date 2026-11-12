@@ -4,12 +4,17 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from collections.abc import Mapping
 from typing import Any
 
 from .schemas import SynthesisResponse
 
 logger = logging.getLogger(__name__)
+_INLINE_EVIDENCE_ID = re.compile(
+    r"\bevidence_id\s*:\s*([A-Za-z0-9][A-Za-z0-9:._-]*)",
+    flags=re.IGNORECASE,
+)
 
 
 class SynthesisFailure(RuntimeError):
@@ -93,17 +98,23 @@ class Synthesizer:
         )
 
     def _parsed(self, value: Any) -> SynthesisResponse | None:
+        parsed: SynthesisResponse | None = None
         if isinstance(value, SynthesisResponse):
-            return value
-        if isinstance(value, Mapping):
+            parsed = value
+        elif isinstance(value, Mapping):
             parsed = value.get("parsed")
             if isinstance(parsed, SynthesisResponse):
-                return parsed
-            if isinstance(parsed, Mapping):
-                return SynthesisResponse.model_validate(parsed)
-            if "answer" in value:
-                return SynthesisResponse.model_validate(value)
-        return None
+                pass
+            elif isinstance(parsed, Mapping):
+                parsed = SynthesisResponse.model_validate(parsed)
+            elif "answer" in value:
+                parsed = SynthesisResponse.model_validate(value)
+            else:
+                parsed = None
+        if parsed is None or parsed.evidence_ids:
+            return parsed
+        inline_ids = list(dict.fromkeys(_INLINE_EVIDENCE_ID.findall(parsed.answer)))
+        return parsed.model_copy(update={"evidence_ids": inline_ids})
 
 
 __all__ = ["SynthesisFailure", "Synthesizer"]
