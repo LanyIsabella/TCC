@@ -165,6 +165,11 @@ aceita conteúdo de outras normas somente quando o próprio trecho contém uma
 regra explícita sobre referências (por exemplo, separação por espaço simples).
 Uma simples menção a NBR 6023 continua insuficiente.
 
+Na revisão seguinte, a compactação de evidências também foi ajustada para
+preservar páginas adjacentes do mesmo documento quando uma página direta é
+selecionada. O limite de quatro trechos continua valendo; a mudança apenas
+preenche posições restantes com continuidades adjacentes, sem alterar a busca.
+
 ## Limitações e pendências
 
 - A interface Streamlit foi inicializada e exercitada com Playwright, mas uma

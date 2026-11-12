@@ -273,6 +273,38 @@ def test_synthesis_prompt_prefers_natural_relevant_evidence():
     assert '"evidence_id": "e2"' not in prompt
 
 
+def test_synthesis_prompt_keeps_adjacent_page_context():
+    prompt = Synthesizer(None)._prompt(
+        "Qual é a regra completa?",
+        [],
+        {
+            "documents": [
+                {
+                    "document_id": 14724,
+                    "standard_id": "abnt_nbr_14724",
+                    "evidence": [
+                        {
+                            "evidence_id": "page-10",
+                            "page_number": 10,
+                            "direct_match": True,
+                            "text": "A regra começa nesta página.",
+                        },
+                        {
+                            "evidence_id": "page-11",
+                            "page_number": 11,
+                            "direct_match": False,
+                            "text": "A regra continua com uma exceção.",
+                        },
+                    ],
+                }
+            ]
+        },
+    )
+
+    assert "A regra começa nesta página." in prompt
+    assert "A regra continua com uma exceção." in prompt
+
+
 def test_planner_prompt_requests_specific_clarification_for_broad_normative_questions():
     prompt = Planner(None)._prompt("Como formatar referências?", [])
 

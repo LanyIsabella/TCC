@@ -139,6 +139,13 @@ def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
     for document in retrieval.get("documents", []):
         if not isinstance(document, Mapping):
             continue
+        document_key = str(
+            document.get("rag_document_id")
+            or document.get("document_id")
+            or document.get("standard_id")
+            or document.get("title")
+            or ""
+        )
         for item in document.get("evidence", []):
             if not isinstance(item, Mapping):
                 continue
@@ -157,10 +164,31 @@ def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
                     "page": item.get("page_number"),
                     "direct_match": bool(item.get("direct_match")),
                     "text": text[:1000],
+                    "_document_key": document_key,
                 }
             )
     direct = [item for item in candidates if item["direct_match"]]
-    selected = direct or candidates
+    if direct:
+        selected = list(direct)
+        direct_pages = {
+            (item["_document_key"], int(item["page"]))
+            for item in direct
+            if str(item["page"]).isdigit()
+        }
+        for item in candidates:
+            if len(selected) >= 4 or item["direct_match"]:
+                continue
+            if not str(item["page"]).isdigit():
+                continue
+            page = int(item["page"])
+            if any(
+                item["_document_key"] == document_key
+                and abs(page - direct_page) == 1
+                for document_key, direct_page in direct_pages
+            ):
+                selected.append(item)
+    else:
+        selected = candidates
     selected.sort(
         key=lambda item: (
             not item["direct_match"],
@@ -168,7 +196,10 @@ def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
             str(item["evidence_id"]),
         )
     )
-    return selected[:4]
+    return [
+        {key: value for key, value in item.items() if not key.startswith("_")}
+        for item in selected[:4]
+    ]
 
 
 def _retry_prompt(prompt: str) -> str:
