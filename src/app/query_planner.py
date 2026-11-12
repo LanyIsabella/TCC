@@ -272,7 +272,8 @@ def _is_underspecified_contextual_question(question: str) -> bool:
     normalized = normalize_text(question).rstrip("?.!")
     return bool(
         re.fullmatch(
-            r"qual (?:e )?(?:o|a) (?:recuo|margem|fonte|espacamento)",
+            r"(?:qual (?:e |deve ser )?|como deve ser )"
+            r"(?:o|a) (?:recuo|margem|fonte|espacamento)",
             normalized,
         )
     )

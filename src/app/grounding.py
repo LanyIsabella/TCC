@@ -307,19 +307,30 @@ def _evidence_topic_matches(question: str, record: Mapping[str, Any]) -> bool:
     source = _canonical(str(record.get("text") or ""))
     if not document:
         return True
-    if "citac" in normalized_question or "citar" in normalized_question:
-        if "citac" in document or "10520" in document:
-            return True
-        return bool(
-            re.search(
-                r"\b(citacao direta|citacao indireta|autor[- ]data|"
-                r"sistema numerico|recuo de)\b",
-                source,
-            )
-        )
     if "referenc" in normalized_question:
-        return "referenc" in document or "6023" in document or "referenc" in source
+        # A verb "citar" can occur in a question explicitly about references;
+        # prefer the reference standard unless the question names citations.
+        if "citac" not in normalized_question:
+            return _reference_topic_matches(document, source)
+    if any(marker in normalized_question for marker in ("citac", "citar")):
+        return _citation_topic_matches(document, source)
     return True
+
+
+def _citation_topic_matches(document: str, source: str) -> bool:
+    if "citac" in document or "10520" in document:
+        return True
+    return bool(
+        re.search(
+            r"\b(citacao direta|citacao indireta|autor[- ]data|"
+            r"sistema numerico|recuo de)\b",
+            source,
+        )
+    )
+
+
+def _reference_topic_matches(document: str, source: str) -> bool:
+    return "referenc" in document or "6023" in document or "referenc" in source
 
 
 def _literal_in_source(claim: str, source: str, question: str) -> bool:

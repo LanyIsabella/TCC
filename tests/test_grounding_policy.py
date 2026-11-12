@@ -82,6 +82,31 @@ def test_literal_rule_survives_page_header_and_section_paragraphs():
     assert result.evidence_ids == ("e1",)
 
 
+def test_reference_author_rule_accepts_citar_verb_in_question():
+    source = (
+        "O autor deve ser indicado pelo último sobrenome, em letras maiúsculas, "
+        "seguido do prenome."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "ABNT NBR 6023",
+            "standard_id": "abnt_nbr_6023",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        source,
+        available,
+        "Como citar autores nas referências?",
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
 def test_literal_rule_survives_truncated_page_sentence_punctuation():
     source = (
         "ABNT NBR 6023:2025\n\n"

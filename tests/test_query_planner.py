@@ -130,6 +130,23 @@ def test_specific_element_in_broad_previous_question_is_preserved() -> None:
 
 @pytest.mark.parametrize(
     "question",
+    ["Qual deve ser o espaçamento?", "Como deve ser a fonte?"],
+)
+def test_equivalent_underspecified_follow_ups_keep_previous_topic(
+    question: str,
+) -> None:
+    history = [
+        {"role": "user", "content": "Como formatar citação direta longa?"},
+        {"role": "assistant", "content": "A citação deve ter recuo."},
+    ]
+
+    query = contextualize_query(question, history)
+
+    assert "Como formatar citação direta longa?" in query
+
+
+@pytest.mark.parametrize(
+    "question",
     ["Como formatar referências?", "Qual é o recuo?"],
 )
 def test_self_contained_questions_do_not_inherit_unrelated_context(
