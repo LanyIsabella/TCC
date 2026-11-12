@@ -471,6 +471,27 @@ def test_structured_clarification_with_academic_terms_remains_conversational() -
     assert result["answer"] == reply
 
 
+def test_structured_clarification_question_can_contain_normative_terms() -> None:
+    reply = "Você quer saber se as citações devem ter recuo?"
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            clarification_questions=[reply],
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke({"messages": [{"role": "user", "content": "Como formatar?"}]})
+
+    assert result["grounding_status"] == "conversational"
+    assert result["answer"] == reply
+
+
 def test_multiple_structured_clarification_questions_remain_conversational() -> None:
     questions = [
         "Você quer formatar citações ou referências?",
@@ -687,6 +708,42 @@ def test_controlled_limitation_is_preserved_without_free_text() -> None:
 
     assert result["grounding_status"] == "supported"
     assert PARTIAL_LIMITATION in result["limitations"]
+
+
+def test_selected_evidence_ids_remain_auditable_after_grounding() -> None:
+    answer = "A citação deve observar a norma aplicável."
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_clarification=False,
+            needs_retrieval=True,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=answer, evidence_ids=["e1", "e2"])
+        ),
+        tools=FakeTools(
+            {
+                "status": "success",
+                "evidence_found": True,
+                "documents": [
+                    {
+                        "evidence": [
+                            {"evidence_id": "e1", "text": answer},
+                            {"evidence_id": "e2", "text": "Outro trecho."},
+                        ]
+                    }
+                ],
+            }
+        ),
+    )
+
+    result = agent.invoke({"messages": [{"role": "user", "content": "Como citar?"}]})
+
+    assert result["selected_evidence_ids"] == ["e1", "e2"]
+    assert result["published_evidence_ids"] == ["e1"]
 
 
 def test_synthesis_error_publishes_only_controlled_code() -> None:

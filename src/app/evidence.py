@@ -262,11 +262,13 @@ def _structured_data(result: Mapping[str, Any]) -> Mapping[str, Any] | None:
 def _selected_evidence_ids(result: Mapping[str, Any]) -> tuple[str, ...] | None:
     """Retorna a seleção explícita; ausência de estrutura não é uma seleção."""
 
-    structured = _structured_data(result)
-    if structured is None:
-        return None
-    identifiers = structured.get("evidence_ids", [])
-    if not isinstance(identifiers, list):
+    identifiers = result.get("_synthesis_evidence_ids")
+    if identifiers is None:
+        structured = _structured_data(result)
+        if structured is None:
+            return None
+        identifiers = structured.get("evidence_ids", [])
+    if not isinstance(identifiers, (list, tuple)):
         return ()
     return tuple(
         dict.fromkeys(
@@ -686,6 +688,13 @@ def _decision(
             and not trusted_clarification
         )
         if trusted_clarification:
+            isolated_question = (
+                clarification_question
+                and "\n" not in answer
+                and not re.search(r"[.!;]", answer.rstrip()[:-1])
+            )
+            if isolated_question:
+                normative_assertion = False
             safe_non_normative = not normative_assertion
         if untrusted_clarification or normative_assertion or (
             not safe_non_normative and needs_support(answer, question)

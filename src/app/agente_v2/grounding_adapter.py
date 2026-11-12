@@ -144,6 +144,7 @@ def grounded_result(
             "turn_id": turn_id,
             "intent": planner.intent,
         },
+        "_synthesis_evidence_ids": list(synthesis.evidence_ids),
         "structured_response": AgentAnswer(
             answer=synthesis.answer,
             evidence_ids=list(synthesis.evidence_ids),
