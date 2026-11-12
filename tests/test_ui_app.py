@@ -240,6 +240,71 @@ def test_v2_presentation_never_promotes_unpublished_evidence() -> None:
     assert record["evidences"] == []
 
 
+def test_v2_keeps_distinct_published_sources_with_identical_text() -> None:
+    record = v2_streamlit_app._presentation_record(
+        {
+            "answer": "Resposta apoiada em duas normas",
+            "evidences": [
+                {
+                    "evidence_id": "e1",
+                    "title": "ABNT NBR 10520",
+                    "version": "2023",
+                    "page_number": 5,
+                    "matched_text": "Regra textual idêntica.",
+                },
+                {
+                    "evidence_id": "e2",
+                    "title": "ABNT NBR 6023",
+                    "version": "2023",
+                    "page_number": 5,
+                    "matched_text": "Regra textual idêntica.",
+                },
+            ],
+            "published_evidence_ids": ["e1", "e2"],
+        }
+    )
+
+    assert [evidence["evidence_id"] for evidence in record["evidences"]] == [
+        "e1",
+        "e2",
+    ]
+
+
+def test_v2_deduplicates_repeated_published_id() -> None:
+    record = v2_streamlit_app._presentation_record(
+        {
+            "answer": "Resposta",
+            "evidences": [
+                {
+                    "evidence_id": "e1",
+                    "title": "ABNT NBR 10520",
+                    "page_number": 5,
+                    "text": "Trecho autorizado.",
+                }
+            ],
+            "published_evidence_ids": ["e1", "e1"],
+        }
+    )
+
+    assert [evidence["evidence_id"] for evidence in record["evidences"]] == [
+        "e1"
+    ]
+
+
+def test_v2_rejects_evidence_without_valid_id() -> None:
+    record = v2_streamlit_app._presentation_record(
+        {
+            "answer": "Resposta",
+            "evidences": [
+                {"evidence_id": "", "title": "Sem ID", "text": "Trecho"}
+            ],
+            "published_evidence_ids": [""],
+        }
+    )
+
+    assert record["evidences"] == []
+
+
 def test_v2_keeps_source_label_with_each_published_evidence(monkeypatch) -> None:
     fake_st = _FakeStreamlit([None])
     monkeypatch.setattr(v2_streamlit_app, "st", fake_st)

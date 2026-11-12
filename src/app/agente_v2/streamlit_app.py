@@ -108,27 +108,32 @@ def _evidence_text(evidence: MappingLike) -> str:
 def _published_evidences(record: dict[str, Any]) -> list[MappingLike]:
     """Retorna somente os trechos explicitamente publicados pelo grounding."""
 
-    published_ids = [str(value) for value in record.get("published_evidence_ids") or ()]
+    published_ids = [
+        normalized_id
+        for value in record.get("published_evidence_ids") or ()
+        if (normalized_id := str(value or "").strip())
+    ]
     if not published_ids:
         return []
-    candidates = {
-        str(evidence.get("evidence_id")): evidence
-        for evidence in record.get("evidences") or ()
-        if isinstance(evidence, dict) and evidence.get("evidence_id") is not None
-    }
+    candidates: dict[str, MappingLike] = {}
+    for evidence in record.get("evidences") or ():
+        if not isinstance(evidence, dict):
+            continue
+        evidence_id = str(evidence.get("evidence_id") or "").strip()
+        if evidence_id:
+            candidates[evidence_id] = evidence
     rendered: list[MappingLike] = []
-    seen: set[str] = set()
+    seen_ids: set[str] = set()
     for evidence_id in published_ids:
+        if evidence_id in seen_ids:
+            continue
         evidence = candidates.get(evidence_id)
         if evidence is None:
             continue
         text = _evidence_text(evidence)
         if not text:
             continue
-        duplicate_key = " ".join(text.split())
-        if duplicate_key in seen:
-            continue
-        seen.add(duplicate_key)
+        seen_ids.add(evidence_id)
         rendered.append(dict(evidence))
     return rendered
 
