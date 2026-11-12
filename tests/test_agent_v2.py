@@ -539,6 +539,30 @@ def test_structured_clarification_with_comma_normative_suffix_fails_closed() -> 
     assert result["answer"] == INSUFFICIENT_EVIDENCE
 
 
+def test_structured_clarification_with_embedded_normative_clause_fails_closed() -> None:
+    reply = (
+        "Qual trecho você quer formatar, já que as citações diretas longas "
+        "devem ter recuo, no seu trabalho?"
+    )
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.AMBIGUOUS,
+            needs_clarification=True,
+            clarification_questions=[reply],
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer="nunca")),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke({"messages": [{"role": "user", "content": "Como formatar?"}]})
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+
+
 def test_structured_clarification_with_normative_alternatives_remains_conversational(
 ) -> None:
     reply = (

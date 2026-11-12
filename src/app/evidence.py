@@ -523,13 +523,15 @@ def _is_isolated_clarification_question(answer: str) -> bool:
         if re.search(r"[.!;]", body):
             return False
         if "," in body:
-            prefix, suffix = body.rsplit(",", 1)
-            if _has_normative_assertion(suffix):
+            clauses = [clause.strip() for clause in body.split(",")]
+            normative_clauses = [
+                index
+                for index, clause in enumerate(clauses)
+                if _has_normative_assertion(clause)
+            ]
+            if any(index > 0 for index in normative_clauses):
                 return False
-            if (
-                _has_normative_assertion(prefix)
-                and not _is_interrogative_clause(prefix)
-            ):
+            if normative_clauses and not _is_interrogative_clause(clauses[0]):
                 return False
     return True
 
