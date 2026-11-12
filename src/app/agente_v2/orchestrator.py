@@ -213,7 +213,10 @@ class AgentV2:
             execution=execution,
             planner=plan,
         )
-        if self._is_underspecified_broad_question(question):
+        if (
+            self._is_underspecified_broad_question(question)
+            and result.grounding_status == "unsupported"
+        ):
             return self._clarification_after_unsupported_broad_query(result, question)
         return result
 

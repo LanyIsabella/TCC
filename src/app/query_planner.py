@@ -217,6 +217,8 @@ def is_contextual_follow_up(question: str) -> bool:
         return True
     if normalized.startswith("como formatar ") and len(terms) >= 8:
         return True
+    if _is_underspecified_contextual_question(question):
+        return True
     return normalized.startswith(
         ("qual o tamanho", "qual a medida", "quanto mede")
     )
@@ -230,6 +232,12 @@ def contextualize_query(
 
     current = question.strip()
     previous_messages = _user_history(history)
+    if (
+        _is_underspecified_contextual_question(current)
+        and previous_messages
+        and is_broad_question(previous_messages[-1])
+    ):
+        return current
     if not current or not previous_messages or not (
         is_contextual_follow_up(current)
         or _is_clarification_follow_up(current, previous_messages)
@@ -257,6 +265,16 @@ def contextualize_query(
         len(previous),
     )
     return contextual
+
+
+def _is_underspecified_contextual_question(question: str) -> bool:
+    normalized = normalize_text(question).rstrip("?.!")
+    return bool(
+        re.fullmatch(
+            r"qual (?:e )?(?:o|a) (?:recuo|margem|fonte|espacamento)",
+            normalized,
+        )
+    )
 
 
 def _is_clarification_follow_up(current: str, previous_messages: list[str]) -> bool:

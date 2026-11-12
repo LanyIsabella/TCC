@@ -175,7 +175,12 @@ class Planner:
                     "Segundo a ABNT NBR 6023, quais são as regras de formatação "
                     "das referências?"
                 )
-        if "recuo" in original and "citac" in aspect:
+        if (
+            "recuo" in original
+            and "citac" in aspect
+            and "direta" in aspect
+            and "longa" in aspect
+        ):
             return (
                 "Segundo a ABNT NBR 10520, qual é o recuo de citação direta "
                 "longa?"
@@ -203,7 +208,10 @@ class Planner:
     def plan(self, question: str, history: list[Any]) -> PlannerDecision:
         fallback = self._fallback(question, history)
         if fallback.intent == ConversationIntent.AMBIGUOUS and not (
-            is_contextual_follow_up(question)
+            (
+                is_contextual_follow_up(question)
+                or _is_underspecified_question(question)
+            )
             and self._history_has_academic_term(history)
         ):
             return fallback
@@ -265,6 +273,11 @@ class Planner:
             history
         ):
             return True
+        if (
+            _is_underspecified_question(question)
+            and self._history_has_academic_term(history)
+        ):
+            return True
         if self._is_explicit_topic_change(question) and has_academic_term(question):
             return True
         return (
@@ -291,19 +304,7 @@ class Planner:
         )
 
     def _prompt(self, question: str, history: list[Any]) -> str:
-        context = [
-            {
-                "role": str(message.get("role", ""))
-                if isinstance(message, Mapping)
-                else str(getattr(message, "role", getattr(message, "type", ""))),
-                "content": str(
-                    message.get("content", "")
-                    if isinstance(message, Mapping)
-                    else getattr(message, "content", "")
-                )[:1200],
-            }
-            for message in history[-8:]
-        ]
+        context = self._prompt_context(history)
         return (
             "Você é o planejador de um assistente acadêmico ABNT. Interprete a "
             "mensagem atual usando o contexto. Não invente regra normativa. "
@@ -316,6 +317,22 @@ class Planner:
             f"Histórico: {json.dumps(context, ensure_ascii=False)}\n"
             f"Pergunta atual: {question}"
         )
+
+    @staticmethod
+    def _prompt_context(history: list[Any]) -> list[dict[str, str]]:
+        return [
+            {
+                "role": str(message.get("role", ""))
+                if isinstance(message, Mapping)
+                else str(getattr(message, "role", getattr(message, "type", ""))),
+                "content": str(
+                    message.get("content", "")
+                    if isinstance(message, Mapping)
+                    else getattr(message, "content", "")
+                )[:1200],
+            }
+            for message in history[-8:]
+        ]
 
     def _parsed(self, value: Any) -> PlannerDecision | None:
         return PlannerDecision.from_llm_value(value)

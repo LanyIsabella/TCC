@@ -105,6 +105,18 @@ def test_contextual_follow_up_keeps_original_intent_and_previous_topic() -> None
     assert plan_queries("Qual o tamanho do recuo necessário?", history) == [query]
 
 
+def test_underspecified_recuo_follow_up_uses_academic_history() -> None:
+    history = [
+        {"role": "user", "content": "Citação direta longa"},
+        {"role": "assistant", "content": "A citação deve ter recuo."},
+    ]
+
+    query = contextualize_query("Qual é o recuo?", history)
+
+    assert "Qual é o recuo?" in query
+    assert "Citação direta longa" in query
+
+
 @pytest.mark.parametrize(
     "question",
     ["Como formatar referências?", "Qual é o recuo?"],

@@ -512,6 +512,39 @@ def test_planner_routes_academic_contextual_follow_up_to_retrieval() -> None:
     assert decision.needs_retrieval is True
 
 
+def test_planner_uses_academic_history_for_underspecified_follow_up() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(intent=ConversationIntent.ACTION_REQUEST)
+    )
+    planner = Planner(model)
+
+    decision = planner.plan(
+        "Qual é o recuo?",
+        [{"role": "user", "content": "Citação direta longa"}],
+    )
+
+    assert decision.intent == ConversationIntent.NORMATIVE_QUERY
+    assert decision.needs_retrieval is True
+
+
+@pytest.mark.parametrize(
+    ("answer", "expected"),
+    [
+        ("Citação direta longa", True),
+        ("Citação indireta", False),
+        ("Citação direta curta", False),
+    ],
+)
+def test_recuo_resolution_preserves_explicit_citation_type(
+    answer: str, expected: bool
+) -> None:
+    resolved = Planner._deterministic_clarification_query(
+        answer, "Qual é o recuo?"
+    )
+
+    assert (resolved is not None) is expected
+
+
 def test_contextual_follow_up_reaches_normative_retrieval() -> None:
     model = FakeStructuredModel(
         PlannerDecision(
@@ -1352,6 +1385,33 @@ def test_unsupported_broad_citation_question_requests_clarification() -> None:
     assert result["published_evidence_ids"] == []
     assert result["errors"] == ["grounding_rejected"]
     assert store.pending_clarification(result["conversation_id"]) is not None
+
+
+def test_supported_broad_answer_is_not_replaced_by_clarification() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            needs_retrieval=True,
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer=SOURCE,
+                evidence_ids=["e1"],
+            )
+        ),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Como fazer citações?"}]}
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert result["completion_type"] == "grounded_answer"
+    assert result["published_evidence_ids"] == ["e1"]
 
 
 @pytest.mark.parametrize(
