@@ -292,6 +292,34 @@ def test_trusted_clarification_cannot_publish_normative_preface(answer: str) -> 
     assert extracted.answer == INSUFFICIENT_EVIDENCE
 
 
+@pytest.mark.parametrize(
+    "intent",
+    [
+        ConversationIntent.CONVERSATIONAL,
+        ConversationIntent.AMBIGUOUS,
+        ConversationIntent.ACTION_REQUEST,
+    ],
+)
+def test_conversational_intents_cannot_bypass_normative_grounding(intent):
+    answer = "Posso ajudar. As citações diretas longas exigem recuo."
+    result = {
+        "messages": [
+            {"role": "user", "content": "Como formatar?"},
+            {"role": "assistant", "content": answer},
+        ],
+        "_conversation": {
+            "intent": intent,
+            "completion_type": "conversational",
+        },
+        "structured_response": AgentAnswer(answer=answer),
+    }
+
+    extracted = extract_agent_result(finalize_grounding(result))
+
+    assert extracted.grounding_status == "unsupported"
+    assert extracted.answer == INSUFFICIENT_EVIDENCE
+
+
 def test_extract_agent_result_links_relevant_evidence_without_model_ids() -> None:
     result = {
         "messages": [

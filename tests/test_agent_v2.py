@@ -146,6 +146,58 @@ class ClarificationSequencePlanner:
         )
 
 
+class TopicChangePlanner:
+    def __init__(self):
+        self.calls = []
+
+    def plan(self, question, history):
+        self.calls.append((question, history))
+        if len(self.calls) == 1:
+            return PlannerDecision(
+                intent=ConversationIntent.AMBIGUOUS,
+                needs_clarification=True,
+                clarification_questions=[
+                    "Você deseja orientação sobre autoria, elementos ou formatação?"
+                ],
+            )
+        return PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["citação direta longa"],
+        )
+
+
+class LlmClarificationPlanner:
+    def __init__(self):
+        self.calls = []
+
+    def resolve_clarification(self, answer, original_question, _prompt, _history):
+        return Planner._deterministic_clarification_query(
+            answer, original_question
+        )
+
+    def plan(self, question, history):
+        self.calls.append((question, history))
+        if len(self.calls) == 1:
+            return PlannerDecision(
+                intent=ConversationIntent.AMBIGUOUS,
+                needs_clarification=True,
+                clarification_questions=[
+                    (
+                        "Você se refere a citações diretas, indiretas ou citações "
+                        "de fontes?"
+                    )
+                ],
+            )
+        return PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["consulta escolhida pelo modelo"],
+        )
+
+
 def references_payload():
     source = "A referência deve ser apresentada conforme os elementos necessários."
     return {
@@ -259,6 +311,32 @@ def test_planner_routes_explicit_conceptual_question_to_general_mode():
     assert decision.needs_retrieval is False
 
 
+def test_planner_routes_greeting_with_help_request_to_conversation():
+    decision = Planner(None).plan("Olá, preciso de ajuda", [])
+
+    assert decision.intent == ConversationIntent.CONVERSATIONAL
+    assert decision.effective_mode() == ResponseMode.GENERAL
+    assert decision.needs_retrieval is False
+
+
+def test_planner_keeps_conceptual_and_normative_parts_in_mixed_mode():
+    model = FakeStructuredModel(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+        )
+    )
+
+    decision = Planner(model).plan(
+        "O que é uma citação direta e qual recuo a norma recomenda?", []
+    )
+
+    assert decision.mode == ResponseMode.MIXED
+    assert decision.intent == ConversationIntent.NORMATIVE_QUERY
+    assert decision.needs_retrieval is True
+
+
 def test_planner_clarifies_underspecified_formatting_question():
     decision = Planner(None).plan("Qual é a formatação certa?", [])
 
@@ -266,6 +344,128 @@ def test_planner_clarifies_underspecified_formatting_question():
     assert decision.effective_mode() == ResponseMode.CLARIFY
     assert decision.needs_clarification is True
     assert decision.needs_retrieval is False
+
+
+def test_planner_clarifies_broad_citation_request_before_retrieval():
+    decision = Planner(None).plan("Como fazer citações?", [])
+
+    assert decision.effective_mode() == ResponseMode.CLARIFY
+    assert decision.needs_clarification is True
+    assert decision.needs_retrieval is False
+    assert decision.clarification_questions
+
+
+def test_all_citation_types_resolves_to_a_broad_normative_query():
+    resolved = Planner._deterministic_clarification_query(
+        "Todas elas",
+        "Como fazer citações?",
+    )
+
+    assert resolved is not None
+    assert "diretas" in resolved.casefold()
+    assert "indiretas" in resolved.casefold()
+    assert "10520" in resolved
+
+
+def test_citation_clarification_follow_up_recovers_all_types():
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=Planner(None),
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+    first = agent.invoke(
+        {
+            "conversation_id": "all-citation-types",
+            "messages": [{"role": "user", "content": "Como fazer citações?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": "all-citation-types",
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Todas elas"},
+            ],
+        }
+    )
+
+    assert first["completion_type"] == "clarification_requested"
+    assert first["grounding_status"] == "conversational"
+    assert tools.calls
+    query = tools.calls[-1][1]["question"].casefold()
+    assert "diretas" in query
+    assert "indiretas" in query
+    assert "10520" in query
+    assert second["published_evidence_ids"] == ["e1"]
+
+
+def test_clarification_resolution_overrides_unfocused_model_query():
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=LlmClarificationPlanner(),
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+    first = agent.invoke(
+        {
+            "conversation_id": "all-citation-query",
+            "messages": [{"role": "user", "content": "Como fazer citações?"}],
+        }
+    )
+    agent.invoke(
+        {
+            "conversation_id": "all-citation-query",
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Todas elas"},
+            ],
+        }
+    )
+
+    query = tools.calls[-1][1]["question"].casefold()
+    assert "diretas" in query
+    assert "indiretas" in query
+    assert "consulta escolhida" not in query
+
+
+def test_formatting_clarification_follow_up_recovers_references_topic():
+    tools = FakeTools(references_payload()[0])
+    agent = AgentV2(
+        planner=Planner(None),
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer=references_payload()[1], evidence_ids=["ref-1"]
+            )
+        ),
+        tools=tools,
+    )
+    first = agent.invoke(
+        {
+            "conversation_id": "formatting-references",
+            "messages": [{"role": "user", "content": "Como formatar?"}],
+        }
+    )
+    second = agent.invoke(
+        {
+            "conversation_id": "formatting-references",
+            "messages": [
+                *first["messages"],
+                {"role": "user", "content": "Referências"},
+            ],
+        }
+    )
+
+    assert first["completion_type"] == "clarification_requested"
+    assert tools.calls
+    query = tools.calls[-1][1]["question"].casefold()
+    assert "6023" in query
+    assert "refer" in query
+    assert second["published_evidence_ids"] == ["ref-1"]
 
 
 @pytest.mark.parametrize(
@@ -488,6 +688,50 @@ def test_synthesis_prompt_prefers_natural_relevant_evidence():
     assert "prefira copiar literalmente" not in prompt
     assert '"evidence_id": "e1"' in prompt
     assert '"evidence_id": "e2"' not in prompt
+
+
+def test_mixed_synthesis_prompt_separates_conceptual_and_normative_claims():
+    prompt = Synthesizer(None)._prompt(
+        "O que é uma citação direta e qual recuo a norma recomenda?",
+        [],
+        {},
+        mode=ResponseMode.MIXED,
+    )
+
+    assert "explicações conceituais em frases próprias" in prompt
+
+
+def test_mixed_synthesis_restores_missing_conceptual_preface():
+    model = FakeSynthesisModel(
+        [
+            {
+                "parsed": {
+                    "answer": "Recomenda-se um recuo de 4 cm.",
+                    "evidence_ids": ["e1"],
+                    "limitations": [],
+                }
+            }
+        ]
+    )
+    result = Synthesizer(model).synthesize(
+        "O que é uma citação direta e qual recuo a norma recomenda?",
+        [],
+        {
+            "documents": [
+                {
+                    "evidence": [
+                        {
+                            "evidence_id": "e1",
+                            "text": "Recomenda-se um recuo de 4 cm.",
+                        }
+                    ]
+                }
+            ]
+        },
+        mode=ResponseMode.MIXED,
+    )
+
+    assert result.answer.startswith("Uma citação direta reproduz literalmente")
 
 
 def test_general_synthesis_prompt_allows_examples_without_fabricating_sources():
@@ -1096,6 +1340,40 @@ def test_pending_clarification_can_be_abandoned_for_new_subject():
     assert "referências" not in tools.calls[-1][1]["question"].casefold()
 
 
+def test_explicit_topic_change_isolated_from_old_clarification_history():
+    planner = TopicChangePlanner()
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+    first = agent.invoke(
+        {
+            "conversation_id": "topic-change-history",
+            "messages": [{"role": "user", "content": "Como formatar referências?"}],
+        }
+    )
+
+    agent.invoke(
+        {
+            "conversation_id": "topic-change-history",
+            "messages": [
+                *first["messages"],
+                {
+                    "role": "user",
+                    "content": "Na verdade, como formatar uma citação direta longa?",
+                },
+            ],
+        }
+    )
+
+    assert planner.calls[-1][1] == []
+    assert "refer" not in tools.calls[-1][1]["question"].casefold()
+
+
 def test_self_contained_normative_question_bypasses_pending_clarification():
     tools = FakeTools(rag_payload())
     agent = AgentV2(
@@ -1183,7 +1461,7 @@ def test_planner_keeps_ambiguous_without_relevant_history() -> None:
     "question",
     ["Como fazer citações?", "Como formatar referências?"],
 )
-def test_planner_does_not_route_broad_academic_questions_to_actions(
+def test_planner_clarifies_broad_academic_questions_without_retrieval(
     question: str,
 ) -> None:
     model = FakeStructuredModel(
@@ -1193,8 +1471,9 @@ def test_planner_does_not_route_broad_academic_questions_to_actions(
 
     decision = planner.plan(question, [])
 
-    assert decision.intent == ConversationIntent.NORMATIVE_QUERY
-    assert decision.needs_retrieval is True
+    assert decision.intent == ConversationIntent.AMBIGUOUS
+    assert decision.needs_clarification is True
+    assert decision.needs_retrieval is False
 
 
 def test_planner_requests_clarification_for_underspecified_margin_question() -> None:
@@ -1369,6 +1648,28 @@ def test_conversational_turn_does_not_call_rag() -> None:
 
     assert result["answer"] == "Olá! Posso ajudar com seu TCC."
     assert result["grounding_status"] == "conversational"
+    assert tools.calls == []
+
+
+def test_conversational_reply_in_general_mode_bypasses_synthesis() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.GENERAL,
+            reply=GREETING_MESSAGE,
+        )
+    )
+    synthesizer = FakeSynthesizer(SynthesisResponse(answer="não deveria ser usado"))
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(planner=planner, synthesizer=synthesizer, tools=tools)
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Olá, preciso de ajuda"}]}
+    )
+
+    assert result["answer"] == GREETING_MESSAGE
+    assert result["grounding_status"] == "conversational"
+    assert synthesizer.calls == []
     assert tools.calls == []
 
 

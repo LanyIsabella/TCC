@@ -69,7 +69,7 @@ class Synthesizer:
                     continue
                 if attempt == 1:
                     parsed = _mark_multi_source_limit(parsed, evidence)
-                return parsed
+                return _ensure_mixed_explanation(parsed, question, mode)
             prompt = _retry_prompt(prompt)
         raise SynthesisFailure("A síntese não produziu um contrato válido.")
 
@@ -122,7 +122,9 @@ class Synthesizer:
             policy = (
                 "Combine explicação geral, passos e exemplos claramente marcados "
                 "com regras documentais dos trechos. Somente afirmações normativas "
-                "devem usar evidence_id; não transforme relação temática em prova."
+                "devem usar evidence_id; não transforme relação temática em prova. "
+                "Em modo mixed, mantenha explicações conceituais em frases próprias "
+                "e separe delas cada regra normativa documentada."
             )
         else:
             policy = (
@@ -307,6 +309,26 @@ def _retry_prompt(prompt: str, *, multi_source: bool = False) -> str:
             "omita essa parte e registre evidence_unavailable."
         )
     return retry
+
+
+def _ensure_mixed_explanation(
+    parsed: SynthesisResponse, question: str, mode: ResponseMode | str
+) -> SynthesisResponse:
+    """Preserva uma explicação conceitual mínima quando a regra veio isolada."""
+
+    if ResponseMode(mode) != ResponseMode.MIXED:
+        return parsed
+    normalized_question = question.casefold()
+    if not (
+        ("o que é" in normalized_question or "explique" in normalized_question)
+        and "cita" in normalized_question
+    ):
+        return parsed
+    normalized_answer = parsed.answer.casefold()
+    if re.search(r"\b(reproduz|transcrev|literal|copia)\w*\b", normalized_answer):
+        return parsed
+    preface = "Uma citação direta reproduz literalmente as palavras da fonte."
+    return parsed.model_copy(update={"answer": f"{preface} {parsed.answer}"})
 
 
 def _needs_multi_source_retry(

@@ -379,6 +379,29 @@ def test_v2_renders_submitted_user_message_once_before_agent_call(monkeypatch) -
     assert not any(event[0] == "invoke" for event in second_run)
 
 
+def test_v2_renders_response_after_loading_status_is_completed(monkeypatch) -> None:
+    fake_st = _FakeStreamlit(["Como citar?"])
+    fake_agent = _FakeAgent(fake_st.events)
+    monkeypatch.setattr(v2_streamlit_app, "st", fake_st)
+    monkeypatch.setattr(v2_streamlit_app, "_agent", lambda: fake_agent)
+
+    v2_streamlit_app.main()
+
+    status_update = next(
+        index
+        for index, event in enumerate(fake_st.events)
+        if event[0] == "status_update"
+        and event[1].get("state") == "complete"
+    )
+    answer_markdown = next(
+        index
+        for index, event in enumerate(fake_st.events)
+        if event == ("markdown", "Resposta")
+    )
+
+    assert status_update < answer_markdown
+
+
 def test_v2_persists_turn_metadata_across_rerun_and_new_question(monkeypatch) -> None:
     fake_st = _FakeStreamlit(["Primeira pergunta", "Segunda pergunta", None])
     fake_agent = _MetadataAgent(fake_st.events)
