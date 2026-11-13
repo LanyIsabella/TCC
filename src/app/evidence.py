@@ -453,9 +453,10 @@ def _has_normative_assertion(answer: str) -> bool:
             normalized,
         )
         or re.search(
-            r"\b(citac\w*|referenc\w*|margens?|folha|resumo)\b"
-            r"[^.!?]{0,100}\b(fica\w*|ficam\w*|usa\w*|utiliza\w*|"
-            r"apresenta\w*|seguem?)\b",
+            r"\b(citac\w*|referenc\w*|margens?|folha|resumo|regra\w*|"
+            r"norma\w*)\b[^.!?]{0,100}\b(fica\w*|ficam\w*|usa\w*|"
+            r"utiliza\w*|apresenta\w*|aparece\w*|aparecem\w*|"
+            r"consiste\w*|corresponde\w*|seguem?)\b",
             normalized,
         )
     )
@@ -465,23 +466,28 @@ def _classified_normative_assertion(
     classifier: Callable[[str, list[str]], Any] | None,
     question: str,
     answer: str,
-) -> bool:
+) -> bool | None:
     if classifier is None:
-        return False
+        return None
     try:
         raw = classifier(question, [answer])
         if isinstance(raw, str):
             raw = json.loads(raw)
         entries = raw.get("claims", []) if isinstance(raw, Mapping) else []
-        return any(
+        if not isinstance(entries, list) or len(entries) != 1:
+            return None
+        if not any(
             isinstance(item, Mapping)
             and str(item.get("index")) == "0"
-            and str(item.get("kind") or "").casefold() == "normative"
+            and str(item.get("kind") or "").casefold()
+            in {"normative", "general", "example"}
             for item in entries
-        )
-    except (TypeError, ValueError, json.JSONDecodeError):
+        ):
+            return None
+        return str(entries[0].get("kind") or "").casefold() == "normative"
+    except Exception:
         logger.warning("grounding_claim_classification_invalid=True")
-        return False
+        return None
 
 
 def _is_safe_non_normative_response(
@@ -750,11 +756,11 @@ def _decision(
             )
             or clarification_question
         )
-        normative_assertion = (
-            _has_normative_assertion(answer)
-            or _classified_normative_assertion(
-                claim_classifier, question, answer
-            )
+        classified_normative = _classified_normative_assertion(
+            claim_classifier, question, answer
+        )
+        normative_assertion = _has_normative_assertion(answer) or (
+            classified_normative is True
         )
         safe_non_normative = _is_safe_non_normative_response(
             answer, intent, completion_type

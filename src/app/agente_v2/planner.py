@@ -442,7 +442,11 @@ class Planner:
             ResponseMode.NORMATIVE,
             ResponseMode.MIXED,
         }
-        if decision.mode in {ResponseMode.NORMATIVE, ResponseMode.OUT_OF_SCOPE}:
+        if decision.mode in {ResponseMode.NORMATIVE, ResponseMode.MIXED}:
+            # A LLM may elaborate retrieved text; grounding remains the sole
+            # authority for normative facts.
+            decision.use_parametric_knowledge = True
+        elif decision.mode == ResponseMode.OUT_OF_SCOPE:
             decision.use_parametric_knowledge = False
 
     @staticmethod

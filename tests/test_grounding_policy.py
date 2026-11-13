@@ -80,6 +80,72 @@ def test_mixed_mode_semantic_classifier_rejects_implicit_normative_claim():
     assert result.answer == INSUFFICIENT_EVIDENCE
 
 
+def _raising_classifier(*_args):
+    raise RuntimeError("indisponível")
+
+
+@pytest.mark.parametrize(
+    "classifier",
+    [
+        None,
+        _raising_classifier,
+        lambda *_args: "invalid json",
+        lambda *_args: {"claims": []},
+        lambda *_args: {"claims": [{"index": 0, "kind": "general"}]},
+    ],
+)
+def test_inconclusive_classifier_does_not_release_implicit_normative_claim(classifier):
+    answer = "A citação curta aparece entre aspas duplas."
+
+    result = ground_answer(
+        answer,
+        evidence("A metodologia organiza as etapas."),
+        "Como fazer citações segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "insufficient"
+    assert result.answer == INSUFFICIENT_EVIDENCE
+
+
+def test_mixed_mode_keeps_conceptual_prose_when_classifier_is_unavailable():
+    result = ground_answer(
+        "A metodologia organiza as etapas do trabalho.",
+        evidence("A margem deve medir 2 cm."),
+        QUESTION,
+        response_mode="mixed",
+        normative_context=True,
+    )
+
+    assert result.status == "conversational"
+    assert result.answer == "A metodologia organiza as etapas do trabalho."
+
+
+def test_partial_classifier_keeps_general_claim_but_removes_unclassified_rule():
+    answer = (
+        "A metodologia organiza as etapas do trabalho. "
+        "A citação curta aparece entre aspas duplas."
+    )
+
+    result = ground_answer(
+        answer,
+        evidence("A metodologia organiza as etapas do trabalho."),
+        QUESTION,
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=lambda *_args: {
+            "claims": [{"index": 0, "kind": "general"}]
+        },
+    )
+
+    assert result.status == "partial"
+    assert "A metodologia organiza" in result.answer
+    assert "A citação curta aparece" not in result.answer
+    assert PARTIAL_LIMITATION in result.answer
+
+
 def test_mixed_mode_preserves_markdown_structure_when_removing_unsupported_rule():
     answer = (
         "A metodologia organiza as etapas.\n\n"

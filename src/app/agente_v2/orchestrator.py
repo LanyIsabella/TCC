@@ -321,24 +321,74 @@ class AgentV2:
             executions[-1],
         )
         merged = dict(successful.raw_result)
-        documents: list[Any] = []
-        seen: set[str] = set()
+        documents_by_key: dict[str, dict[str, Any]] = {}
+        document_order: list[str] = []
         for execution in executions:
             for document in execution.raw_result.get("documents", []):
                 if not isinstance(document, Mapping):
                     continue
-                key = str(
-                    document.get("rag_document_id")
-                    or document.get("document_id")
-                    or document.get("standard_id")
-                    or len(documents)
-                )
-                if key not in seen:
-                    seen.add(key)
-                    documents.append(document)
+                key = self._document_identity(document)
+                if key not in documents_by_key:
+                    documents_by_key[key] = dict(document)
+                    document_order.append(key)
+                    for field in ("pages", "matched_pages", "evidence"):
+                        value = document.get(field)
+                        if isinstance(value, list):
+                            documents_by_key[key][field] = list(value)
+                else:
+                    self._merge_document(
+                        documents_by_key[key], document
+                    )
+        documents = [documents_by_key[key] for key in document_order]
         merged["documents"] = documents
         merged["evidence_found"] = bool(documents)
         return successful.model_copy(update={"raw_result": merged})
+
+    @staticmethod
+    def _document_identity(document: Mapping[str, Any]) -> str:
+        for field in ("rag_document_id", "document_id", "standard_id"):
+            value = document.get(field)
+            if value not in (None, ""):
+                return f"{field}:{value}"
+        return "title-version:" + "|".join(
+            str(document.get(field) or "") for field in ("title", "version")
+        )
+
+    @classmethod
+    def _merge_document(
+        cls, target: dict[str, Any], incoming: Mapping[str, Any]
+    ) -> None:
+        for field in ("pages", "matched_pages", "evidence"):
+            values = incoming.get(field)
+            if not isinstance(values, list):
+                continue
+            existing = target.setdefault(field, [])
+            if not isinstance(existing, list):
+                target[field] = existing = []
+            seen = {
+                cls._record_identity(field, item)
+                for item in existing
+            }
+            for item in values:
+                marker = cls._record_identity(field, item)
+                if marker not in seen:
+                    existing.append(item)
+                    seen.add(marker)
+
+    @staticmethod
+    def _record_identity(field: str, item: Any) -> str:
+        if isinstance(item, Mapping):
+            if field == "evidence" and item.get("evidence_id"):
+                return f"evidence:{item['evidence_id']}"
+            if field == "evidence":
+                return "evidence:" + "|".join(
+                    str(item.get(key) or "")
+                    for key in ("page_number", "text", "matched_text")
+                )
+            if item.get("page_number") is not None:
+                return f"{field}-page:{item['page_number']}"
+            return f"{field}:{item.get('text') or item.get('matched_text') or item}"
+        return f"{field}:{item}"
 
     def _synthesize(
         self,
@@ -373,12 +423,32 @@ class AgentV2:
     def _retrieval_sufficient(execution: ToolExecution, question: str) -> bool:
         if AgentV2._retrieval_failed(execution):
             return False
+        generic_terms = {
+            "abnt",
+            "academico",
+            "academicos",
+            "formatacao",
+            "principal",
+            "principais",
+            "regra",
+            "regras",
+            "norma",
+            "normas",
+            "tcc",
+            "trabalho",
+            "trabalhos",
+        }
+        terms = {
+            term.strip(".,?!;:()[]{}")
+            for term in normalize_text(question).split()
+        }
         terms = {
             term
-            for term in normalize_text(question).split()
+            for term in terms
             if len(term) >= 4
             and term
             not in {"qual", "quais", "como", "para", "segundo", "sobre"}
+            and term not in generic_terms
         }
         for document in execution.raw_result.get("documents", []):
             if not isinstance(document, Mapping):
@@ -388,7 +458,7 @@ class AgentV2:
                     continue
                 text = normalize_text(str(evidence.get("text") or ""))
                 overlap = any(term in text for term in terms)
-                if evidence.get("direct_match") and (not terms or overlap):
+                if evidence.get("direct_match") and overlap:
                     return True
                 if evidence.get("matched_text") and overlap:
                     return True

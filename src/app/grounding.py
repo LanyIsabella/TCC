@@ -127,7 +127,7 @@ def _implicit_normative_claim(claim: str) -> bool:
         )
         and re.search(
             r"\b(fica\w*|ficam\w*|usa\w*|utiliza\w*|apresenta\w*|"
-            r"apresentam\w*|segue\w*|seguem\w*)\b",
+            r"apresentam\w*|aparece\w*|aparecem\w*|segue\w*|seguem\w*)\b",
             canonical,
         )
     )
@@ -137,24 +137,36 @@ def _classified_normative_claims(
     classifier: ClaimClassifier | None,
     question: str,
     claims: list[str],
-) -> set[int]:
+) -> tuple[set[int], bool]:
     if classifier is None:
-        return set()
+        return set(), False
     try:
         raw = classifier(question, claims)
         if isinstance(raw, str):
             raw = json.loads(raw)
         entries = raw.get("claims", []) if isinstance(raw, Mapping) else []
-        return {
+        if not isinstance(entries, list):
+            return set(), False
+        indices = {
+            int(item["index"])
+            for item in entries
+            if isinstance(item, Mapping)
+            and str(item.get("index", "")).isdigit()
+            and 0 <= int(item["index"]) < len(claims)
+        }
+        normative = {
             int(item["index"])
             for item in entries
             if isinstance(item, Mapping)
             and str(item.get("kind") or "").casefold() == "normative"
             and str(item.get("index", "")).isdigit()
+            and 0 <= int(item["index"]) < len(claims)
         }
-    except (TypeError, ValueError, json.JSONDecodeError):
+        complete = indices == set(range(len(claims)))
+        return normative, complete
+    except Exception:
         logger.warning("grounding_claim_classification_invalid=True")
-        return set()
+        return set(), False
 
 
 def _plain_text_rewrite(answer: str, question: str) -> bool:
@@ -623,7 +635,15 @@ def ground_answer(
             if _claim_requires_normative_support(claim)
             or _implicit_normative_claim(claim)
         }
-        required.update(
-            _classified_normative_claims(claim_classifier, question, claims)
+        classified, complete = _classified_normative_claims(
+            claim_classifier, question, claims
         )
+        required.update(classified)
+        if not complete:
+            required.update(
+                index
+                for index, claim in enumerate(claims)
+                if _claim_requires_normative_support(claim)
+                or _implicit_normative_claim(claim)
+            )
     return _compose(answer, claims, support, required)

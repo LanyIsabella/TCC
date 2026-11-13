@@ -37,6 +37,12 @@ class FakeSynthesizer:
         return self.response
 
 
+class KeywordSynthesizer(FakeSynthesizer):
+    def synthesize(self, question, history, retrieval, **kwargs):
+        self.calls.append((question, history, retrieval, kwargs))
+        return self.response
+
+
 class FakeTools:
     def __init__(self, payload):
         self.payload = payload
@@ -375,6 +381,20 @@ def test_general_synthesis_prompt_allows_examples_without_fabricating_sources():
     assert "Exemplo ilustrativo:" in prompt
     assert "não crie citações ou IDs documentais" in prompt
     assert "não use evidence_unavailable" in prompt
+
+
+def test_normative_synthesis_prompt_allows_explanation_but_not_parametric_authority():
+    prompt = Synthesizer(None)._prompt(
+        "Qual é a regra?",
+        [],
+        {"documents": []},
+        mode=ResponseMode.NORMATIVE,
+        use_parametric_knowledge=True,
+    )
+
+    assert "Pode explicar e combinar regras" in prompt
+    assert "somente o texto dos trechos fornecidos" in prompt
+    assert "autoridade factual" in prompt
 
 
 def test_synthesis_prompt_keeps_adjacent_page_context():
@@ -1332,6 +1352,163 @@ def test_normative_mode_retries_when_first_result_is_thematic_but_insufficient()
 
     assert len(tools.calls) == 2
     assert result["grounding_status"] == "supported"
+
+
+def test_normative_mode_merges_pages_from_same_document_across_queries():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["consulta ampla", "consulta sobre recuo"],
+        )
+    )
+    first = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "rag_document_id": 3,
+                "standard_id": "abnt_nbr_14724",
+                "title": "Trabalhos acadêmicos",
+                "version": "2024",
+                "pages": [3],
+                "evidence": [
+                    {
+                        "evidence_id": "document:3:page:3",
+                        "page_number": 3,
+                        "text": "Escopo geral.",
+                    }
+                ],
+            }
+        ],
+    }
+    second = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "rag_document_id": 3,
+                "standard_id": "abnt_nbr_14724",
+                "title": "Trabalhos acadêmicos",
+                "version": "2024",
+                "pages": [7],
+                "evidence": [
+                    {
+                        "evidence_id": "document:3:page:7",
+                        "page_number": 7,
+                        "text": "O recuo deve observar a norma.",
+                    }
+                ],
+            }
+        ],
+    }
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer=SOURCE)),
+        tools=SequencedTools([first, second]),
+    )
+
+    execution = agent._execute_searches(
+        "Qual é o recuo?",
+        [],
+        "conversation",
+        "turn",
+        planner.decision.retrieval_queries,
+    )
+
+    assert len(execution.raw_result["documents"]) == 1
+    document = execution.raw_result["documents"][0]
+    assert document["pages"] == [3, 7]
+    assert [item["evidence_id"] for item in document["evidence"]] == [
+        "document:3:page:3",
+        "document:3:page:7",
+    ]
+
+
+def test_normative_synthesis_keeps_text_generation_enabled_without_authority_bypass():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            use_parametric_knowledge=False,
+        )
+    )
+    synthesizer = KeywordSynthesizer(
+        SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=synthesizer,
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual é a regra?"}]}
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert synthesizer.calls[0][3]["use_parametric_knowledge"] is True
+
+
+def test_retrieval_does_not_stop_on_generic_normative_overlap():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["regras ABNT", "margem e recuo"],
+        )
+    )
+    generic = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "rag_document_id": 3,
+                "evidence": [
+                    {
+                        "evidence_id": "generic",
+                        "direct_match": True,
+                        "text": "ABNT norma brasileira.",
+                    }
+                ],
+            }
+        ],
+    }
+    relevant = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "rag_document_id": 3,
+                "evidence": [
+                    {
+                        "evidence_id": "relevant",
+                        "direct_match": True,
+                        "text": "A margem e o recuo devem seguir a apresentação.",
+                    }
+                ],
+            }
+        ],
+    }
+    tools = SequencedTools([generic, relevant])
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer=SOURCE)),
+        tools=tools,
+    )
+
+    agent._execute_searches(
+        "Quais são as principais regras de formatação ABNT?",
+        [],
+        "conversation",
+        "turn",
+        planner.decision.retrieval_queries,
+    )
+
+    assert len(tools.calls) == 2
 
 
 def test_mixed_mode_keeps_general_explanation_when_retrieval_fails():

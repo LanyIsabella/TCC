@@ -56,7 +56,7 @@ geral quando uma regra normativa não é sustentada.
 
 Resultados locais após a implementação:
 
-- `uv run --locked pytest -q`: 430 passed, 1 skipped, 9 xfailed.
+- `uv run --locked pytest -q`: 454 passed, 1 skipped, 9 xfailed.
 - `uv run --locked ruff check .`: aprovado.
 - `git diff --check`: pendente de confirmação no diff final da branch.
 
@@ -74,7 +74,7 @@ grounding também classifica afirmações semânticas no modo geral: explicaçõ
 procedurais podem permanecer conversacionais, mas regras normativas implícitas
 falham fechadas sem suporte.
 
-Na validação local, `uv run --locked pytest -q` registrou 443 aprovados, 1
+Na validação local, `uv run --locked pytest -q` registrou 454 aprovados, 1
 ignorado e 9 `xfail`; Ruff e `git diff --check` passaram. Uma execução real com
 Ollama `gemma4:e2b` e PostgreSQL local, sem escrita, preservou o comportamento
 fail-closed nas consultas normativas sem suporte e produziu respostas
@@ -82,6 +82,26 @@ conversacionais para explicações gerais. A consulta ampla sobre regras de
 formatação ainda pode recuperar um trecho temático inadequado; isso permanece
 uma limitação de qualidade da recuperação/síntese, não uma autorização para
 publicar evidência não verificada.
+
+## Estabilização complementar
+
+O classificador de afirmações agora diferencia resultado inconclusivo de uma
+classificação completa. Falhas de execução, JSON inválido ou respostas parciais
+não convertem silenciosamente regras implícitas em prosa geral; as guardas
+conservadoras permanecem ativas e explicações conceituais sem marcadores
+normativos continuam liberadas.
+
+Quando duas consultas retornam páginas diferentes da mesma norma, a execução
+consolidada preserva o documento único, todas as páginas e todas as evidências
+distintas por `evidence_id`. No modo normativo, a LLM mantém liberdade para
+organizar explicações e exemplos, mas o prompt estabelece que somente os
+trechos recuperados têm autoridade factual.
+
+O critério de suficiência não encerra a busca por coincidência apenas em termos
+genéricos como ABNT, norma, regra ou TCC. A exploração real dos seis casos está
+registrada em `validacao_pr15.md`; a pergunta ampla de formatação ainda produziu
+uma resposta documentalmente suportada, porém insuficientemente abrangente para
+ser considerada sucesso de pertinência.
 
 ## Limitações conhecidas
 
