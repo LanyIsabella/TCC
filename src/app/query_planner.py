@@ -189,12 +189,19 @@ def is_broad_question(question: str) -> bool:
 
     normalized = normalize_text(question)
     terms = set(re.findall(r"[\wÀ-ÿ]+", normalized))
+    project_references_topic = (
+        len(terms) <= 20
+        and "projeto" in terms
+        and any(term.startswith("referenc") for term in terms)
+        and any(term.startswith("dissert") for term in terms)
+    )
     specific_measure = bool(
         re.match(r"^(?:qual [oa] (?:tamanho|medida)|quanto (?:mede|e))\b", normalized)
     )
     return (
         (len(terms) <= 8 and len(terms & BROAD_QUERY_TERMS) >= 2)
         or ("quais" in terms and len(terms) >= 6)
+        or project_references_topic
         or bool(
             len(terms) <= 8
             and not specific_measure
@@ -375,10 +382,24 @@ def plan_queries(
         return []
 
     retrieval_question = contextualize_query(question, history)
+    normalized = normalize_text(question)
+    if "sistema" in normalized and "chamada" in normalized:
+        return [
+            "sistema de chamada citações ABNT NBR 10520",
+            retrieval_question,
+        ]
     if not is_broad_question(question):
         return [retrieval_question]
 
-    normalized = normalize_text(question)
+    if (
+        "projeto" in normalized
+        and "referenc" in normalized
+        and "dissert" in normalized
+    ):
+        return [
+            "projeto de pesquisa apresentacao referencias normativas",
+            "trabalho academico monografia dissertacao",
+        ]
     if "citacoes" in normalized:
         expansion = (
             "citações diretas indiretas chamadas recuo "

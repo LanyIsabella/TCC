@@ -381,6 +381,31 @@ def test_semantic_verifier_cannot_bypass_reference_topic_filter():
     assert result.evidence_ids == ()
 
 
+def test_incidental_reference_section_does_not_make_citation_standard_relevant():
+    source = (
+        "Na lista de referências, a fonte deve ser apresentada ao final. "
+        "As citações diretas devem estar entre aspas duplas."
+    )
+    available = {
+        "e1": {
+            "evidence_id": "e1",
+            "title": "Informação e documentação — Citações em documentos",
+            "standard_id": "abnt_nbr_10520",
+            "text": source,
+        }
+    }
+
+    result = ground_answer(
+        "As citações diretas devem estar entre aspas duplas.",
+        available,
+        "Como referenciar uma dissertação no projeto de pesquisa?",
+        normative_context=True,
+    )
+
+    assert result.answer == INSUFFICIENT_EVIDENCE
+    assert result.evidence_ids == ()
+
+
 def test_reference_spacing_rule_from_academic_standard_is_relevant():
     source = (
         "As referências, ao final do trabalho, devem ser separadas entre si "
@@ -497,6 +522,33 @@ def test_paraphrase_can_be_supported_by_semantic_assessment_and_real_quote():
     assert result.status == "supported"
 
 
+def test_standard_identifier_does_not_create_a_numeric_conflict():
+    source = (
+        "As citações devem ser indicadas no texto por um sistema de chamada: "
+        "autor-data ou numérico. Qualquer que seja o sistema adotado, este deve "
+        "ser seguido consistentemente ao longo de todo o trabalho, permitindo "
+        "sua correlação com a referência."
+    )
+    answer = (
+        "A NBR 10520 permite sistemas de chamada autor-data ou numérico, e o "
+        "sistema adotado deve ser seguido consistentemente ao longo de todo o "
+        "trabalho para permitir a correlação com a referência."
+    )
+    result = ground_answer(
+        answer,
+        evidence(source),
+        (
+            "Quais sistemas de chamada a NBR 10520 permite e como manter a "
+            "consistência ao longo do texto?"
+        ),
+        judge(source),
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
+
+
 @pytest.mark.parametrize(
     "source,answer",
     [
@@ -546,6 +598,31 @@ def test_condition_can_be_carried_by_the_current_question():
         answer, evidence(source), "Quando impresso, qual a margem?", judge(source)
     )
     assert result.answer == answer
+
+
+def test_paraphrased_condition_is_not_rejected_as_a_new_exception():
+    source = (
+        "Quando for pessoa física, a indicação deve ser feita pelo sobrenome "
+        "do autor, em letras maiúsculas e minúsculas."
+    )
+    answer = (
+        "No sistema autor-data, quando se trata de pessoa física, a indicação "
+        "de responsabilidade deve ser feita pelo sobrenome do autor, em letras "
+        "maiúsculas e minúsculas."
+    )
+    result = ground_answer(
+        answer,
+        evidence(source),
+        (
+            "Se eu escolher autor-data, como escrevo o sobrenome de um autor "
+            "pessoa física?"
+        ),
+        judge(source),
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.evidence_ids == ("e1",)
 
 
 def test_quote_cannot_hide_condition_in_the_same_source_paragraph():

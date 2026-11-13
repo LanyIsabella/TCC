@@ -16,6 +16,7 @@ from src.app.query_planner import (
     is_broad_question,
     is_contextual_follow_up,
     normalize_text,
+    plan_queries,
 )
 from src.app.scope_guard import (
     ACTION_UNAVAILABLE_MESSAGE,
@@ -58,7 +59,8 @@ def _is_underspecified_question(question: str) -> bool:
     return bool(
         re.fullmatch(
             r"(?:qual (?:e |deve ser )?|como deve ser )"
-            r"(?:o|a) (?:recuo|margem|fonte|espacamento)",
+            r"(?:o|a) (?:recuo|margem|fonte|espacamento|formatacao)"
+            r"(?: (?:certa|correta|adequada))?",
             normalized,
         )
     )
@@ -261,9 +263,17 @@ class Planner:
             if parsed is None:
                 return fallback
             decision = self._safe_decision(parsed, fallback)
-            return self._repair_contextual_decision(
+            decision = self._repair_contextual_decision(
                 question, history, decision, fallback
             )
+            if decision.needs_retrieval and (
+                not decision.retrieval_queries
+                or self._needs_targeted_query(question)
+            ):
+                decision = decision.model_copy(
+                    update={"retrieval_queries": plan_queries(question, history)[:2]}
+                )
+            return decision
         except Exception:
             logger.exception("planner_execution_failed=True")
             return fallback
@@ -286,6 +296,11 @@ class Planner:
             )
             in {"user", "human"}
         )
+
+    @staticmethod
+    def _needs_targeted_query(question: str) -> bool:
+        normalized = normalize_text(question)
+        return "sistema" in normalized and "chamada" in normalized
 
     def _repair_contextual_decision(
         self,
@@ -354,9 +369,11 @@ class Planner:
             "faltarem dados e out_of_scope para pedidos não suportados. "
             "Pedidos de estratégia pessoal, redação ou melhoria de uma introdução "
             "são general quando não pedirem um requisito específico de norma. "
-            "needs_retrieval deve ser true em normative ou mixed e false em general, "
-            "clarify e out_of_scope. Em retrieval_queries, forneça no máximo duas "
-            "consultas autossuficientes quando forem necessárias. Para ambiguous, "
+             "needs_retrieval deve ser true em normative ou mixed e false em general, "
+             "clarify e out_of_scope. Quando needs_retrieval for true, forneça pelo "
+             "menos uma retrieval_query e no máximo duas consultas autossuficientes; "
+             "em perguntas amplas, cubra cada tema normativo relevante em consultas "
+             "separadas e nunca deixe retrieval_queries vazio. Para ambiguous, "
             "escreva "
             "uma ou mais perguntas isoladas em clarification_questions, sem prefácios "
             "ou afirmações. Quando a pergunta normativa for ampla e puder se referir "

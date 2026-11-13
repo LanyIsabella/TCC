@@ -8,7 +8,9 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-from .schemas import ResponseMode, SynthesisResponse
+from src.app.query_planner import focused_query
+
+from .schemas import LimitationCode, ResponseMode, SynthesisResponse
 
 logger = logging.getLogger(__name__)
 _INLINE_EVIDENCE_ID = re.compile(
@@ -57,9 +59,16 @@ class Synthesizer:
             objective=objective,
             use_parametric_knowledge=use_parametric_knowledge,
         )
+        evidence = _prompt_evidence(retrieval, focus=question)
         for attempt in range(2):
             parsed = self._attempt(prompt, attempt)
             if parsed is not None:
+                parsed = _canonicalize_evidence_ids(parsed, evidence)
+                if attempt == 0 and _needs_multi_source_retry(parsed, evidence):
+                    prompt = _retry_prompt(prompt, multi_source=True)
+                    continue
+                if attempt == 1:
+                    parsed = _mark_multi_source_limit(parsed, evidence)
                 return parsed
             prompt = _retry_prompt(prompt)
         raise SynthesisFailure("A síntese não produziu um contrato válido.")
@@ -97,7 +106,7 @@ class Synthesizer:
             }
             for item in history[-8:]
         ]
-        evidence = _prompt_evidence(retrieval)
+        evidence = _prompt_evidence(retrieval, focus=question)
         selected_mode = ResponseMode(mode)
         if selected_mode == ResponseMode.GENERAL:
             policy = (
@@ -127,8 +136,13 @@ class Synthesizer:
             "pertinentes, mas preserve integralmente "
             "números, unidades, obrigações, permissões, negações, condições e "
             "exceções; não copie fragmentos que não respondam ao aspecto perguntado. "
-            "O título, o nome da norma, a similaridade lexical e o marcador "
-            "direct_match não são prova factual. Para cada afirmação normativa "
+             "Quando a pergunta combinar temas ou documentos, associe cada "
+             "afirmação aos trechos que a sustentam e use mais de um evidence_id "
+             "quando necessário; não atribua a um único trecho uma relação que "
+             "exige outra fonte. Separe afirmações sustentadas por fontes distintas "
+             "em frases diferentes. O título, o nome da norma, a similaridade lexical "
+             "e o marcador direct_match não são prova factual. Para cada afirmação "
+             "normativa "
             "sustentada, selecione um evidence_id existente. Se os trechos não "
             "responderem, use evidence_ids=[] e "
             "limitations=[\"evidence_unavailable\"]. "
@@ -179,7 +193,9 @@ def _normalize_inline_evidence_ids(
     return parsed.model_copy(update=updates)
 
 
-def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
+def _prompt_evidence(
+    retrieval: Mapping[str, Any], *, focus: str | None = None
+) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     for document in retrieval.get("documents", []):
         if not isinstance(document, Mapping):
@@ -194,7 +210,7 @@ def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
         for item in document.get("evidence", []):
             if not isinstance(item, Mapping):
                 continue
-            text = _compact_evidence_text(item)
+            text = _compact_evidence_text(item, focus=focus)
             if not text:
                 continue
             candidates.append(
@@ -247,10 +263,26 @@ def _prompt_evidence(retrieval: Mapping[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
-def _compact_evidence_text(item: Mapping[str, Any], limit: int = 1000) -> str:
+def _compact_evidence_text(
+    item: Mapping[str, Any], limit: int = 1000, *, focus: str | None = None
+) -> str:
     text = str(item.get("text") or "").strip()
     if len(text) <= limit:
         return text
+    if focus:
+        lowered = text.casefold()
+        terms = sorted(
+            set(focused_query(focus).split()), key=len, reverse=True
+        )
+        for term in terms:
+            start = lowered.find(term.casefold())
+            if start < 0:
+                continue
+            window_start = max(0, start - 200)
+            window_end = min(len(text), window_start + limit)
+            if window_end - window_start < limit:
+                window_start = max(0, window_end - limit)
+            return text[window_start:window_end].strip()
     matched = str(item.get("matched_text") or "").strip()
     if matched and (start := text.find(matched)) >= 0:
         window_start = max(0, start - 200)
@@ -261,11 +293,87 @@ def _compact_evidence_text(item: Mapping[str, Any], limit: int = 1000) -> str:
     return text[:limit]
 
 
-def _retry_prompt(prompt: str) -> str:
-    return (
+def _retry_prompt(prompt: str, *, multi_source: bool = False) -> str:
+    retry = (
         prompt
         + "\nA tentativa anterior falhou. Retorne obrigatoriamente apenas "
         "os campos answer, evidence_ids e limitations; nunca invente IDs."
+    )
+    if multi_source:
+        retry += (
+            " Há fontes distintas disponíveis: associe cada afirmação à fonte "
+            "correspondente e separe as afirmações em frases diferentes. Inclua "
+            "todos os evidence_id usados; se uma fonte não sustentar uma parte, "
+            "omita essa parte e registre evidence_unavailable."
+        )
+    return retry
+
+
+def _needs_multi_source_retry(
+    parsed: SynthesisResponse, evidence: list[dict[str, Any]]
+) -> bool:
+    return _distinct_source_count(evidence) > 1 and (
+        len(set(parsed.evidence_ids)) < 2 or _answer_sentence_count(parsed.answer) < 2
+    )
+
+
+def _distinct_source_count(evidence: list[dict[str, Any]]) -> int:
+    return len(
+        {
+            str(item.get("standard") or "").strip()
+            for item in evidence
+            if str(item.get("standard") or "").strip()
+        }
+    )
+
+
+def _answer_sentence_count(answer: str) -> int:
+    return len(
+        [
+            part
+            for part in re.split(
+                r"(?<=[.!?])\s+(?=[A-ZÀ-Ý])|\n+", answer
+            )
+            if part.strip()
+        ]
+    )
+
+
+def _canonicalize_evidence_ids(
+    parsed: SynthesisResponse, evidence: list[dict[str, Any]]
+) -> SynthesisResponse:
+    candidates = {
+        str(item.get("evidence_id"))
+        for item in evidence
+        if str(item.get("evidence_id") or "").strip()
+    }
+    aliases: dict[str, str] = {}
+    for candidate in candidates:
+        prefix, marker, page = candidate.rpartition(":page:")
+        if marker and prefix and page.isdigit():
+            aliases[f"{prefix}:{page}"] = candidate
+    normalized = [
+        aliases.get(identifier, identifier) for identifier in parsed.evidence_ids
+    ]
+    if normalized == parsed.evidence_ids:
+        return parsed
+    return parsed.model_copy(update={"evidence_ids": list(dict.fromkeys(normalized))})
+
+
+def _mark_multi_source_limit(
+    parsed: SynthesisResponse, evidence: list[dict[str, Any]]
+) -> SynthesisResponse:
+    if _distinct_source_count(evidence) <= 1 or len(set(parsed.evidence_ids)) >= 2:
+        return parsed
+    if LimitationCode.EVIDENCE_UNAVAILABLE in parsed.limitations:
+        return parsed
+    return parsed.model_copy(
+        update={
+            "limitations": [
+                *parsed.limitations,
+                LimitationCode.EVIDENCE_UNAVAILABLE,
+            ]
+        }
     )
 
 

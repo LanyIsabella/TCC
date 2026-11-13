@@ -43,7 +43,9 @@ _DOCUMENTARY_SUBJECT = (
 _CONCEPTUAL_CUES = (
     r"\b(organiz\w*|consist\w*|signific\w*|descrev\w*|explic\w*|"
     r"apresent\w*|contextualiz\w*|defin\w*|busc\w*|investig\w*|"
-    r"analis\w*)\b"
+    r"analis\w*|objetiv\w*|conhec\w*|teoric\w*|panorama\w*|"
+    r"debate\w*|fornec\w*|estabelec\w*|literatur\w*|comunic\w*|"
+    r"cultur\w*|desenvolv\w*|transmit\w*|express\w*)\b"
 )
 _STRUCTURAL_NORMATIVE_SUBJECT = (
     r"\b(referenc\w*|sumari\w*|identific\w*|autori\w*|folha|"
@@ -317,10 +319,21 @@ def _literal_quantity(match: re.Match[str]) -> str:
 
 
 def _numeric_conflict(claim: str, context: str) -> bool:
+    claim = _without_standard_identifiers(claim)
+    context = _without_standard_identifiers(context)
     quantities, numbers = _quantities(claim)
     source_quantities, source_numbers = _quantities(context)
     return not quantities.issubset(source_quantities) or not numbers.issubset(
         source_numbers
+    )
+
+
+def _without_standard_identifiers(text: str) -> str:
+    return re.sub(
+        r"\b(?:abnt\s+)?nbr\s*[-_]?\s*\d+(?:\s*:\s*\d{4})?\b",
+        "",
+        text,
+        flags=re.IGNORECASE,
     )
 
 
@@ -355,8 +368,20 @@ def _qualifier_conflict(claim: str, context: str, question: str) -> bool:
     # Equivalent "se/quando" and a condition already explicit in the question are valid.
     targets = claim + " " + question
     return any(
-        re.sub(r"^(?:se|quando|caso)\s+", "", q) not in targets for q in qualifiers
+        not _qualifier_is_present(q, targets) for q in qualifiers
     )
+
+
+def _qualifier_is_present(qualifier: str, targets: str) -> bool:
+    body = re.sub(r"^(?:se|quando|caso)\s+", "", qualifier)
+    if body in targets:
+        return True
+    tokens = [
+        token
+        for token in re.findall(r"\b[\wÀ-ÿ]+\b", body)
+        if token not in {"for", "ser", "deve", "devem", "que", "ter"}
+    ]
+    return len(tokens) >= 2 and all(token in targets for token in tokens)
 
 
 def _modality_conflict(claim: str, context: str) -> bool:
@@ -472,6 +497,8 @@ def _citation_topic_matches(document: str, source: str) -> bool:
 def _reference_topic_matches(document: str, source: str) -> bool:
     # Menções ocasionais a referências normativas não tornam uma norma de
     # citações pertinente a uma pergunta sobre referências bibliográficas.
+    if ("10520" in document or "citac" in document) and "6023" not in document:
+        return False
     if "referenc" in document or "6023" in document:
         return True
     return bool(

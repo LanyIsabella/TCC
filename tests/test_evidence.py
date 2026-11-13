@@ -111,6 +111,35 @@ def test_general_mode_preserves_conceptual_explanation_without_classifier(answer
     assert extracted.answer == answer
 
 
+def test_general_mode_preserves_multi_sentence_conceptual_explanation():
+    answer = (
+        "Uma revisão de literatura em um trabalho acadêmico é o processo de "
+        "pesquisa, seleção, análise e síntese crítica das fontes de informação "
+        "relevantes (como livros, artigos científicos, teses, etc.) sobre um "
+        "determinado tema. O objetivo principal é fornecer um panorama abrangente "
+        "do conhecimento já existente sobre o assunto, identificar as principais "
+        "teorias, conceitos, descobertas e debates existentes, e estabelecer o "
+        "contexto teórico para a pesquisa ou argumentação do trabalho."
+    )
+    result = {
+        "messages": [
+            {"role": "user", "content": "O que é uma revisão de literatura?"},
+            {"role": "assistant", "content": answer},
+        ],
+        "_conversation": {
+            "intent": ConversationIntent.CONVERSATIONAL,
+            "response_mode": "general",
+        },
+        "structured_response": AgentAnswer(answer=answer),
+    }
+
+    finalized = finalize_grounding(result)
+    extracted = extract_agent_result(finalized)
+
+    assert extracted.grounding_status == "conversational"
+    assert extracted.answer == answer
+
+
 def test_compact_document_creates_stable_page_evidences() -> None:
     document = _compact_document(
         {

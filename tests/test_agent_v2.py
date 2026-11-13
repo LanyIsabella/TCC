@@ -259,6 +259,15 @@ def test_planner_routes_explicit_conceptual_question_to_general_mode():
     assert decision.needs_retrieval is False
 
 
+def test_planner_clarifies_underspecified_formatting_question():
+    decision = Planner(None).plan("Qual é a formatação certa?", [])
+
+    assert decision.intent == ConversationIntent.AMBIGUOUS
+    assert decision.effective_mode() == ResponseMode.CLARIFY
+    assert decision.needs_clarification is True
+    assert decision.needs_retrieval is False
+
+
 @pytest.mark.parametrize(
     "question",
     [
@@ -324,6 +333,118 @@ def test_synthesizer_retries_invalid_contract_and_returns_valid_response():
     assert result.answer == "A regra é aplicada."
     assert len(model.calls) == 2
     assert "tentativa anterior falhou" in model.calls[1][0]["content"]
+
+
+def test_synthesizer_retries_when_distinct_sources_need_separate_support():
+    model = FakeSynthesisModel(
+        [
+            {
+                "parsed": {
+                    "answer": "A resposta combina os dois documentos.",
+                    "evidence_ids": ["e1"],
+                    "limitations": [],
+                }
+            },
+            {
+                "parsed": {
+                    "answer": (
+                        "A primeira regra está no projeto. "
+                        "A segunda regra está na referência."
+                    ),
+                    "evidence_ids": ["e1", "e2"],
+                    "limitations": [],
+                }
+            },
+        ]
+    )
+    retrieval = {
+        "documents": [
+            {
+                "standard_label": "ABNT NBR 15287",
+                "evidence": [
+                    {
+                        "evidence_id": "e1",
+                        "direct_match": True,
+                        "page_number": 5,
+                        "text": "A regra do projeto.",
+                    }
+                ],
+            },
+            {
+                "standard_label": "ABNT NBR 6023",
+                "evidence": [
+                    {
+                        "evidence_id": "e2",
+                        "direct_match": True,
+                        "page_number": 12,
+                        "text": "A regra da referência.",
+                    }
+                ],
+            },
+        ]
+    }
+
+    result = Synthesizer(model).synthesize(
+        "Como combinar as duas regras?", [], retrieval
+    )
+
+    assert result.evidence_ids == ["e1", "e2"]
+    assert len(model.calls) == 2
+    assert "fontes distintas" in model.calls[1][0]["content"]
+
+
+def test_synthesizer_canonicalizes_unambiguous_page_alias_and_marks_partial_source():
+    model = FakeSynthesisModel(
+        [
+            {
+                "parsed": {
+                    "answer": "A regra está no projeto.",
+                    "evidence_ids": ["document:4:5"],
+                    "limitations": [],
+                }
+            },
+            {
+                "parsed": {
+                    "answer": "A regra continua no projeto.",
+                    "evidence_ids": ["document:4:5"],
+                    "limitations": [],
+                }
+            },
+        ]
+    )
+    retrieval = {
+        "documents": [
+            {
+                "standard_label": "ABNT NBR 15287",
+                "evidence": [
+                    {
+                        "evidence_id": "document:4:page:5",
+                        "direct_match": True,
+                        "page_number": 5,
+                        "text": "A regra do projeto.",
+                    }
+                ],
+            },
+            {
+                "standard_label": "ABNT NBR 6023",
+                "evidence": [
+                    {
+                        "evidence_id": "document:32:page:12",
+                        "direct_match": True,
+                        "page_number": 12,
+                        "text": "A regra da referência.",
+                    }
+                ],
+            },
+        ]
+    }
+
+    result = Synthesizer(model).synthesize(
+        "Como combinar as duas regras?", [], retrieval
+    )
+
+    assert result.evidence_ids == ["document:4:page:5"]
+    assert result.limitations == [LimitationCode.EVIDENCE_UNAVAILABLE]
 
 
 def test_synthesis_parser_accepts_typed_and_wrapped_contracts():
@@ -395,6 +516,8 @@ def test_normative_synthesis_prompt_allows_explanation_but_not_parametric_author
     assert "Pode explicar e combinar regras" in prompt
     assert "somente o texto dos trechos fornecidos" in prompt
     assert "autoridade factual" in prompt
+    assert "associe cada afirmação aos trechos" in prompt
+    assert "frases diferentes" in prompt
 
 
 def test_synthesis_prompt_keeps_adjacent_page_context():
@@ -445,6 +568,37 @@ def test_synthesis_prompt_compacts_around_relevant_match():
                             "direct_match": True,
                             "text": "x" * 1280 + rule,
                             "matched_text": rule,
+                        }
+                    ],
+                }
+            ]
+        },
+    )
+
+    assert rule in prompt
+
+
+def test_synthesis_prompt_focuses_excerpt_on_question_terms():
+    rule = (
+        "Quando for pessoa física, a indicação deve ser feita pelo sobrenome "
+        "do autor, em letras maiúsculas e minúsculas."
+    )
+    prompt = Synthesizer(None)._prompt(
+        (
+            "Se eu escolher autor-data, como escrevo o sobrenome de um autor "
+            "pessoa física?"
+        ),
+        [],
+        {
+            "documents": [
+                {
+                    "standard_label": "ABNT NBR 10520",
+                    "evidence": [
+                        {
+                            "evidence_id": "page-8",
+                            "direct_match": True,
+                            "page_number": 8,
+                            "text": "Prefácio sem relação. " * 120 + rule,
                         }
                     ],
                 }
@@ -1059,6 +1213,49 @@ def test_planner_requests_clarification_for_underspecified_margin_question() -> 
     assert decision.clarification_questions
 
 
+def test_planner_fills_missing_queries_for_normative_broad_question() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+        )
+    )
+    planner = Planner(model)
+
+    decision = planner.plan(
+        "No projeto de pesquisa, como a exigência de referências se articula "
+        "com os dados exigidos para referenciar uma dissertação?",
+        [],
+    )
+
+    assert decision.retrieval_queries == [
+        "projeto de pesquisa apresentacao referencias normativas",
+        "trabalho academico monografia dissertacao",
+    ]
+
+
+def test_planner_repairs_unfocused_call_system_query() -> None:
+    model = FakeStructuredModel(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["NBR 10520 sistemas de chamada"],
+        )
+    )
+
+    decision = Planner(model).plan(
+        (
+            "Quais sistemas de chamada a NBR 10520 permite e como manter a "
+            "consistência ao longo do texto?"
+        ),
+        [],
+    )
+
+    assert decision.retrieval_queries[0] == "sistema de chamada citações ABNT NBR 10520"
+
+
 def test_planner_routes_explicit_academic_topic_change_to_retrieval() -> None:
     model = FakeStructuredModel(
         PlannerDecision(intent=ConversationIntent.ACTION_REQUEST)
@@ -1424,6 +1621,36 @@ def test_normative_mode_merges_pages_from_same_document_across_queries():
         "document:3:page:3",
         "document:3:page:7",
     ]
+
+
+def test_broad_normative_query_executes_all_planner_queries_for_coverage() -> None:
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["primeira fonte", "segunda fonte"],
+        )
+    )
+    tools = SequencedTools([rag_payload(), rag_payload()])
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+
+    agent._execute_searches(
+        "No projeto de pesquisa, como a exigência de referências se articula "
+        "com os dados exigidos para referenciar uma dissertação?",
+        [],
+        "conversation",
+        "turn",
+        planner.decision.retrieval_queries,
+    )
+
+    assert len(tools.calls) == 2
 
 
 def test_normative_synthesis_keeps_text_generation_enabled_without_authority_bypass():

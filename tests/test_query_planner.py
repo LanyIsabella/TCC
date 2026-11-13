@@ -30,10 +30,34 @@ def test_common_normative_topics_get_targeted_expansion() -> None:
     assert "autores" in reference_queries[1]
 
 
+def test_project_references_question_expands_to_project_and_reference_sources() -> None:
+    question = (
+        "No projeto de pesquisa, como a exigência de referências se articula "
+        "com os dados exigidos para referenciar uma dissertação?"
+    )
+
+    assert is_broad_question(question)
+    queries = plan_queries(question)
+    assert len(queries) == 2
+    assert queries == [
+        "projeto de pesquisa apresentacao referencias normativas",
+        "trabalho academico monografia dissertacao",
+    ]
+
+
 def test_specific_question_is_not_expanded() -> None:
     queries = plan_queries("Qual é o item 7.1 da ABNT NBR 10520?")
 
     assert queries == ["Qual é o item 7.1 da ABNT NBR 10520?"]
+
+
+def test_call_system_question_gets_a_targeted_normative_query() -> None:
+    queries = plan_queries(
+        "Quais sistemas de chamada a NBR 10520 permite e como manter a "
+        "consistência ao longo do texto?"
+    )
+
+    assert queries[0] == "sistema de chamada citações ABNT NBR 10520"
 
 
 @pytest.mark.parametrize(
