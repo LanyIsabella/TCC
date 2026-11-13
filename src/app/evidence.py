@@ -26,6 +26,7 @@ from .grounding import (
     GroundingDecision,
     Verifier,
     ground_answer,
+    is_conceptual_explanation,
     needs_support,
 )
 from .scope_guard import (
@@ -505,6 +506,8 @@ def _is_safe_non_normative_response(
     }
     if normalized in known_safe:
         return True
+    if normalized.startswith("a sintese geral nao foi publicada"):
+        return True
     if (
         intent == ConversationIntent.AMBIGUOUS
         and completion_type == "clarification_requested"
@@ -778,6 +781,12 @@ def _decision(
             isinstance(conversation, Mapping)
             and str(conversation.get("response_mode") or "") == "general"
         )
+        unclassified_general = (
+            general_mode
+            and classified_normative is None
+            and not safe_non_normative
+            and not is_conceptual_explanation(answer)
+        )
         untrusted_clarification = (
             intent == ConversationIntent.AMBIGUOUS
             and completion_type == "clarification_requested"
@@ -794,6 +803,7 @@ def _decision(
         if (
             untrusted_clarification
             or normative_assertion
+            or unclassified_general
             or (
                 not general_mode
                 and not safe_non_normative

@@ -110,6 +110,31 @@ def test_inconclusive_classifier_does_not_release_implicit_normative_claim(class
     assert result.answer == INSUFFICIENT_EVIDENCE
 
 
+@pytest.mark.parametrize(
+    "classifier",
+    [
+        None,
+        lambda *_args: "invalid json",
+        lambda *_args: {"claims": []},
+        lambda *_args: {"claims": [{"index": 0, "kind": "unknown"}]},
+    ],
+)
+def test_mixed_mode_rejects_unclassified_normative_statement_without_known_marker(
+    classifier,
+):
+    result = ground_answer(
+        "As referências bibliográficas incluem autor e título.",
+        evidence("A metodologia organiza as etapas."),
+        "Como formatar referências segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "insufficient"
+    assert result.answer == INSUFFICIENT_EVIDENCE
+
+
 def test_mixed_mode_keeps_conceptual_prose_when_classifier_is_unavailable():
     result = ground_answer(
         "A metodologia organiza as etapas do trabalho.",

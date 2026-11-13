@@ -40,6 +40,10 @@ _DOCUMENTARY_SUBJECT = (
     r"\b(citac\w*|referenc\w*|margens?|recuos?|fonte|folha|resumo|"
     r"espac\w*|elementos? pre[- ]textuais?|norma\w*|regra\w*|abnt|nbr)\b"
 )
+_CONCEPTUAL_CUES = (
+    r"\b(organiz\w*|consist\w*|signific\w*|descrev\w*|explic\w*|"
+    r"represent\w*|defin\w*|busc\w*|investig\w*|analis\w*)\b"
+)
 Verifier = Callable[[str, list[str], Mapping[str, Any]], Any]
 ClaimClassifier = Callable[[str, list[str]], Any]
 
@@ -133,6 +137,20 @@ def _implicit_normative_claim(claim: str) -> bool:
     )
 
 
+def is_conceptual_explanation(text: str) -> bool:
+    """Conserva prosa conceitual sem tratar ausência de classificação como prova."""
+    claims = _claims(text)
+    return bool(claims) and all(
+        _conversational(claim)
+        or (
+            bool(re.search(_CONCEPTUAL_CUES, _canonical(claim)))
+            and not _claim_requires_normative_support(claim)
+            and not _implicit_normative_claim(claim)
+        )
+        for claim in claims
+    )
+
+
 def _classified_normative_claims(
     classifier: ClaimClassifier | None,
     question: str,
@@ -162,7 +180,17 @@ def _classified_normative_claims(
             and str(item.get("index", "")).isdigit()
             and 0 <= int(item["index"]) < len(claims)
         }
-        complete = indices == set(range(len(claims)))
+        complete = (
+            len(entries) == len(claims)
+            and indices == set(range(len(claims)))
+            and len(indices) == len(entries)
+            and all(
+                isinstance(item, Mapping)
+                and str(item.get("kind") or "").casefold()
+                in {"normative", "general", "example"}
+                for item in entries
+            )
+        )
         return normative, complete
     except Exception:
         logger.warning("grounding_claim_classification_invalid=True")
@@ -645,5 +673,6 @@ def ground_answer(
                 for index, claim in enumerate(claims)
                 if _claim_requires_normative_support(claim)
                 or _implicit_normative_claim(claim)
+                or not is_conceptual_explanation(claim)
             )
     return _compose(answer, claims, support, required)

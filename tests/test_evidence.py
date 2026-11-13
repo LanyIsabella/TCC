@@ -4,9 +4,41 @@ import json
 
 import pytest
 from src.app.conversation import ConversationIntent
-from src.app.evidence import AgentAnswer, extract_agent_result
+from src.app.evidence import AgentAnswer, extract_agent_result, finalize_grounding
 from src.app.grounding import INSUFFICIENT_EVIDENCE
 from src.app.tools.rag_search import _compact_document, _matched_text
+
+
+@pytest.mark.parametrize(
+    "classifier",
+    [
+        None,
+        lambda *_args: "invalid json",
+        lambda *_args: {"claims": []},
+        lambda *_args: {"claims": [{"index": 0, "kind": "unknown"}]},
+    ],
+)
+def test_general_mode_does_not_release_unclassified_normative_statement(
+    classifier,
+):
+    answer = "As referências bibliográficas incluem autor e título."
+    result = {
+        "messages": [
+            {"role": "user", "content": "Olá"},
+            {"role": "assistant", "content": answer},
+        ],
+        "_conversation": {
+            "intent": ConversationIntent.CONVERSATIONAL,
+            "response_mode": "general",
+        },
+        "structured_response": AgentAnswer(answer=answer),
+    }
+
+    finalized = finalize_grounding(result, claim_classifier=classifier)
+    extracted = extract_agent_result(finalized)
+
+    assert extracted.grounding_status == "unsupported"
+    assert extracted.answer == INSUFFICIENT_EVIDENCE
 
 
 def test_compact_document_creates_stable_page_evidences() -> None:
