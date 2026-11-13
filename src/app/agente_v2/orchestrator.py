@@ -307,12 +307,13 @@ class AgentV2:
         if not candidates:
             candidates = [""]
         executions: list[ToolExecution] = []
+        run_all_queries = len(candidates) > 1 and is_broad_question(question)
         for query in candidates:
             execution = self._execute_search(
                 question, history, conversation_id, turn_id, query=query or None
             )
             executions.append(execution)
-            if self._retrieval_sufficient(execution, question):
+            if not run_all_queries and self._retrieval_sufficient(execution, question):
                 break
         if len(executions) == 1:
             return executions[0]
