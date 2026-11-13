@@ -135,6 +135,60 @@ def test_mixed_mode_rejects_unclassified_normative_statement_without_known_marke
     assert result.answer == INSUFFICIENT_EVIDENCE
 
 
+@pytest.mark.parametrize(
+    "classifier",
+    [
+        None,
+        lambda *_args: "invalid json",
+        lambda *_args: {"claims": []},
+        lambda *_args: {"claims": [{"index": 0, "kind": "unknown"}]},
+    ],
+)
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "As referências bibliográficas representam uma seção posterior à conclusão.",
+        "O sumário corresponde à seção que antecede a introdução.",
+        "A identificação da autoria aparece antes do título na folha de rosto.",
+    ],
+)
+def test_mixed_mode_rejects_structural_claim_when_classifier_is_inconclusive(
+    classifier, answer
+):
+    result = ground_answer(
+        answer,
+        evidence("A metodologia organiza as etapas."),
+        "Como organizar os elementos de um trabalho segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "insufficient"
+    assert result.answer == INSUFFICIENT_EVIDENCE
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "A metodologia organiza as etapas de uma pesquisa.",
+        "A pesquisa qualitativa busca compreender experiências e significados.",
+        "Uma introdução apresenta o assunto e contextualiza o problema investigado.",
+    ],
+)
+def test_mixed_mode_preserves_conceptual_explanation_without_classifier(answer):
+    result = ground_answer(
+        answer,
+        evidence("A margem deve medir 2 cm."),
+        "Explique o conceito para um TCC.",
+        response_mode="mixed",
+        normative_context=True,
+    )
+
+    assert result.status == "conversational"
+    assert result.answer == answer
+
+
 def test_mixed_mode_keeps_conceptual_prose_when_classifier_is_unavailable():
     result = ground_answer(
         "A metodologia organiza as etapas do trabalho.",

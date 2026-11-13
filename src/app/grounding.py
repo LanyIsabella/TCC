@@ -42,7 +42,20 @@ _DOCUMENTARY_SUBJECT = (
 )
 _CONCEPTUAL_CUES = (
     r"\b(organiz\w*|consist\w*|signific\w*|descrev\w*|explic\w*|"
-    r"represent\w*|defin\w*|busc\w*|investig\w*|analis\w*)\b"
+    r"apresent\w*|contextualiz\w*|defin\w*|busc\w*|investig\w*|"
+    r"analis\w*)\b"
+)
+_STRUCTURAL_NORMATIVE_SUBJECT = (
+    r"\b(referenc\w*|sumari\w*|identific\w*|autori\w*|folha|"
+    r"capa|titulo|citac\w*)\b"
+)
+_STRUCTURAL_NORMATIVE_RELATION = (
+    r"\b(represent\w*|correspond\w*|aparec\w*|anteced\w*|"
+    r"preced\w*|suced\w*)\b"
+)
+_STRUCTURAL_NORMATIVE_QUALIFIER = (
+    r"\b(secao\w*|secoes\w*|posterior\w*|anterior\w*|antes|"
+    r"depois|ordem|titulo|folha|autori\w*)\b"
 )
 Verifier = Callable[[str, list[str], Mapping[str, Any]], Any]
 ClaimClassifier = Callable[[str, list[str]], Any]
@@ -117,6 +130,11 @@ def _claim_requires_normative_support(claim: str) -> bool:
         or (
             re.search(_NORMATIVE_MODAL, canonical)
             and re.search(_DOCUMENTARY_SUBJECT, canonical)
+        )
+        or (
+            re.search(_STRUCTURAL_NORMATIVE_SUBJECT, canonical)
+            and re.search(_STRUCTURAL_NORMATIVE_RELATION, canonical)
+            and re.search(_STRUCTURAL_NORMATIVE_QUALIFIER, canonical)
         )
     )
 

@@ -41,6 +41,76 @@ def test_general_mode_does_not_release_unclassified_normative_statement(
     assert extracted.answer == INSUFFICIENT_EVIDENCE
 
 
+@pytest.mark.parametrize(
+    "classifier",
+    [
+        None,
+        lambda *_args: "invalid json",
+        lambda *_args: {"claims": []},
+        lambda *_args: {"claims": [{"index": 0, "kind": "unknown"}]},
+    ],
+)
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "As referências bibliográficas representam uma seção posterior à conclusão.",
+        "O sumário corresponde à seção que antecede a introdução.",
+        "A identificação da autoria aparece antes do título na folha de rosto.",
+    ],
+)
+def test_general_mode_rejects_structural_claim_when_classifier_is_inconclusive(
+    classifier, answer
+):
+    result = {
+        "messages": [
+            {
+                "role": "user",
+                "content": "Como organizar os elementos segundo a ABNT?",
+            },
+            {"role": "assistant", "content": answer},
+        ],
+        "_conversation": {
+            "intent": ConversationIntent.CONVERSATIONAL,
+            "response_mode": "general",
+        },
+        "structured_response": AgentAnswer(answer=answer),
+    }
+
+    finalized = finalize_grounding(result, claim_classifier=classifier)
+    extracted = extract_agent_result(finalized)
+
+    assert extracted.grounding_status == "unsupported"
+    assert extracted.answer == INSUFFICIENT_EVIDENCE
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "A metodologia organiza as etapas de uma pesquisa.",
+        "A pesquisa qualitativa busca compreender experiências e significados.",
+        "Uma introdução apresenta o assunto e contextualiza o problema investigado.",
+    ],
+)
+def test_general_mode_preserves_conceptual_explanation_without_classifier(answer):
+    result = {
+        "messages": [
+            {"role": "user", "content": "O que é metodologia?"},
+            {"role": "assistant", "content": answer},
+        ],
+        "_conversation": {
+            "intent": ConversationIntent.CONVERSATIONAL,
+            "response_mode": "general",
+        },
+        "structured_response": AgentAnswer(answer=answer),
+    }
+
+    finalized = finalize_grounding(result)
+    extracted = extract_agent_result(finalized)
+
+    assert extracted.grounding_status == "conversational"
+    assert extracted.answer == answer
+
+
 def test_compact_document_creates_stable_page_evidences() -> None:
     document = _compact_document(
         {
