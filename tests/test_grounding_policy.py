@@ -870,6 +870,20 @@ def test_conversational_parts_are_preserved_in_academic_context():
     assert ground_answer("Recebi sua mensagem.", {}).answer == "Recebi sua mensagem."
 
 
+def test_mixed_mode_preserves_a_supported_conceptual_sentence():
+    result = ground_answer(
+        "A citação direta reproduz literalmente as palavras da fonte. "
+        "A citação direta longa deve ter recuo de 4 cm.",
+        evidence("A citação direta longa deve ter recuo de 4 cm."),
+        "O que é uma citação direta e qual recuo a norma recomenda?",
+        response_mode="mixed",
+    )
+
+    assert "reproduz literalmente" in result.answer
+    assert "4 cm" in result.answer
+    assert result.status == "supported"
+
+
 def test_explicit_exception_can_be_preserved_by_a_faithful_paraphrase():
     source = "A margem deve medir 2 cm, exceto em folhas especiais."
     answer = "A margem mede dois centímetros, exceto em folhas especiais."

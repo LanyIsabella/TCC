@@ -45,7 +45,8 @@ _CONCEPTUAL_CUES = (
     r"apresent\w*|contextualiz\w*|defin\w*|busc\w*|investig\w*|"
     r"analis\w*|objetiv\w*|conhec\w*|teoric\w*|panorama\w*|"
     r"debate\w*|fornec\w*|estabelec\w*|literatur\w*|comunic\w*|"
-    r"cultur\w*|desenvolv\w*|transmit\w*|express\w*)\b"
+    r"cultur\w*|desenvolv\w*|transmit\w*|express\w*|"
+    r"reproduz\w*|transcrev\w*|literal\w*)\b"
 )
 _STRUCTURAL_NORMATIVE_SUBJECT = (
     r"\b(referenc\w*|sumari\w*|identific\w*|autori\w*|folha|"

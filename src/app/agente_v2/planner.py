@@ -66,6 +66,26 @@ def _is_underspecified_question(question: str) -> bool:
     )
 
 
+def _is_broad_clarification_question(question: str) -> bool:
+    """Detecta pedidos de tópico sem aspecto suficiente para uma busca única."""
+
+    normalized = normalize_text(question).strip().rstrip("?.!")
+    terms = set(normalized.split())
+    if len(terms) > 5:
+        return False
+    if "citac" in normalized:
+        return not any(
+            marker in normalized
+            for marker in ("direta", "indireta", "fonte", "autor", "sistema")
+        )
+    if "referenc" in normalized:
+        return not any(
+            marker in normalized
+            for marker in ("autor", "element", "ordem", "alfabet", "formatacao")
+        )
+    return False
+
+
 def _is_general_knowledge_question(question: str) -> bool:
     normalized = normalize_text(question).strip().rstrip("?.!")
     if not normalized.startswith(
@@ -98,6 +118,29 @@ def _is_general_knowledge_question(question: str) -> bool:
             "espacamento",
         )
     )
+
+
+def _is_mixed_question(question: str) -> bool:
+    normalized = normalize_text(question).strip()
+    conceptual = normalized.startswith(("o que e ", "explique ", "como funciona "))
+    subject = any(
+        marker in normalized
+        for marker in ("citac", "referenc", "recuo", "margem", "fonte", "espac")
+    )
+    normative = any(
+        marker in normalized
+        for marker in (
+            "deve",
+            "obrigatori",
+            "recuo",
+            "margem",
+            "norma",
+            "regra",
+            "segundo a abnt",
+            "nbr",
+        )
+    )
+    return conceptual and subject and normative
 
 
 class Planner:
@@ -197,6 +240,27 @@ class Planner:
     ) -> str | None:
         aspect = normalize_text(answer)
         original = normalize_text(original_question)
+        if any(marker in aspect for marker in ("todas", "todos")):
+            if "citac" in original:
+                return (
+                    "Segundo a ABNT NBR 10520, como fazer citações diretas, "
+                    "indiretas e citações de fontes?"
+                )
+            if "referenc" in original:
+                return (
+                    "Segundo a ABNT NBR 6023, quais são as regras para elaborar "
+                    "e formatar referências bibliográficas?"
+                )
+        if "como formatar" in original and "referenc" in aspect:
+            return (
+                "Segundo a ABNT NBR 6023, quais são as regras de formatação "
+                "das referências bibliográficas?"
+            )
+        if "como formatar" in original and "citac" in aspect:
+            return (
+                "Segundo a ABNT NBR 10520, quais são as regras de formatação "
+                "das citações?"
+            )
         if "referenc" in original:
             if any(term in aspect for term in ("autor", "respons", "nome")):
                 return (
@@ -263,6 +327,19 @@ class Planner:
             if parsed is None:
                 return fallback
             decision = self._safe_decision(parsed, fallback)
+            if (
+                fallback.mode == ResponseMode.MIXED
+                and decision.mode != ResponseMode.MIXED
+            ):
+                decision = decision.model_copy(
+                    update={
+                        "intent": ConversationIntent.NORMATIVE_QUERY,
+                        "mode": ResponseMode.MIXED,
+                        "needs_retrieval": True,
+                        "retrieval_queries": decision.retrieval_queries
+                        or plan_queries(question, history)[:2],
+                    }
+                )
             decision = self._repair_contextual_decision(
                 question, history, decision, fallback
             )
@@ -504,6 +581,30 @@ class Planner:
             return PlannerDecision(
                 intent=ConversationIntent.CONVERSATIONAL,
                 mode=ResponseMode.GENERAL,
+            )
+        if _is_mixed_question(question):
+            return PlannerDecision(
+                intent=ConversationIntent.NORMATIVE_QUERY,
+                mode=ResponseMode.MIXED,
+                needs_retrieval=True,
+                retrieval_queries=plan_queries(question, history)[:2],
+            )
+        if _is_broad_clarification_question(question):
+            if "citac" in normalize_text(question):
+                prompt = (
+                    "Você se refere a citações diretas, indiretas ou citações "
+                    "de fontes?"
+                )
+            else:
+                prompt = (
+                    "Você deseja orientação sobre autoria, elementos ou "
+                    "formatação das referências?"
+                )
+            return PlannerDecision(
+                intent=ConversationIntent.AMBIGUOUS,
+                needs_clarification=True,
+                clarification_questions=[prompt],
+                mode=ResponseMode.CLARIFY,
             )
         decision = interpret_intent([*history, {"role": "user", "content": question}])
         if _is_underspecified_question(question):

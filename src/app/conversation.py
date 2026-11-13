@@ -160,6 +160,10 @@ def _is_action_request(question: str) -> bool:
 
 def _is_conversational(question: str) -> bool:
     normalized = normalize_text(question).strip("?.! ")
+    if normalized.replace(",", " ").startswith(("ola ", "oi ")) and any(
+        marker in normalized for marker in ("ajuda", "pode ajudar", "preciso de ajuda")
+    ):
+        return True
     return normalized in {
         "oi",
         "ola",

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from dataclasses import replace
 from typing import Any
@@ -80,14 +81,21 @@ class AgentV2:
         )
         if pending is not None:
             self._store.clear_pending_clarification(conversation_id)
+        if self._is_explicit_topic_change(question):
+            history = []
         plan = self._plan(planning_question, history)
+        if planning_question != question and plan.needs_retrieval:
+            plan = plan.model_copy(update={"retrieval_queries": [planning_question]})
 
         if plan.effective_mode() in {
             ResponseMode.GENERAL,
             ResponseMode.CLARIFY,
             ResponseMode.OUT_OF_SCOPE,
         }:
-            if plan.mode == ResponseMode.GENERAL:
+            if plan.mode == ResponseMode.GENERAL and not (
+                plan.intent == ConversationIntent.CONVERSATIONAL
+                and self._is_safe_conversational_reply(plan.reply)
+            ):
                 result = self._general_turn(
                     conversation_id, turn_id, question, planning_question, history, plan
                 )
@@ -268,6 +276,19 @@ class AgentV2:
         if plan.intent == ConversationIntent.CONVERSATIONAL:
             return GREETING_MESSAGE
         return "Por favor, envie uma pergunta acadêmica mais específica."
+
+    @staticmethod
+    def _is_safe_conversational_reply(reply: str | None) -> bool:
+        if not reply:
+            return False
+        normalized = normalize_text(reply).strip()
+        return bool(
+            re.fullmatch(
+                r"(?:ola|oi|bom dia|boa tarde|boa noite)[!.]?"
+                r"(?: posso ajudar(?: com [^.!?]+)?[!.]?)?",
+                normalized,
+            )
+        )
 
     def _execute_search(
         self,
