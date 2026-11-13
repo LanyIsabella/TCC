@@ -6,6 +6,7 @@ from src.app.agente_v2.schemas import (
     ClarificationResolution,
     LimitationCode,
     PlannerDecision,
+    ResponseMode,
     SynthesisResponse,
 )
 from src.app.agente_v2.synthesis import SynthesisFailure, Synthesizer
@@ -36,6 +37,12 @@ class FakeSynthesizer:
         return self.response
 
 
+class KeywordSynthesizer(FakeSynthesizer):
+    def synthesize(self, question, history, retrieval, **kwargs):
+        self.calls.append((question, history, retrieval, kwargs))
+        return self.response
+
+
 class FakeTools:
     def __init__(self, payload):
         self.payload = payload
@@ -44,6 +51,16 @@ class FakeTools:
     def execute(self, name, arguments, *, conversation_id, turn_id):
         self.calls.append((name, arguments, conversation_id, turn_id))
         return self.payload
+
+
+class SequencedTools(FakeTools):
+    def __init__(self, payloads):
+        super().__init__(None)
+        self.payloads = list(payloads)
+
+    def execute(self, name, arguments, *, conversation_id, turn_id):
+        self.calls.append((name, arguments, conversation_id, turn_id))
+        return self.payloads.pop(0)
 
 
 class FakeStructuredModel:
@@ -209,6 +226,85 @@ def test_structured_contract_parsers_accept_raw_and_typed_values():
     assert ClarificationResolution.from_llm_value([]) is None
 
 
+def test_planner_modes_normalize_retrieval_contract():
+    planner = Planner(None)
+    mixed = planner._safe_decision(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.MIXED,
+            needs_retrieval=False,
+        ),
+        PlannerDecision(intent=ConversationIntent.CONVERSATIONAL),
+    )
+    general = planner._safe_decision(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.GENERAL,
+            needs_retrieval=True,
+        ),
+        PlannerDecision(intent=ConversationIntent.CONVERSATIONAL),
+    )
+
+    assert mixed.needs_retrieval is True
+    assert general.needs_retrieval is True
+    assert general.mode == ResponseMode.NORMATIVE
+
+
+def test_planner_routes_explicit_conceptual_question_to_general_mode():
+    planner = Planner(None)
+
+    decision = planner.plan("O que é metodologia científica?", [])
+
+    assert decision.mode == ResponseMode.GENERAL
+    assert decision.needs_retrieval is False
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "Como melhorar a introdução do meu TCC?",
+        "Como fazer uma introdução para a pesquisa?",
+    ],
+)
+def test_planner_allows_general_procedural_advice_without_normative_terms(question):
+    decision = Planner(None).plan(question, [])
+
+    assert decision.mode == ResponseMode.GENERAL
+    assert decision.needs_retrieval is False
+
+
+def test_planner_consults_llm_for_contextual_conceptual_question():
+    model = FakeStructuredModel(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.GENERAL,
+        )
+    )
+
+    decision = Planner(model).plan(
+        "Explique os elementos pré-textuais de um TCC.", []
+    )
+
+    assert model.calls
+    assert decision.mode == ResponseMode.GENERAL
+
+
+def test_contradictory_normative_intent_cannot_be_normalized_to_general():
+    planner = Planner(None)
+
+    decision = planner._safe_decision(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.GENERAL,
+            needs_retrieval=True,
+        ),
+        PlannerDecision(intent=ConversationIntent.CONVERSATIONAL),
+    )
+
+    assert decision.mode == ResponseMode.NORMATIVE
+    assert decision.needs_retrieval is True
+
+
 def test_synthesizer_retries_invalid_contract_and_returns_valid_response():
     model = FakeSynthesisModel(
         [
@@ -271,6 +367,34 @@ def test_synthesis_prompt_prefers_natural_relevant_evidence():
     assert "prefira copiar literalmente" not in prompt
     assert '"evidence_id": "e1"' in prompt
     assert '"evidence_id": "e2"' not in prompt
+
+
+def test_general_synthesis_prompt_allows_examples_without_fabricating_sources():
+    prompt = Synthesizer(None)._prompt(
+        "O que é metodologia?",
+        [],
+        {},
+        mode=ResponseMode.GENERAL,
+    )
+
+    assert "conhecimento paramétrico" in prompt
+    assert "Exemplo ilustrativo:" in prompt
+    assert "não crie citações ou IDs documentais" in prompt
+    assert "não use evidence_unavailable" in prompt
+
+
+def test_normative_synthesis_prompt_allows_explanation_but_not_parametric_authority():
+    prompt = Synthesizer(None)._prompt(
+        "Qual é a regra?",
+        [],
+        {"documents": []},
+        mode=ResponseMode.NORMATIVE,
+        use_parametric_knowledge=True,
+    )
+
+    assert "Pode explicar e combinar regras" in prompt
+    assert "somente o texto dos trechos fornecidos" in prompt
+    assert "autoridade factual" in prompt
 
 
 def test_synthesis_prompt_keeps_adjacent_page_context():
@@ -1051,6 +1175,33 @@ def test_conversational_turn_does_not_call_rag() -> None:
     assert tools.calls == []
 
 
+def test_general_mode_uses_synthesis_without_rag():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.GENERAL,
+            reply="",
+        )
+    )
+    synthesizer = FakeSynthesizer(
+        SynthesisResponse(
+            answer="A metodologia organiza as etapas do trabalho.",
+            evidence_ids=[],
+        )
+    )
+    tools = FakeTools(rag_payload())
+    agent = AgentV2(planner=planner, synthesizer=synthesizer, tools=tools)
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "O que é metodologia?"}]}
+    )
+
+    assert result["answer"] == "A metodologia organiza as etapas do trabalho."
+    assert result["grounding_status"] == "conversational"
+    assert tools.calls == []
+    assert synthesizer.calls
+
+
 def test_conversational_plan_without_reply_uses_greeting() -> None:
     planner = FakePlanner(
         PlannerDecision(
@@ -1098,7 +1249,340 @@ def test_normative_turn_retrieves_and_publishes_validated_evidence() -> None:
     assert [item["evidence_id"] for item in result["evidences"]] == ["e1"]
     assert result["published_evidence_ids"] == ["e1"]
     assert tools.calls[0][0] == "rag_document_search"
-    assert synthesizer.calls
+
+
+def test_mixed_mode_keeps_general_explanation_and_grounds_normative_claim():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.MIXED,
+            needs_retrieval=True,
+        )
+    )
+    tools = FakeTools(rag_payload())
+    synthesizer = FakeSynthesizer(
+        SynthesisResponse(
+            answer=(
+                "A metodologia organiza as etapas do trabalho. "
+                + SOURCE
+            ),
+            evidence_ids=["e1"],
+        )
+    )
+    agent = AgentV2(planner=planner, synthesizer=synthesizer, tools=tools)
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Explique e fundamente."}]}
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert "A metodologia organiza" in result["answer"]
+    assert SOURCE in result["answer"]
+    assert result["published_evidence_ids"] == ["e1"]
+
+
+def test_normative_mode_can_retry_one_planner_query_when_first_is_empty():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["primeira consulta", "segunda consulta"],
+        )
+    )
+    tools = SequencedTools(
+        [
+            {"status": "success", "evidence_found": False, "documents": []},
+            rag_payload(),
+        ]
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual é a regra?"}]}
+    )
+
+    assert len(tools.calls) == 2
+    assert result["grounding_status"] == "supported"
+
+
+def test_normative_mode_retries_when_first_result_is_thematic_but_insufficient():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["consulta ampla", "consulta sobre recuo"],
+        )
+    )
+    unrelated = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "document_id": 14724,
+                "evidence": [
+                    {
+                        "evidence_id": "other",
+                        "text": "A metodologia organiza etapas.",
+                        "matched_text": "A metodologia organiza etapas.",
+                    }
+                ],
+            }
+        ],
+    }
+    tools = SequencedTools([unrelated, rag_payload()])
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+        ),
+        tools=tools,
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual é o recuo?"}]}
+    )
+
+    assert len(tools.calls) == 2
+    assert result["grounding_status"] == "supported"
+
+
+def test_normative_mode_merges_pages_from_same_document_across_queries():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["consulta ampla", "consulta sobre recuo"],
+        )
+    )
+    first = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "rag_document_id": 3,
+                "standard_id": "abnt_nbr_14724",
+                "title": "Trabalhos acadêmicos",
+                "version": "2024",
+                "pages": [3],
+                "evidence": [
+                    {
+                        "evidence_id": "document:3:page:3",
+                        "page_number": 3,
+                        "text": "Escopo geral.",
+                    }
+                ],
+            }
+        ],
+    }
+    second = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "rag_document_id": 3,
+                "standard_id": "abnt_nbr_14724",
+                "title": "Trabalhos acadêmicos",
+                "version": "2024",
+                "pages": [7],
+                "evidence": [
+                    {
+                        "evidence_id": "document:3:page:7",
+                        "page_number": 7,
+                        "text": "O recuo deve observar a norma.",
+                    }
+                ],
+            }
+        ],
+    }
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer=SOURCE)),
+        tools=SequencedTools([first, second]),
+    )
+
+    execution = agent._execute_searches(
+        "Qual é o recuo?",
+        [],
+        "conversation",
+        "turn",
+        planner.decision.retrieval_queries,
+    )
+
+    assert len(execution.raw_result["documents"]) == 1
+    document = execution.raw_result["documents"][0]
+    assert document["pages"] == [3, 7]
+    assert [item["evidence_id"] for item in document["evidence"]] == [
+        "document:3:page:3",
+        "document:3:page:7",
+    ]
+
+
+def test_normative_synthesis_keeps_text_generation_enabled_without_authority_bypass():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            use_parametric_knowledge=False,
+        )
+    )
+    synthesizer = KeywordSynthesizer(
+        SynthesisResponse(answer=SOURCE, evidence_ids=["e1"])
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=synthesizer,
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Qual é a regra?"}]}
+    )
+
+    assert result["grounding_status"] == "supported"
+    assert synthesizer.calls[0][3]["use_parametric_knowledge"] is True
+
+
+def test_retrieval_does_not_stop_on_generic_normative_overlap():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.NORMATIVE,
+            needs_retrieval=True,
+            retrieval_queries=["regras ABNT", "margem e recuo"],
+        )
+    )
+    generic = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "rag_document_id": 3,
+                "evidence": [
+                    {
+                        "evidence_id": "generic",
+                        "direct_match": True,
+                        "text": "ABNT norma brasileira.",
+                    }
+                ],
+            }
+        ],
+    }
+    relevant = {
+        "status": "success",
+        "evidence_found": True,
+        "documents": [
+            {
+                "rag_document_id": 3,
+                "evidence": [
+                    {
+                        "evidence_id": "relevant",
+                        "direct_match": True,
+                        "text": "A margem e o recuo devem seguir a apresentação.",
+                    }
+                ],
+            }
+        ],
+    }
+    tools = SequencedTools([generic, relevant])
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer=SOURCE)),
+        tools=tools,
+    )
+
+    agent._execute_searches(
+        "Quais são as principais regras de formatação ABNT?",
+        [],
+        "conversation",
+        "turn",
+        planner.decision.retrieval_queries,
+    )
+
+    assert len(tools.calls) == 2
+
+
+def test_mixed_mode_keeps_general_explanation_when_retrieval_fails():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.NORMATIVE_QUERY,
+            mode=ResponseMode.MIXED,
+            needs_retrieval=True,
+        )
+    )
+    tools = FakeTools(
+        {"status": "success", "evidence_found": False, "documents": []}
+    )
+    synthesizer = FakeSynthesizer(
+        SynthesisResponse(
+            answer="A metodologia organiza as etapas. A margem deve medir 2 cm.",
+            evidence_ids=[],
+        )
+    )
+    agent = AgentV2(planner=planner, synthesizer=synthesizer, tools=tools)
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Explique e fundamente."}]}
+    )
+
+    assert "A metodologia organiza" in result["answer"]
+    assert "2 cm" not in result["answer"]
+    assert result["grounding_status"] == "partial"
+    assert result["limitations"]
+
+
+def test_general_synthesis_failure_returns_limitation_not_greeting():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.GENERAL,
+        )
+    )
+    synthesizer = FakeSynthesizer(SynthesisResponse(answer="placeholder"))
+    synthesizer.synthesize = lambda *_args, **_kwargs: (_ for _ in ()).throw(
+        SynthesisFailure("invalid")
+    )
+    agent = AgentV2(
+        planner=planner, synthesizer=synthesizer, tools=FakeTools(rag_payload())
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "O que é metodologia?"}]}
+    )
+
+    assert result["answer"] != GREETING_MESSAGE
+    assert "síntese" in result["answer"].lower()
+    assert result["completion_type"] == "technical_failure"
+
+
+def test_parametric_knowledge_flag_controls_general_generation():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.GENERAL,
+            use_parametric_knowledge=False,
+        )
+    )
+    synthesizer = FakeSynthesizer(SynthesisResponse(answer="não deveria"))
+    agent = AgentV2(
+        planner=planner, synthesizer=synthesizer, tools=FakeTools(rag_payload())
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "O que é metodologia?"}]}
+    )
+
+    assert "síntese" in result["answer"].lower()
+    assert synthesizer.calls == []
 
 
 def test_normative_turn_accepts_literal_evidence_after_page_header() -> None:
@@ -1347,6 +1831,63 @@ def test_conversational_prefix_with_unlisted_normative_claim_fails_closed() -> N
     assert result["grounding_status"] == "unsupported"
     assert result["answer"] == INSUFFICIENT_EVIDENCE
     assert result["evidences"] == []
+
+
+def test_general_mode_cannot_bypass_implicit_normative_claim():
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.GENERAL,
+            reply="Posso ajudar. A citação direta curta fica entre aspas duplas.",
+        )
+    )
+    agent = AgentV2(
+        planner=planner,
+        synthesizer=FakeSynthesizer(
+            SynthesisResponse(
+                answer="Posso ajudar. A citação direta curta fica entre aspas duplas."
+            )
+        ),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke({"messages": [{"role": "user", "content": "Olá"}]})
+
+    assert result["grounding_status"] == "unsupported"
+    assert result["answer"] == INSUFFICIENT_EVIDENCE
+
+
+@pytest.mark.parametrize(
+    ("claim_kind", "expected_status"),
+    [("general", "conversational"), ("normative", "unsupported")],
+)
+def test_general_mode_uses_claim_classification_for_implicit_rules(
+    claim_kind, expected_status
+):
+    planner = FakePlanner(
+        PlannerDecision(
+            intent=ConversationIntent.CONVERSATIONAL,
+            mode=ResponseMode.GENERAL,
+            reply="A introdução deve apresentar o tema e o objetivo do estudo.",
+        )
+    )
+    answer = "A introdução deve apresentar o tema e o objetivo do estudo."
+    agent = AgentV2(
+        model=FakeGroundingVerifierModel(
+            {"claims": [{"index": 0, "kind": claim_kind}]}
+        ),
+        planner=planner,
+        synthesizer=FakeSynthesizer(SynthesisResponse(answer=answer)),
+        tools=FakeTools(rag_payload()),
+    )
+
+    result = agent.invoke({"messages": [{"role": "user", "content": "Olá"}]})
+
+    assert result["grounding_status"] == expected_status
+    if expected_status == "conversational":
+        assert result["answer"] == answer
+    else:
+        assert result["answer"] == INSUFFICIENT_EVIDENCE
 
 
 def test_greeting_with_academic_capabilities_remains_conversational() -> None:

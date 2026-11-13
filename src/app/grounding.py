@@ -32,7 +32,33 @@ _RULE_MARKERS = (
     r"\b(deve\w*|obrigatori\w*|permitid\w*|proibid\w*|vedad\w*|cm|mm|pt|pontos)\b"
 )
 _DOCUMENTARY_FIELDS = r"\b(fontes?|recuos?|(?:tipo|tamanho|estilo) de letras?)\b"
+_NORMATIVE_MODAL = (
+    r"\b(deve\w*|obrigatori\w*|permitid\w*|proibid\w*|vedad\w*|"
+    r"exig\w*|requer\w*|necessári\w*|necessari\w*)\b"
+)
+_DOCUMENTARY_SUBJECT = (
+    r"\b(citac\w*|referenc\w*|margens?|recuos?|fonte|folha|resumo|"
+    r"espac\w*|elementos? pre[- ]textuais?|norma\w*|regra\w*|abnt|nbr)\b"
+)
+_CONCEPTUAL_CUES = (
+    r"\b(organiz\w*|consist\w*|signific\w*|descrev\w*|explic\w*|"
+    r"apresent\w*|contextualiz\w*|defin\w*|busc\w*|investig\w*|"
+    r"analis\w*)\b"
+)
+_STRUCTURAL_NORMATIVE_SUBJECT = (
+    r"\b(referenc\w*|sumari\w*|identific\w*|autori\w*|folha|"
+    r"capa|titulo|citac\w*)\b"
+)
+_STRUCTURAL_NORMATIVE_RELATION = (
+    r"\b(represent\w*|correspond\w*|aparec\w*|anteced\w*|"
+    r"preced\w*|suced\w*)\b"
+)
+_STRUCTURAL_NORMATIVE_QUALIFIER = (
+    r"\b(secao\w*|secoes\w*|posterior\w*|anterior\w*|antes|"
+    r"depois|ordem|titulo|folha|autori\w*)\b"
+)
 Verifier = Callable[[str, list[str], Mapping[str, Any]], Any]
+ClaimClassifier = Callable[[str, list[str]], Any]
 
 
 @dataclass(frozen=True)
@@ -94,6 +120,99 @@ def needs_support(answer: str, question: str = "") -> bool:
         or re.search(_DOCUMENTARY_FIELDS, _canonical(question))
         or _QUANTITY.search(_canonical(answer))
     )
+
+
+def _claim_requires_normative_support(claim: str) -> bool:
+    canonical = _canonical(claim)
+    return bool(
+        _QUANTITY.search(canonical)
+        or re.search(r"\b(conforme|segundo|norma\w*|regra\w*|abnt|nbr)\b", canonical)
+        or (
+            re.search(_NORMATIVE_MODAL, canonical)
+            and re.search(_DOCUMENTARY_SUBJECT, canonical)
+        )
+        or (
+            re.search(_STRUCTURAL_NORMATIVE_SUBJECT, canonical)
+            and re.search(_STRUCTURAL_NORMATIVE_RELATION, canonical)
+            and re.search(_STRUCTURAL_NORMATIVE_QUALIFIER, canonical)
+        )
+    )
+
+
+def _implicit_normative_claim(claim: str) -> bool:
+    canonical = _canonical(claim)
+    return bool(
+        re.search(
+            r"\b(citac\w*|referenc\w*|margens?|folha|resumo|"
+            r"elementos? pre[- ]textuais?)\b",
+            canonical,
+        )
+        and re.search(
+            r"\b(fica\w*|ficam\w*|usa\w*|utiliza\w*|apresenta\w*|"
+            r"apresentam\w*|aparece\w*|aparecem\w*|segue\w*|seguem\w*)\b",
+            canonical,
+        )
+    )
+
+
+def is_conceptual_explanation(text: str) -> bool:
+    """Conserva prosa conceitual sem tratar ausência de classificação como prova."""
+    claims = _claims(text)
+    return bool(claims) and all(
+        _conversational(claim)
+        or (
+            bool(re.search(_CONCEPTUAL_CUES, _canonical(claim)))
+            and not _claim_requires_normative_support(claim)
+            and not _implicit_normative_claim(claim)
+        )
+        for claim in claims
+    )
+
+
+def _classified_normative_claims(
+    classifier: ClaimClassifier | None,
+    question: str,
+    claims: list[str],
+) -> tuple[set[int], bool]:
+    if classifier is None:
+        return set(), False
+    try:
+        raw = classifier(question, claims)
+        if isinstance(raw, str):
+            raw = json.loads(raw)
+        entries = raw.get("claims", []) if isinstance(raw, Mapping) else []
+        if not isinstance(entries, list):
+            return set(), False
+        indices = {
+            int(item["index"])
+            for item in entries
+            if isinstance(item, Mapping)
+            and str(item.get("index", "")).isdigit()
+            and 0 <= int(item["index"]) < len(claims)
+        }
+        normative = {
+            int(item["index"])
+            for item in entries
+            if isinstance(item, Mapping)
+            and str(item.get("kind") or "").casefold() == "normative"
+            and str(item.get("index", "")).isdigit()
+            and 0 <= int(item["index"]) < len(claims)
+        }
+        complete = (
+            len(entries) == len(claims)
+            and indices == set(range(len(claims)))
+            and len(indices) == len(entries)
+            and all(
+                isinstance(item, Mapping)
+                and str(item.get("kind") or "").casefold()
+                in {"normative", "general", "example"}
+                for item in entries
+            )
+        )
+        return normative, complete
+    except Exception:
+        logger.warning("grounding_claim_classification_invalid=True")
+        return set(), False
 
 
 def _plain_text_rewrite(answer: str, question: str) -> bool:
@@ -465,40 +584,74 @@ def _claim_support(
     question: str,
     verifier: Verifier | None,
 ) -> dict[int, str | None]:
+    normalized_claims = [
+        re.sub(r"^[ \t]*[-*+][ \t]+", "", claim) for claim in claims
+    ]
     support = {
         index: _literal_support(claim, available, question)
-        for index, claim in enumerate(claims)
+        for index, claim in enumerate(normalized_claims)
     }
     if not available or all(support.values()):
         return support
-    assessments = _assess(verifier, question, claims, available)
+    assessments = _assess(verifier, question, normalized_claims, available)
     counts = Counter(item.index for item in assessments)
     for item in assessments:
         if 0 <= item.index < len(claims) and counts[item.index] == 1:
             support[item.index] = support[item.index] or _verified_support(
-                item, claims[item.index], available, question
+                item, normalized_claims[item.index], available, question
             )
     return support
 
 
 def _compose(
-    answer: str, claims: list[str], support: Mapping[int, str | None]
+    answer: str,
+    claims: list[str],
+    support: Mapping[int, str | None],
+    required: set[int] | None = None,
 ) -> GroundingDecision:
+    required = set(range(len(claims))) if required is None else required
     kept = [
         claim
         for index, claim in enumerate(claims)
-        if support[index] or _conversational(claim)
+        if index not in required or support[index] or _conversational(claim)
     ]
     identifiers = tuple(
-        dict.fromkeys(identifier for identifier in support.values() if identifier)
+        dict.fromkeys(
+            identifier
+            for index, identifier in support.items()
+            if index in required and identifier
+        )
     )
-    if not identifiers:
+    if not required:
+        return GroundingDecision(answer, (), "conversational")
+    unsupported = [
+        claim
+        for index, claim in enumerate(claims)
+        if index in required and not support[index]
+    ]
+    if required and not identifiers:
+        if kept:
+            return GroundingDecision(
+                _preserve_structure(answer, unsupported), (), "partial"
+            )
         return GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
     if len(kept) == len(claims):
         return GroundingDecision(answer, identifiers, "supported")
     return GroundingDecision(
-        "\n".join([*kept, PARTIAL_LIMITATION]), identifiers, "partial"
+        _preserve_structure(answer, unsupported), identifiers, "partial"
     )
+
+
+def _preserve_structure(answer: str, unsupported: list[str]) -> str:
+    cleaned = answer
+    for claim in unsupported:
+        cleaned = cleaned.replace(claim, "")
+    cleaned = re.sub(r"(?m)^\s*[-*]\s*$\r?\n?", "", cleaned)
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+    if not cleaned:
+        return INSUFFICIENT_EVIDENCE
+    return f"{cleaned}\n\n{PARTIAL_LIMITATION}"
 
 
 def ground_answer(
@@ -508,6 +661,8 @@ def ground_answer(
     verifier: Verifier | None = None,
     *,
     normative_context: bool = False,
+    response_mode: str | None = None,
+    claim_classifier: ClaimClassifier | None = None,
 ) -> GroundingDecision:
     """IDs e similaridade não provam suporte; paráfrases exigem avaliação semântica."""
     if (
@@ -517,6 +672,25 @@ def ground_answer(
     ):
         return GroundingDecision(answer, (), "conversational")
     claims = _claims(answer)
-    return _compose(
-        answer, claims, _claim_support(claims, available, question, verifier)
-    )
+    support = _claim_support(claims, available, question, verifier)
+    required = None
+    if response_mode == "mixed":
+        required = {
+            index
+            for index, claim in enumerate(claims)
+            if _claim_requires_normative_support(claim)
+            or _implicit_normative_claim(claim)
+        }
+        classified, complete = _classified_normative_claims(
+            claim_classifier, question, claims
+        )
+        required.update(classified)
+        if not complete:
+            required.update(
+                index
+                for index, claim in enumerate(claims)
+                if _claim_requires_normative_support(claim)
+                or _implicit_normative_claim(claim)
+                or not is_conceptual_explanation(claim)
+            )
+    return _compose(answer, claims, support, required)

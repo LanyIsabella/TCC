@@ -28,6 +28,7 @@ from src.app.scope_guard import (
 from .schemas import (
     ClarificationResolution,
     PlannerDecision,
+    ResponseMode,
     is_structured_clarification,
 )
 
@@ -59,6 +60,40 @@ def _is_underspecified_question(question: str) -> bool:
             r"(?:qual (?:e |deve ser )?|como deve ser )"
             r"(?:o|a) (?:recuo|margem|fonte|espacamento)",
             normalized,
+        )
+    )
+
+
+def _is_general_knowledge_question(question: str) -> bool:
+    normalized = normalize_text(question).strip().rstrip("?.!")
+    if not normalized.startswith(
+        (
+            "o que e ",
+            "explique ",
+            "qual a importancia ",
+            "como funciona ",
+            "como fazer ",
+            "como posso melhorar ",
+            "como melhorar ",
+            "como escrever ",
+        )
+    ):
+        return False
+    return not any(
+        marker in normalized
+        for marker in (
+            "abnt",
+            "nbr",
+            "norma",
+            "regra",
+            "deve",
+            "obrigatori",
+            "permitid",
+            "recuo",
+            "margem",
+            "citac",
+            "referenc",
+            "espacamento",
         )
     )
 
@@ -297,6 +332,7 @@ class Planner:
         return decision.model_copy(
             update={
                 "intent": ConversationIntent.NORMATIVE_QUERY,
+                "mode": ResponseMode.NORMATIVE,
                 "needs_clarification": False,
                 "needs_retrieval": True,
                 "reply": None,
@@ -309,15 +345,26 @@ class Planner:
         return (
             "Você é o planejador de um assistente acadêmico ABNT. Interprete a "
             "mensagem atual usando o contexto. Não invente regra normativa. "
-            "Escolha uma intenção entre conversational, ambiguous, normative_query, "
-            "action_request, out_of_scope e unknown. Use needs_retrieval=true apenas "
-            "quando a resposta exigir documento normativo. Para ambiguous, escreva "
+            "Escolha um modo entre general, normative, mixed, clarify e out_of_scope "
+            "e uma intenção entre conversational, ambiguous, normative_query, "
+            "action_request, out_of_scope e unknown. Use general para explicações "
+            "conceituais ou procedurais sem regra normativa específica; normative "
+            "quando toda afirmação normativa exigir documento; mixed quando uma "
+            "explicação geral puder acompanhar regras documentais. Use clarify quando "
+            "faltarem dados e out_of_scope para pedidos não suportados. "
+            "Pedidos de estratégia pessoal, redação ou melhoria de uma introdução "
+            "são general quando não pedirem um requisito específico de norma. "
+            "needs_retrieval deve ser true em normative ou mixed e false em general, "
+            "clarify e out_of_scope. Em retrieval_queries, forneça no máximo duas "
+            "consultas autossuficientes quando forem necessárias. Para ambiguous, "
+            "escreva "
             "uma ou mais perguntas isoladas em clarification_questions, sem prefácios "
             "ou afirmações. Quando a pergunta normativa for ampla e puder se referir "
             "a aspectos diferentes, como autoria, elementos ou formatação, prefira "
             "ambiguous e peça um único esclarecimento específico. Para "
-            "action_request, não simule "
-            "a ferramenta. Retorne somente o objeto estruturado.\n\n"
+            "action_request, não simule a ferramenta. Retorne somente o objeto "
+            "estruturado, incluindo mode, objective, retrieval_queries e "
+            "use_parametric_knowledge.\n\n"
             f"Histórico: {json.dumps(context, ensure_ascii=False)}\n"
             f"Pergunta atual: {question}"
         )
@@ -351,17 +398,56 @@ class Planner:
 
     @staticmethod
     def _normalize_retrieval_flag(decision: PlannerDecision) -> None:
-        if decision.needs_retrieval and decision.intent == ConversationIntent.UNKNOWN:
+        normative_signal = (
+            decision.intent == ConversationIntent.NORMATIVE_QUERY
+            or decision.needs_retrieval
+        )
+        if decision.mode == ResponseMode.GENERAL:
+            if normative_signal:
+                decision.mode = ResponseMode.NORMATIVE
+                decision.intent = ConversationIntent.NORMATIVE_QUERY
+            elif decision.intent == ConversationIntent.AMBIGUOUS:
+                decision.mode = ResponseMode.CLARIFY
+            elif decision.intent in {
+                ConversationIntent.ACTION_REQUEST,
+                ConversationIntent.OUT_OF_SCOPE,
+            }:
+                decision.mode = ResponseMode.OUT_OF_SCOPE
+        elif decision.mode == ResponseMode.MIXED:
             decision.intent = ConversationIntent.NORMATIVE_QUERY
-        if decision.intent in {
-            ConversationIntent.CONVERSATIONAL,
-            ConversationIntent.AMBIGUOUS,
+        elif decision.mode == ResponseMode.NORMATIVE:
+            decision.intent = ConversationIntent.NORMATIVE_QUERY
+        elif decision.mode == ResponseMode.CLARIFY:
+            if normative_signal:
+                decision.mode = ResponseMode.NORMATIVE
+                decision.intent = ConversationIntent.NORMATIVE_QUERY
+        elif decision.mode == ResponseMode.OUT_OF_SCOPE:
+            if normative_signal:
+                decision.mode = ResponseMode.NORMATIVE
+                decision.intent = ConversationIntent.NORMATIVE_QUERY
+        elif normative_signal:
+            decision.mode = ResponseMode.NORMATIVE
+            decision.intent = ConversationIntent.NORMATIVE_QUERY
+        elif decision.intent == ConversationIntent.AMBIGUOUS:
+            decision.mode = ResponseMode.CLARIFY
+        elif decision.intent in {
             ConversationIntent.ACTION_REQUEST,
             ConversationIntent.OUT_OF_SCOPE,
         }:
-            decision.needs_retrieval = False
-        if decision.intent == ConversationIntent.NORMATIVE_QUERY:
-            decision.needs_retrieval = True
+            decision.mode = ResponseMode.OUT_OF_SCOPE
+        else:
+            decision.mode = ResponseMode.GENERAL
+
+        decision.needs_retrieval = decision.mode in {
+            ResponseMode.NORMATIVE,
+            ResponseMode.MIXED,
+        }
+        if decision.mode in {ResponseMode.NORMATIVE, ResponseMode.MIXED}:
+            # A LLM may elaborate retrieved text; grounding remains the sole
+            # authority for normative facts.
+            decision.use_parametric_knowledge = True
+        elif decision.mode == ResponseMode.OUT_OF_SCOPE:
+            decision.use_parametric_knowledge = False
 
     @staticmethod
     def _normalize_ambiguous_decision(
@@ -397,6 +483,11 @@ class Planner:
         )
 
     def _fallback(self, question: str, history: list[Any]) -> PlannerDecision:
+        if _is_general_knowledge_question(question):
+            return PlannerDecision(
+                intent=ConversationIntent.CONVERSATIONAL,
+                mode=ResponseMode.GENERAL,
+            )
         decision = interpret_intent([*history, {"role": "user", "content": question}])
         if _is_underspecified_question(question):
             return PlannerDecision(
@@ -426,6 +517,12 @@ class Planner:
             needs_retrieval=decision.intent == ConversationIntent.NORMATIVE_QUERY,
             reply=reply,
             clarification_questions=clarification_questions,
+            mode={
+                ConversationIntent.NORMATIVE_QUERY: ResponseMode.NORMATIVE,
+                ConversationIntent.AMBIGUOUS: ResponseMode.CLARIFY,
+                ConversationIntent.ACTION_REQUEST: ResponseMode.OUT_OF_SCOPE,
+                ConversationIntent.OUT_OF_SCOPE: ResponseMode.OUT_OF_SCOPE,
+            }.get(decision.intent, ResponseMode.GENERAL),
         )
 
 

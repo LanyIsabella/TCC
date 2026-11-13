@@ -3,7 +3,7 @@
 import json
 
 import pytest
-from src.app.grounding import INSUFFICIENT_EVIDENCE, ground_answer
+from src.app.grounding import INSUFFICIENT_EVIDENCE, PARTIAL_LIMITATION, ground_answer
 
 QUESTION = "Qual a regra de formatação segundo a ABNT?"
 
@@ -30,6 +30,229 @@ def test_literal_complete_rule_is_supported_even_without_model_ids():
     result = ground_answer(text, evidence(text), QUESTION)
     assert result.answer == text
     assert result.evidence_ids == ("e1",)
+
+
+def test_mixed_mode_preserves_general_prose_while_grounding_normative_claims():
+    answer = "A metodologia organiza as etapas. A margem direita deve medir 2 cm."
+    result = ground_answer(
+        answer,
+        evidence("A margem direita deve medir 2 cm."),
+        QUESTION,
+        response_mode="mixed",
+        normative_context=True,
+    )
+
+    assert result.status == "supported"
+    assert result.answer == answer
+    assert result.evidence_ids == ("e1",)
+
+
+def test_mixed_mode_rejects_unsupported_normative_claim_but_keeps_general_prose():
+    answer = "A metodologia organiza as etapas. A margem direita deve medir 9 cm."
+    result = ground_answer(
+        answer,
+        evidence("A margem direita deve medir 2 cm."),
+        QUESTION,
+        response_mode="mixed",
+        normative_context=True,
+    )
+
+    assert result.status == "partial"
+    assert "A metodologia organiza" in result.answer
+    assert PARTIAL_LIMITATION in result.answer
+
+
+def test_mixed_mode_semantic_classifier_rejects_implicit_normative_claim():
+    answer = "A citação direta curta fica entre aspas duplas."
+    def classifier(*_args):
+        return {"claims": [{"index": 0, "kind": "normative"}]}
+
+    result = ground_answer(
+        answer,
+        evidence("A metodologia organiza as etapas."),
+        "Como fazer uma citação direta curta segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "insufficient"
+    assert result.answer == INSUFFICIENT_EVIDENCE
+
+
+def _raising_classifier(*_args):
+    raise RuntimeError("indisponível")
+
+
+@pytest.mark.parametrize(
+    "classifier",
+    [
+        None,
+        _raising_classifier,
+        lambda *_args: "invalid json",
+        lambda *_args: {"claims": []},
+        lambda *_args: {"claims": [{"index": 0, "kind": "general"}]},
+    ],
+)
+def test_inconclusive_classifier_does_not_release_implicit_normative_claim(classifier):
+    answer = "A citação curta aparece entre aspas duplas."
+
+    result = ground_answer(
+        answer,
+        evidence("A metodologia organiza as etapas."),
+        "Como fazer citações segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "insufficient"
+    assert result.answer == INSUFFICIENT_EVIDENCE
+
+
+@pytest.mark.parametrize(
+    "classifier",
+    [
+        None,
+        lambda *_args: "invalid json",
+        lambda *_args: {"claims": []},
+        lambda *_args: {"claims": [{"index": 0, "kind": "unknown"}]},
+    ],
+)
+def test_mixed_mode_rejects_unclassified_normative_statement_without_known_marker(
+    classifier,
+):
+    result = ground_answer(
+        "As referências bibliográficas incluem autor e título.",
+        evidence("A metodologia organiza as etapas."),
+        "Como formatar referências segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "insufficient"
+    assert result.answer == INSUFFICIENT_EVIDENCE
+
+
+@pytest.mark.parametrize(
+    "classifier",
+    [
+        None,
+        lambda *_args: "invalid json",
+        lambda *_args: {"claims": []},
+        lambda *_args: {"claims": [{"index": 0, "kind": "unknown"}]},
+    ],
+)
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "As referências bibliográficas representam uma seção posterior à conclusão.",
+        "O sumário corresponde à seção que antecede a introdução.",
+        "A identificação da autoria aparece antes do título na folha de rosto.",
+    ],
+)
+def test_mixed_mode_rejects_structural_claim_when_classifier_is_inconclusive(
+    classifier, answer
+):
+    result = ground_answer(
+        answer,
+        evidence("A metodologia organiza as etapas."),
+        "Como organizar os elementos de um trabalho segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "insufficient"
+    assert result.answer == INSUFFICIENT_EVIDENCE
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "A metodologia organiza as etapas de uma pesquisa.",
+        "A pesquisa qualitativa busca compreender experiências e significados.",
+        "Uma introdução apresenta o assunto e contextualiza o problema investigado.",
+    ],
+)
+def test_mixed_mode_preserves_conceptual_explanation_without_classifier(answer):
+    result = ground_answer(
+        answer,
+        evidence("A margem deve medir 2 cm."),
+        "Explique o conceito para um TCC.",
+        response_mode="mixed",
+        normative_context=True,
+    )
+
+    assert result.status == "conversational"
+    assert result.answer == answer
+
+
+def test_mixed_mode_keeps_conceptual_prose_when_classifier_is_unavailable():
+    result = ground_answer(
+        "A metodologia organiza as etapas do trabalho.",
+        evidence("A margem deve medir 2 cm."),
+        QUESTION,
+        response_mode="mixed",
+        normative_context=True,
+    )
+
+    assert result.status == "conversational"
+    assert result.answer == "A metodologia organiza as etapas do trabalho."
+
+
+def test_partial_classifier_keeps_general_claim_but_removes_unclassified_rule():
+    answer = (
+        "A metodologia organiza as etapas do trabalho. "
+        "A citação curta aparece entre aspas duplas."
+    )
+
+    result = ground_answer(
+        answer,
+        evidence("A metodologia organiza as etapas do trabalho."),
+        QUESTION,
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=lambda *_args: {
+            "claims": [{"index": 0, "kind": "general"}]
+        },
+    )
+
+    assert result.status == "partial"
+    assert "A metodologia organiza" in result.answer
+    assert "A citação curta aparece" not in result.answer
+    assert PARTIAL_LIMITATION in result.answer
+
+
+def test_mixed_mode_preserves_markdown_structure_when_removing_unsupported_rule():
+    answer = (
+        "A metodologia organiza as etapas.\n\n"
+        "- A margem direita deve medir 2 cm.\n"
+        "- A citação direta curta fica entre aspas duplas."
+    )
+    def classifier(*_args):
+        return {
+            "claims": [
+                {"index": 0, "kind": "general"},
+                {"index": 1, "kind": "normative"},
+                {"index": 2, "kind": "normative"},
+            ]
+        }
+
+    result = ground_answer(
+        answer,
+        evidence("A margem direita deve medir 2 cm."),
+        "Como fazer citações segundo a ABNT?",
+        response_mode="mixed",
+        normative_context=True,
+        claim_classifier=classifier,
+    )
+
+    assert result.status == "partial"
+    assert "\n- A margem direita deve medir 2 cm." in result.answer
+    assert "\n- A citação direta curta" not in result.answer
+    assert PARTIAL_LIMITATION in result.answer
 
 
 def test_literal_rule_from_reference_only_document_is_not_relevant_support():

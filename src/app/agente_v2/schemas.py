@@ -11,6 +11,16 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from src.app.conversation import ConversationIntent
 
 
+class ResponseMode(StrEnum):
+    """Modo publicável decidido antes da recuperação."""
+
+    GENERAL = "general"
+    NORMATIVE = "normative"
+    MIXED = "mixed"
+    CLARIFY = "clarify"
+    OUT_OF_SCOPE = "out_of_scope"
+
+
 def _from_llm_value(
     model_type: type[BaseModel], value: Any, required_field: str
 ) -> BaseModel | None:
@@ -37,6 +47,10 @@ class PlannerDecision(BaseModel):
     reply: str | None = None
     clarification_questions: list[str] = Field(default_factory=list)
     action: str | None = None
+    mode: ResponseMode | None = None
+    objective: str | None = None
+    retrieval_queries: list[str] = Field(default_factory=list)
+    use_parametric_knowledge: bool = True
 
     @field_validator("clarification_questions")
     @classmethod
@@ -54,6 +68,20 @@ class PlannerDecision(BaseModel):
     @classmethod
     def from_llm_value(cls, value: Any) -> PlannerDecision | None:
         return _from_llm_value(cls, value, "intent")  # type: ignore[return-value]
+
+    def effective_mode(self) -> ResponseMode:
+        if self.mode is not None:
+            return self.mode
+        if self.intent == ConversationIntent.NORMATIVE_QUERY or self.needs_retrieval:
+            return ResponseMode.NORMATIVE
+        if self.intent == ConversationIntent.AMBIGUOUS or self.needs_clarification:
+            return ResponseMode.CLARIFY
+        if self.intent in {
+            ConversationIntent.ACTION_REQUEST,
+            ConversationIntent.OUT_OF_SCOPE,
+        }:
+            return ResponseMode.OUT_OF_SCOPE
+        return ResponseMode.GENERAL
 
 
 class ClarificationResolution(BaseModel):
@@ -110,6 +138,7 @@ class ToolExecution(BaseModel):
 
 __all__ = [
     "PlannerDecision",
+    "ResponseMode",
     "ClarificationResolution",
     "SynthesisResponse",
     "ToolExecution",

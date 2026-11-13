@@ -6,7 +6,7 @@ import hashlib
 import json
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 from uuid import uuid4
@@ -26,6 +26,7 @@ from .grounding import (
     GroundingDecision,
     Verifier,
     ground_answer,
+    is_conceptual_explanation,
     needs_support,
 )
 from .scope_guard import (
@@ -434,15 +435,60 @@ def looks_like_guarded_answer(answer: str) -> bool:
 def _has_normative_assertion(answer: str) -> bool:
     normalized = normalize_text(answer)
     return bool(
-        re.search(
-            r"\b(?:deve\w*|obrigatori\w*|permitid\w*|proibid\w*|"
-            r"vedad\w*|necessari\w*|exig\w*|requer\w*|mede|medir)\b"
-            r"|\b(?:\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|três|"
+        (
+            re.search(
+                r"\b(?:deve\w*|obrigatori\w*|permitid\w*|proibid\w*|"
+                r"vedad\w*|necessari\w*|exig\w*|requer\w*|mede|medir)\b",
+                normalized,
+            )
+            and re.search(
+                r"\b(?:margem|fonte|citac\w*|referenc\w*|recuo|espac\w*|"
+                r"norma\w*|regra\w*|abnt|nbr)\b",
+                normalized,
+            )
+        )
+        or re.search(
+            r"\b(?:\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|três|"
             r"quatro|cinco|seis|sete|oito|nove|dez)\s*"
             r"(?:cm|mm|pt|pontos?|centimetros?|milimetros?)\b",
             normalized,
         )
+        or re.search(
+            r"\b(citac\w*|referenc\w*|margens?|folha|resumo|regra\w*|"
+            r"norma\w*)\b[^.!?]{0,100}\b(fica\w*|ficam\w*|usa\w*|"
+            r"utiliza\w*|apresenta\w*|aparece\w*|aparecem\w*|"
+            r"consiste\w*|corresponde\w*|seguem?)\b",
+            normalized,
+        )
     )
+
+
+def _classified_normative_assertion(
+    classifier: Callable[[str, list[str]], Any] | None,
+    question: str,
+    answer: str,
+) -> bool | None:
+    if classifier is None:
+        return None
+    try:
+        raw = classifier(question, [answer])
+        if isinstance(raw, str):
+            raw = json.loads(raw)
+        entries = raw.get("claims", []) if isinstance(raw, Mapping) else []
+        if not isinstance(entries, list) or len(entries) != 1:
+            return None
+        if not any(
+            isinstance(item, Mapping)
+            and str(item.get("index")) == "0"
+            and str(item.get("kind") or "").casefold()
+            in {"normative", "general", "example"}
+            for item in entries
+        ):
+            return None
+        return str(entries[0].get("kind") or "").casefold() == "normative"
+    except Exception:
+        logger.warning("grounding_claim_classification_invalid=True")
+        return None
 
 
 def _is_safe_non_normative_response(
@@ -459,6 +505,8 @@ def _is_safe_non_normative_response(
         )
     }
     if normalized in known_safe:
+        return True
+    if normalized.startswith("a sintese geral nao foi publicada"):
         return True
     if (
         intent == ConversationIntent.AMBIGUOUS
@@ -583,6 +631,12 @@ def _fingerprint(
 
 def _normative_context(result: Mapping[str, Any]) -> bool:
     conversation = result.get("_conversation")
+    if isinstance(conversation, Mapping):
+        mode = str(conversation.get("response_mode") or "")
+        if mode == "general":
+            return False
+        if mode in {"normative", "mixed"}:
+            return True
     if isinstance(conversation, Mapping) and conversation.get("intent") in {
         ConversationIntent.CONVERSATIONAL,
         ConversationIntent.AMBIGUOUS,
@@ -642,6 +696,7 @@ def _trace_metadata(
 def _decision(
     result: Mapping[str, Any],
     verifier: Verifier | None = None,
+    claim_classifier: Callable[[str, list[str]], Any] | None = None,
     question: str | None = None,
 ) -> GroundingDecision:
     answer = _extract_answer(result)
@@ -704,7 +759,12 @@ def _decision(
             )
             or clarification_question
         )
-        normative_assertion = _has_normative_assertion(answer)
+        classified_normative = _classified_normative_assertion(
+            claim_classifier, question, answer
+        )
+        normative_assertion = _has_normative_assertion(answer) or (
+            classified_normative is True
+        )
         safe_non_normative = _is_safe_non_normative_response(
             answer, intent, completion_type
         )
@@ -717,6 +777,16 @@ def _decision(
             "structured",
             "legacy_structured",
         }
+        general_mode = (
+            isinstance(conversation, Mapping)
+            and str(conversation.get("response_mode") or "") == "general"
+        )
+        unclassified_general = (
+            general_mode
+            and classified_normative is None
+            and not safe_non_normative
+            and not is_conceptual_explanation(answer)
+        )
         untrusted_clarification = (
             intent == ConversationIntent.AMBIGUOUS
             and completion_type == "clarification_requested"
@@ -730,13 +800,21 @@ def _decision(
             if isolated_question:
                 normative_assertion = False
             safe_non_normative = not normative_assertion
-        if untrusted_clarification or normative_assertion or (
-            not safe_non_normative and needs_support(answer, question)
+        if (
+            untrusted_clarification
+            or normative_assertion
+            or unclassified_general
+            or (
+                not general_mode
+                and not safe_non_normative
+                and needs_support(answer, question)
+            )
         ):
             decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
         elif (
             explicitly_non_normative
             or safe_non_normative
+            or general_mode
             or not needs_support(answer, question)
         ):
             decision = GroundingDecision(answer, (), "conversational")
@@ -749,6 +827,12 @@ def _decision(
             question,
             verifier,
             normative_context=_normative_context(result),
+            response_mode=(
+                str(conversation.get("response_mode"))
+                if isinstance(conversation, Mapping)
+                else None
+            ),
+            claim_classifier=claim_classifier,
         )
     logger.info(
         "grounding status=%s available=%d supported=%d",
@@ -762,12 +846,15 @@ def _decision(
 def finalize_grounding(
     result: dict[str, Any],
     verifier: Verifier | None = None,
+    claim_classifier: Callable[[str, list[str]], Any] | None = None,
     *,
     question: str | None = None,
 ) -> dict[str, Any]:
     """Só publica a decisão central; eventos internos mantêm os pares de tools."""
     try:
-        decision = _decision(result, verifier, question=question)
+        decision = _decision(
+            result, verifier, claim_classifier, question=question
+        )
     except RuntimeError:
         decision = GroundingDecision(INSUFFICIENT_EVIDENCE, (), "insufficient")
     current_ids = {id(message) for message in current_turn_messages(result)}
